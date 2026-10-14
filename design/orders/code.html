@@ -1,0 +1,281 @@
+<!DOCTYPE html><html lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "tertiary-container": "#1f1a1a", "tertiary": "#000000", "primary-container": "#1c1b1d", "on-primary": "#ffffff", "inverse-primary": "#c8c6c8", "error": "#ba1a1a", "on-primary-fixed-variant": "#474649", "tertiary-fixed-dim": "#cec4c4", "surface-container-lowest": "#ffffff", "surface-bright": "#fbf8fc", "on-surface-variant": "#47464a", "on-secondary-container": "#63646c", "on-surface": "#1b1b1e", "surface-tint": "#5f5e60", "on-tertiary-container": "#8a8282", "secondary-fixed-dim": "#c6c5cf", "primary": "#000000", "on-tertiary-fixed-variant": "#4c4545", "surface-container": "#f0edf1", "background": "#fbf8fc", "secondary": "#5d5e66", "secondary-fixed": "#e3e1ec", "secondary-container": "#e3e1ec", "on-error": "#ffffff", "inverse-surface": "#303033", "tertiary-fixed": "#ebe0df", "surface": "#fbf8fc", "error-container": "#ffdad6", "outline-variant": "#c8c5ca", "surface-dim": "#dcd9dd", "on-primary-fixed": "#1c1b1d", "surface-container-high": "#eae7eb", "inverse-on-surface": "#f3f0f4", "surface-container-highest": "#e4e1e6", "surface-variant": "#e4e1e6", "primary-fixed": "#e5e1e4", "on-error-container": "#93000a", "on-secondary-fixed-variant": "#46464e", "on-primary-container": "#858386", "on-secondary-fixed": "#1a1b22", "surface-container-low": "#f6f2f7", "on-background": "#1b1b1e", "outline": "#78767b", "on-tertiary": "#ffffff", "primary-fixed-dim": "#c8c6c8", "on-tertiary-fixed": "#1f1a1a", "on-secondary": "#ffffff" }, borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, spacing: { "margin": "2rem", "space-xl": "2rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "gutter": "1.5rem", "margin-mobile": "1rem", "gutter-mobile": "0.75rem", "space-md": "0.75rem", "space-lg": "1.25rem" }, fontFamily: { "label-xs": ["Inter"], "body-sm": ["Inter"], "headline-xl-mobile": ["Inter"], "headline-lg": ["Inter"], "label-md": ["Inter"], "mono-data": ["JetBrains Mono"], "body-lg": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"], "headline-xl": ["Inter"], "label-sm": ["Inter"], "headline-sm": ["Inter"] }, fontSize: { "label-xs": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0.005em", "fontWeight": "400" }], "headline-xl-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "500" }], "mono-data": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "600" }], "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }], "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-14 px-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><span class="font-semibold text-headline-sm text-primary tracking-tight truncate">Westernswings</span></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="User Account" class="w-9 h-9 rounded-full bg-surface-container-low border border-outline-variant/30 flex items-center justify-center text-on-surface hover:bg-surface-container transition-colors shadow-sm flex-shrink-0"><span class="material-symbols-outlined text-[20px]">person</span></button></div></div></header><main class="flex flex-col relative w-full pt-14 pb-20 bg-surface min-h-screen px-margin-mobile"><div class="flex flex-col w-full gap-space-md">
+<!-- Interactive Toast Notification container for micro-interactions -->
+<div class="fixed top-16 inset-x-4 z-50 transform -translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center justify-between p-space-sm bg-primary text-on-primary rounded-xl shadow-xl" id="action-toast">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-surface text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-md text-label-md truncate" id="toast-text">Order updated successfully</span>
+</div>
+<span class="font-mono-data text-mono-data text-surface-variant uppercase tracking-wider">Done</span>
+</div>
+<!-- KPI Operational Telemetry Bar -->
+<div class="flex items-center justify-between px-space-xs py-space-xs">
+<div class="flex items-center gap-space-md">
+<div class="flex items-baseline gap-1.5">
+<span class="font-label-xs text-label-xs uppercase tracking-wider text-on-surface-variant">Pending</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">18</span>
+</div>
+<span class="text-outline-variant">|</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-label-xs text-label-xs uppercase tracking-wider text-on-surface-variant">Total Today</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">86</span>
+</div>
+</div>
+<span class="font-mono-data text-mono-data text-on-surface-variant text-[12px]">$12,254.00</span>
+</div>
+<!-- Real-time Filter Bar & Search Input Stack -->
+<div class="flex flex-col gap-space-xs">
+<!-- Fast Search Input -->
+<div class="relative flex items-center w-full">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full h-10 pl-9 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none shadow-sm transition-all pr-3" id="order-search" placeholder="Search by order # or customer..." type="text">
+
+</div>
+<!-- Horizontally Scrollable Status Chips -->
+<div class="flex items-center gap-space-xs overflow-x-auto no-scrollbar py-0.5 -mx-margin-mobile px-margin-mobile"><button class="filter-chip active-chip px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-primary text-on-primary shadow-sm transition-colors flex-shrink-0 whitespace-nowrap" data-filter="all">All (86)</button>
+<button class="filter-chip px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex-shrink-0 whitespace-nowrap" data-filter="new">New (18)</button>
+<button class="filter-chip px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex-shrink-0 whitespace-nowrap" data-filter="accepted">Accepted (14)</button>
+<button class="filter-chip px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex-shrink-0 whitespace-nowrap" data-filter="shipped">Shipped (42)</button>
+<button class="filter-chip px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex-shrink-0 whitespace-nowrap" data-filter="delivered">Delivered (10)</button>
+<button class="filter-chip px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex-shrink-0 whitespace-nowrap" data-filter="returned">Returned (2)</button></div>
+</div>
+<!-- Operational Header with Batch Dispatch trigger -->
+
+<!-- Orders Touch Feed Stack -->
+<div class="flex flex-col gap-space-sm" id="orders-stream"><!-- Order 1: New / Active / Online (Paid) -->
+<div class="order-card flex flex-col bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all gap-space-sm" data-customer="Elena Vance" data-order-id="#ORD-9024" data-status="new">
+  <div class="flex items-start justify-between gap-space-xs">
+    <div class="flex flex-col min-w-0">
+      <div class="flex items-center gap-space-xs">
+        <span class="font-mono-data text-mono-data font-semibold text-primary">#ORD-9024</span>
+        <span class="text-on-surface-variant text-[10px]">•</span>
+        <span class="font-mono-data text-mono-data text-on-surface-variant text-[11px]">12m ago</span>
+      </div>
+      <span class="font-headline-sm text-headline-sm text-on-surface mt-0.5 truncate">Elena Vance</span>
+      <span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">Seattle, WA</span>
+    </div>
+    <div class="flex flex-col items-end gap-1 flex-shrink-0">
+      <div class="flex items-center gap-1">
+        <span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-xs text-label-xs font-medium">New</span>
+        <span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-xs text-label-xs font-medium">Active</span>
+      </div>
+      <span class="font-mono-data text-mono-data text-[11px] text-on-surface-variant">Online • <span class="font-medium text-primary">Paid</span></span>
+    </div>
+  </div>
+  <div class="flex items-center gap-space-sm py-space-xs px-space-xs bg-surface-container-low rounded-lg">
+    <img class="h-9 w-9 rounded-lg object-cover flex-shrink-0" data-alt="Dark gray merino wool sweater folded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEDDOnnBFsbXUo5i_wazQMRZWzfeQ8CJQg73zHOWY932dmv7fS_ksZp4NGczCpEZ2Up8rZoy1E7T8VpBVlZUZkGwyWXVjWchmo9L24lVjhXav3BkTRd-BWuPg1eKg1mQxNoLTh9yfYzckM0nriLYbOujPc2UedXz2fMoqPu4XpOrRgc3utnCUKQTlBb8omOMsY5WeX5nhdM-TQwXP9gtmmQXa9w9Znsnzqgp6fCzYAGSNRCQPE2MaHrg">
+    <div class="flex flex-col min-w-0 flex-1">
+      <span class="font-body-sm text-body-sm text-on-surface truncate font-medium">Merino Wool Crewneck (x1), Tumbler (x2)</span>
+      <span class="font-mono-data text-mono-data text-on-surface-variant text-[11px]">3 items total</span>
+    </div>
+    <span class="font-mono-data text-mono-data font-semibold text-on-surface text-[14px] flex-shrink-0">$248.00</span>
+  </div>
+  <div class="flex items-center gap-space-xs pt-space-xs">
+    <button class="flex-1 h-10 flex items-center justify-center gap-space-xs bg-primary text-on-primary rounded-lg font-label-md text-label-md active:scale-[0.98] transition-transform shadow-sm" onclick="triggerFulfill(this, '#ORD-9024', 'Elena Vance')">
+      <span class="">Accept Order</span>
+    </button>
+  </div>
+</div>
+
+<!-- Order 2: Accepted / Active / COD (Pending) -->
+<div class="order-card flex flex-col bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all gap-space-sm" data-customer="Marcus Kane" data-order-id="#ORD-9023" data-status="accepted">
+  <div class="flex items-start justify-between gap-space-xs">
+    <div class="flex flex-col min-w-0">
+      <div class="flex items-center gap-space-xs">
+        <span class="font-mono-data text-mono-data font-semibold text-primary">#ORD-9023</span>
+        <span class="text-on-surface-variant text-[10px]">•</span>
+        <span class="font-mono-data text-mono-data text-on-surface-variant text-[11px]">34m ago</span>
+      </div>
+      <span class="font-headline-sm text-headline-sm text-on-surface mt-0.5 truncate">Marcus Kane</span>
+      <span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">Toronto, CA</span>
+    </div>
+    <div class="flex flex-col items-end gap-1 flex-shrink-0">
+      <div class="flex items-center gap-1">
+        <span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-xs text-label-xs font-medium">Accepted</span>
+        <span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-xs text-label-xs font-medium">Active</span>
+      </div>
+      <span class="font-mono-data text-mono-data text-[11px] text-on-surface-variant">COD • <span class="font-medium text-on-surface">Pending</span></span>
+    </div>
+  </div>
+  <div class="flex items-center gap-space-sm py-space-xs px-space-xs bg-surface-container-low rounded-lg">
+    <img class="h-9 w-9 rounded-lg object-cover flex-shrink-0" data-alt="Titanium stylus pen on paper" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA780D_q1CEjJf8m4Y_X_Un8kdc4Z_d0DHlvxc4ZR1vAe6ZwfWeV2dD7XhkWXHve4MC1PqkbiakXDTh8JRFdZz8BS2Sldy3TkKOyc-s1PUPAH4KWTRfqVGU_8mZ3FkA3Rjv3wKCpprgfdYfaCQ1QJ8yer18gf1hCT7sd0JUZkVbVRYUSrR7AFOdGB-xIr71pE2qoBo3gGaITZN1K_-Oz596mGi6ssITqDErjkv5kLpM2ZqFY6zvD3sIAA">
+    <div class="flex flex-col min-w-0 flex-1">
+      <span class="font-body-sm text-body-sm text-on-surface truncate font-medium">Titanium Stylus Pen (x1)</span>
+      <span class="font-mono-data text-mono-data text-on-surface-variant text-[11px]">1 item total</span>
+    </div>
+    <span class="font-mono-data text-mono-data font-semibold text-on-surface text-[14px] flex-shrink-0">$89.00</span>
+  </div>
+  <div class="flex items-center gap-space-xs pt-space-xs">
+    <button class="flex-1 h-10 flex items-center justify-center gap-space-xs bg-primary text-on-primary rounded-lg font-label-md text-label-md active:scale-[0.98] transition-transform shadow-sm" onclick="triggerDispatch(this, '#ORD-9023')">
+      <span class="">Dispatch Courier</span>
+    </button>
+  </div>
+</div>
+
+<!-- Order 3: Shipped / Completed / Online (Paid) -->
+<div class="order-card flex flex-col bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all gap-space-sm opacity-85" data-customer="Sophia Lind" data-order-id="#ORD-9022" data-status="shipped">
+  <div class="flex items-start justify-between gap-space-xs">
+    <div class="flex flex-col min-w-0">
+      <div class="flex items-center gap-space-xs">
+        <span class="font-mono-data text-mono-data font-medium text-on-surface-variant">#ORD-9022</span>
+        <span class="text-on-surface-variant text-[10px]">•</span>
+        <span class="font-mono-data text-mono-data text-on-surface-variant text-[11px]">1h ago</span>
+      </div>
+      <span class="font-headline-sm text-headline-sm text-on-surface mt-0.5 truncate">Sophia Lind</span>
+      <span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">Stockholm, SE</span>
+    </div>
+    <div class="flex flex-col items-end gap-1 flex-shrink-0">
+      <div class="flex items-center gap-1">
+        <span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-xs text-label-xs font-medium">Shipped</span>
+        <span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-xs text-label-xs font-medium">Completed</span>
+      </div>
+      <span class="font-mono-data text-mono-data text-[11px] text-on-surface-variant">Online • <span class="font-medium text-primary">Paid</span></span>
+    </div>
+  </div>
+  <div class="flex items-center gap-space-sm py-space-xs px-space-xs bg-surface-container-low rounded-lg">
+    <img class="h-9 w-9 rounded-lg object-cover flex-shrink-0" data-alt="Leather folio document case" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL0GtsxagMJZKPARqccCyV8feYsjHXu8B5oTWKmozUyrXxXg1aVx9rHYi6dCu09rZz28rvQeJlPUS7UNTYHhqQeqAMRrJ2Qs4f8M0hpQ9Y7otgg7suicoHfOmWUSGKvHkGgJvG9n4PEeOEmcW6N8rc56L0yTzoT-aPzKszFejILiyeYI50UcqTc-yuI7Wit6T-SSFQZzDzYyZbc8FMTVI16nQlWy972uz95Z3dLb72zBwEBIEUrGpFsw">
+    <div class="flex flex-col min-w-0 flex-1">
+      <span class="font-body-sm text-body-sm text-on-surface truncate font-medium">Leather Folio (x1), Brass Ruler (x1)</span>
+      <span class="font-mono-data text-mono-data text-on-surface-variant text-[11px]">2 items total</span>
+    </div>
+    <span class="font-mono-data text-mono-data font-semibold text-on-surface text-[14px] flex-shrink-0">$312.00</span>
+  </div>
+  <div class="flex items-center justify-between pt-space-xs">
+    <span class="font-mono-data text-mono-data text-on-surface-variant text-[11px]">DHL • #940124</span>
+    <button class="font-label-sm text-label-sm text-on-surface hover:underline font-medium">Track Shipment</button>
+  </div>
+</div>
+
+<!-- Order 4: Returned / Cancelled / Online (Refunded) -->
+<div class="order-card flex flex-col bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all gap-space-sm opacity-70" data-customer="Julian Wu" data-order-id="#ORD-9021" data-status="returned">
+  <div class="flex items-start justify-between gap-space-xs">
+    <div class="flex flex-col min-w-0">
+      <div class="flex items-center gap-space-xs">
+        <span class="font-mono-data text-mono-data font-medium text-on-surface-variant line-through">#ORD-9021</span>
+        <span class="text-on-surface-variant text-[10px]">•</span>
+        <span class="font-mono-data text-mono-data text-on-surface-variant text-[11px]">2h ago</span>
+      </div>
+      <span class="font-headline-sm text-headline-sm text-on-surface mt-0.5 truncate">Julian Wu</span>
+      <span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">San Francisco, CA</span>
+    </div>
+    <div class="flex flex-col items-end gap-1 flex-shrink-0">
+      <div class="flex items-center gap-1">
+        <span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-xs text-label-xs font-medium">Returned</span>
+        <span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-xs text-label-xs font-medium">Cancelled</span>
+      </div>
+      <span class="font-mono-data text-mono-data text-[11px] text-on-surface-variant">Online • <span class="font-medium text-on-error-container">Refunded</span></span>
+    </div>
+  </div>
+  <div class="flex items-center justify-between py-space-xs px-space-xs bg-surface-container-low rounded-lg">
+    <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Customer Cancellation</span>
+    <span class="font-mono-data text-mono-data text-on-surface-variant font-medium flex-shrink-0">$45.00</span>
+  </div>
+  <div class="flex items-center justify-between pt-space-xs">
+    <span class="font-mono-data text-mono-data text-on-surface-variant text-[11px]">Refunded $45.00 to Online • Visa (Completed)</span>
+    <button class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface font-medium">Details</button>
+  </div>
+</div></div>
+<!-- Bottom Inventory Synchronizer status / delight moment -->
+
+</div>
+<script>
+  // Dynamic bottom navigation sync: highlight "Orders" tab in shell
+  (function initShellTab() {
+    const navLinks = document.querySelectorAll('nav a[data-path]');
+    navLinks.forEach(link => {
+      if (link.getAttribute('data-path') === 'orders') {
+        link.classList.remove('text-on-surface-variant');
+        link.classList.add('text-primary');
+        const icon = link.querySelector('.material-symbols-outlined');
+        if (icon) icon.style.fontVariationSettings = "'FILL' 1";
+      }
+    });
+  })();
+
+  // Instant Interactive Search & Filter Filter logic
+  const searchInput = document.getElementById('order-search');
+  const cards = document.querySelectorAll('.order-card');
+  const filterChips = document.querySelectorAll('.filter-chip');
+
+  let activeFilter = 'unfulfilled';
+
+  function applyFilters() {
+    const term = (searchInput?.value || '').toLowerCase().trim();
+
+    cards.forEach(card => {
+      const id = (card.getAttribute('data-order-id') || '').toLowerCase();
+      const customer = (card.getAttribute('data-customer') || '').toLowerCase();
+      const status = card.getAttribute('data-status');
+
+      const matchesSearch = !term || id.includes(term) || customer.includes(term);
+      const matchesFilter = (activeFilter === 'all') || (status === activeFilter);
+
+      if (matchesSearch && matchesFilter) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', applyFilters);
+  }
+
+  filterChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      filterChips.forEach(c => {
+        c.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+        c.classList.add('bg-surface-container', 'text-on-surface');
+      });
+      chip.classList.remove('bg-surface-container', 'text-on-surface');
+      chip.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+
+      activeFilter = chip.getAttribute('data-filter') || 'all';
+      applyFilters();
+    });
+  });
+
+  // Micro-interaction delight triggers: Toast notifications
+  function showToast(message) {
+    const toast = document.getElementById('action-toast');
+    const toastText = document.getElementById('toast-text');
+    if (!toast || !toastText) return;
+
+    toastText.textContent = message;
+    toast.classList.remove('-translate-y-24', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+
+    setTimeout(() => {
+      toast.classList.remove('translate-y-0', 'opacity-100');
+      toast.classList.add('-translate-y-24', 'opacity-0');
+    }, 2800);
+  }
+
+  window.triggerFulfill = function(btn, orderId, customerName) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Printing Label...</span>`;
+    
+    setTimeout(() => {
+      btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">check</span><span>Ready for Courier</span>`;
+      btn.classList.remove('bg-primary', 'text-on-primary');
+      btn.classList.add('bg-surface-container-highest', 'text-on-surface');
+      showToast(`Waybill generated for ${customerName} (${orderId})`);
+    }, 900);
+  };
+
+  window.triggerDispatch = function(btn, orderId) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">check_circle</span><span>Dispatched</span>`;
+    showToast(`${orderId} handed over to carrier.`);
+  };
+
+  const batchBtn = document.getElementById('batch-btn');
+  if (batchBtn) {
+    batchBtn.addEventListener('click', () => {
+      showToast('Batch selection mode activated.');
+    });
+  }
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-label-md"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] gap-space-xs text-on-surface-variant transition-colors" data-path="products" href="#"><span class="material-symbols-outlined text-[22px]">inventory_2</span><span class="font-label-xs text-label-xs">Products</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] gap-space-xs transition-colors text-primary font-label-md" data-path="orders" href="#"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">shopping_bag</span><span class="font-label-xs text-label-xs">Orders</span></a><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] gap-space-xs text-on-surface-variant transition-colors" data-path="reviews" href="#"><span class="material-symbols-outlined text-[22px]">rate_review</span><span class="font-label-xs text-label-xs">Reviews</span></a><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] gap-space-xs text-on-surface-variant transition-colors" data-path="content" href="#"><span class="material-symbols-outlined text-[22px]">view_carousel</span><span class="font-label-xs text-label-xs">Content</span></a></div></nav>
+
+</body></html>

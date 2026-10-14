@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { usePwaInstall } from "@/lib/hooks/usePwaInstall";
 import { useOnlineStatus } from "@/lib/hooks/useOnlineStatus";
 
@@ -12,130 +13,132 @@ export default function AdminDashboardPage() {
   const isOnline = useOnlineStatus();
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-900/50 via-[#131926] to-[#0d0f14] border border-blue-500/20 p-4">
+    <div className="flex flex-col gap-3.5">
+      {/* Studio Header Card */}
+      <div className="relative overflow-hidden rounded-lg bg-canvas border border-border-default p-4 shadow-xs">
         <div className="relative z-10 flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-blue-400 tracking-wider uppercase">
-              Admin Control Center
+            <span className="type-label-xs text-text-secondary uppercase">
+              Monochrome Commerce Studio
             </span>
-            <Badge variant={isStandalone ? "success" : "info"}>
+            <Badge variant={isStandalone ? "success" : "neutral"}>
               {isStandalone ? "Installed PWA" : "Browser Mode"}
             </Badge>
           </div>
-          <h2 className="text-xl font-bold text-white tracking-tight">
+          <h2 className="type-headline-md text-text-primary">
             Western Admin
           </h2>
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            Production-grade modular mobile PWA with offline caching & instant sync.
+          <p className="type-body-sm text-text-secondary leading-relaxed">
+            Architectural eCommerce administration workspace with instant offline sync & telemetry control.
           </p>
           {!isStandalone && isInstallable && (
-            <button
-              onClick={() => promptInstall()}
-              className="mt-1 self-start px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-blue-600/30 transition active:scale-95 cursor-pointer flex items-center gap-1.5"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-3.5 h-3.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
+            <div className="mt-1">
+              <Button
+                onClick={() => promptInstall()}
+                variant="primary"
+                size="sm"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
-              Install App
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                Install Application
+              </Button>
+            </div>
           )}
         </div>
-        <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
       {/* PWA System Diagnostic Metrics */}
       <div className="grid grid-cols-2 gap-2.5">
         <Card className="flex flex-col gap-1 p-3">
-          <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+          <span className="type-label-xs uppercase text-text-secondary">
             Network Status
           </span>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span
-              className={`w-2 h-2 rounded-full ${
-                isOnline ? "bg-emerald-400" : "bg-amber-400"
+              className={`w-1.5 h-1.5 rounded-full ${
+                isOnline ? "bg-[#16a34a]" : "bg-[#d97706]"
               }`}
             />
-            <span className="text-sm font-bold text-white">
+            <span className="type-label-md text-text-primary">
               {isOnline ? "Online" : "Offline"}
             </span>
           </div>
-          <span className="text-[10px] text-zinc-400">
+          <span className="type-label-xs text-text-subtle">
             {isOnline ? "Syncing live data" : "Serving from cache"}
           </span>
         </Card>
 
         <Card className="flex flex-col gap-1 p-3">
-          <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+          <span className="type-label-xs uppercase text-text-secondary">
             PWA Manifest
           </span>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="w-2 h-2 rounded-full bg-blue-400" />
-            <span className="text-sm font-bold text-white">v1.0 Ready</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-border-strong" />
+            <span className="type-label-md text-text-primary">v1.0 Ready</span>
           </div>
-          <span className="text-[10px] text-zinc-400">Standalone App Scope</span>
+          <span className="type-label-xs text-text-subtle">Standalone App Scope</span>
         </Card>
 
         <Card className="flex flex-col gap-1 p-3">
-          <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+          <span className="type-label-xs uppercase text-text-secondary">
             Service Worker
           </span>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="w-2 h-2 rounded-full bg-indigo-400" />
-            <span className="text-sm font-bold text-white">Active (sw.js)</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a]" />
+            <span className="type-label-md text-text-primary font-mono-data">sw.js active</span>
           </div>
-          <span className="text-[10px] text-zinc-400">Cache-First Shell</span>
+          <span className="type-label-xs text-text-subtle">Cache-First Shell</span>
         </Card>
 
         <Card className="flex flex-col gap-1 p-3">
-          <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+          <span className="type-label-xs uppercase text-text-secondary">
             Display Mode
           </span>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span
-              className={`w-2 h-2 rounded-full ${
-                isStandalone ? "bg-emerald-400" : "bg-zinc-400"
+              className={`w-1.5 h-1.5 rounded-full ${
+                isStandalone ? "bg-[#16a34a]" : "bg-text-subtle"
               }`}
             />
-            <span className="text-sm font-bold text-white">
+            <span className="type-label-md text-text-primary">
               {isStandalone ? "Standalone" : "Web Shell"}
             </span>
           </div>
-          <span className="text-[10px] text-zinc-400">
-            {isStandalone ? "Full screen native" : "Installable banner active"}
+          <span className="type-label-xs text-text-subtle">
+            {isStandalone ? "Full screen native" : "Browser frame"}
           </span>
         </Card>
       </div>
 
-      {/* Admin Quick Action Modules */}
-      <div className="flex flex-col gap-2 mt-1">
+      {/* Admin Core Modules */}
+      <div className="flex flex-col gap-2 mt-0.5">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+          <h3 className="type-label-xs text-text-secondary uppercase">
             Core Modules
           </h3>
-          <span className="text-[11px] text-blue-400 font-medium">Modular Architecture</span>
+          <span className="type-label-xs text-text-subtle">Precision Telemetry</span>
         </div>
 
         <div className="grid grid-cols-1 gap-2">
           {/* Module: Store Operations */}
-          <Card className="flex items-center justify-between p-3.5 hover:border-zinc-700 active:scale-[0.99] transition cursor-pointer">
+          <Card className="flex items-center justify-between p-3.5 hover:bg-surface-subtle active:scale-[0.99] transition cursor-pointer">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <div className="w-8 h-8 rounded-md bg-surface-subtle border border-border-default flex items-center justify-center text-text-primary">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
+                  className="w-4 h-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -149,20 +152,20 @@ export default function AdminDashboardPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-xs font-semibold text-white">Catalog & Inventory</p>
-                <p className="text-[10px] text-zinc-400">Manage products, stock & SKUs</p>
+                <p className="type-label-md text-text-primary">Catalog & Inventory</p>
+                <p className="type-label-xs text-text-secondary">Manage products, stock & SKUs</p>
               </div>
             </div>
-            <Badge variant="info">Active</Badge>
+            <Badge variant="neutral">Active</Badge>
           </Card>
 
           {/* Module: Orders & Shipments */}
-          <Card className="flex items-center justify-between p-3.5 hover:border-zinc-700 active:scale-[0.99] transition cursor-pointer">
+          <Card className="flex items-center justify-between p-3.5 hover:bg-surface-subtle active:scale-[0.99] transition cursor-pointer">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <div className="w-8 h-8 rounded-md bg-surface-subtle border border-border-default flex items-center justify-center text-text-primary">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
+                  className="w-4 h-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -176,20 +179,20 @@ export default function AdminDashboardPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-xs font-semibold text-white">Orders & Shipments</p>
-                <p className="text-[10px] text-zinc-400">Dispatch queue & tracking</p>
+                <p className="type-label-md text-text-primary">Orders & Shipments</p>
+                <p className="type-label-xs text-text-secondary">Dispatch queue & tracking</p>
               </div>
             </div>
             <Badge variant="success">Syncing</Badge>
           </Card>
 
-          {/* Module: User Access & Roles */}
-          <Card className="flex items-center justify-between p-3.5 hover:border-zinc-700 active:scale-[0.99] transition cursor-pointer">
+          {/* Module: Staff & Access */}
+          <Card className="flex items-center justify-between p-3.5 hover:bg-surface-subtle active:scale-[0.99] transition cursor-pointer">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+              <div className="w-8 h-8 rounded-md bg-surface-subtle border border-border-default flex items-center justify-center text-text-primary">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
+                  className="w-4 h-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -203,8 +206,8 @@ export default function AdminDashboardPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-xs font-semibold text-white">Staff & Permissions</p>
-                <p className="text-[10px] text-zinc-400">Roles, sessions & audit log</p>
+                <p className="type-label-md text-text-primary">Staff & Permissions</p>
+                <p className="type-label-xs text-text-secondary">Roles, sessions & audit log</p>
               </div>
             </div>
             <Badge variant="default">Protected</Badge>
@@ -212,18 +215,18 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* PWA Offline Test Trigger */}
-      <Card className="p-3.5 bg-[#10131b] border-dashed border-zinc-800 flex flex-col gap-2 mt-1">
+      {/* PWA Resilience Card */}
+      <Card className="p-3.5 bg-surface-subtle border border-border-default flex flex-col gap-2 mt-0.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-zinc-300">PWA Resilience Check</span>
+          <span className="type-label-xs font-semibold text-text-primary">PWA Resilience Check</span>
           <Link
             href="/offline"
-            className="text-[11px] font-medium text-blue-400 hover:text-blue-300 transition"
+            className="type-label-xs text-text-secondary hover:text-text-primary transition underline underline-offset-2"
           >
             Preview Offline Page →
           </Link>
         </div>
-        <p className="text-[11px] text-zinc-500 leading-relaxed">
+        <p className="type-body-sm text-text-secondary leading-relaxed">
           The service worker automatically intercepts disconnection and renders the offline cache fallback.
         </p>
       </Card>

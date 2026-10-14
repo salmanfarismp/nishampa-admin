@@ -1,11 +1,12 @@
 import React from "react";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "destructive";
+export type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: ButtonVariant;
-  size?: "sm" | "md" | "lg";
+  size?: ButtonSize;
   className?: string;
 }
 
@@ -17,20 +18,25 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    "font-medium rounded-xl transition duration-150 active:scale-[0.97] inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none";
+    "font-medium rounded-md transition duration-150 active:scale-[0.98] inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none select-none outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-border-strong";
 
-  const sizeStyles = {
-    sm: "px-2.5 py-1.5 text-xs",
-    md: "px-3.5 py-2.5 text-sm",
-    lg: "px-4.5 py-3 text-base",
+  const sizeStyles: Record<ButtonSize, string> = {
+    sm: "h-8 px-2.5 text-xs",
+    md: "h-9 px-3.5 text-sm", // 36px on desktop, optimal control height
+    lg: "h-[42px] px-4.5 text-sm font-semibold", // 42px mobile touch target
   };
 
-  const variantStyles = {
+  const variantStyles: Record<ButtonVariant, string> = {
     primary:
-      "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/20",
-    secondary: "bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700",
-    outline: "border border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/50",
-    ghost: "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/30",
+      "bg-text-primary text-text-inverted hover:bg-[#27272a] border border-transparent shadow-xs",
+    secondary:
+      "bg-canvas text-text-primary border border-border-default hover:bg-surface-hover",
+    outline:
+      "bg-canvas text-text-primary border border-border-default hover:bg-surface-hover",
+    ghost:
+      "bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-hover",
+    destructive:
+      "bg-canvas text-[#dc2626] border border-[#fecaca] hover:bg-[#fef2f2]",
   };
 
   return (

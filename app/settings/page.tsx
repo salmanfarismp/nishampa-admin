@@ -2,6 +2,8 @@
 
 import React from "react";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { usePwaInstall } from "@/lib/hooks/usePwaInstall";
 
 export default function SettingsPage() {
@@ -10,14 +12,14 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1 pb-1">
-        <h2 className="text-lg font-bold text-white tracking-tight">App Settings</h2>
-        <p className="text-xs text-zinc-400">PWA preferences and device configurations.</p>
+        <h2 className="type-headline-md text-text-primary">App Settings</h2>
+        <p className="type-body-sm text-text-secondary">PWA preferences and device configurations.</p>
       </div>
 
       <Card className="p-3.5 flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold text-white">Standalone Installation</p>
-          <p className="text-[11px] text-zinc-400">
+          <p className="type-label-md text-text-primary">Standalone Installation</p>
+          <p className="type-label-xs text-text-secondary">
             {isStandalone
               ? "Running in installed standalone mode"
               : isInstallable
@@ -26,29 +28,30 @@ export default function SettingsPage() {
           </p>
         </div>
         {!isStandalone && isInstallable && (
-          <button
+          <Button
             onClick={() => promptInstall()}
-            className="px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-semibold shadow transition active:scale-95 cursor-pointer"
+            variant="primary"
+            size="sm"
           >
             Install
-          </button>
+          </Button>
         )}
       </Card>
 
       <Card className="p-3.5 flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold text-white">Offline Synchronization</p>
-          <p className="text-[11px] text-zinc-400">Cache static assets & admin layouts</p>
+          <p className="type-label-md text-text-primary">Offline Synchronization</p>
+          <p className="type-label-xs text-text-secondary">Cache static assets & admin layouts</p>
         </div>
-        <span className="text-xs font-semibold text-emerald-400">Enabled</span>
+        <Badge variant="success">Enabled</Badge>
       </Card>
 
       <Card className="p-3.5 flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold text-white">Safe Area Layout</p>
-          <p className="text-[11px] text-zinc-400">iOS & Android home indicator insets</p>
+          <p className="type-label-md text-text-primary">Design System Theme</p>
+          <p className="type-label-xs text-text-secondary">Monochrome Commerce Studio standard</p>
         </div>
-        <span className="text-xs font-semibold text-blue-400">Adaptive</span>
+        <Badge variant="neutral">Active</Badge>
       </Card>
     </div>
   );

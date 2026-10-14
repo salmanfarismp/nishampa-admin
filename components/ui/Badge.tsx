@@ -1,27 +1,71 @@
 import React from "react";
 
-type BadgeVariant = "default" | "success" | "warning" | "danger" | "info";
+export type BadgeVariant =
+  | "default"
+  | "neutral"
+  | "success"
+  | "warning"
+  | "critical"
+  | "danger"
+  | "info";
 
 interface BadgeProps {
   children: React.ReactNode;
   variant?: BadgeVariant;
+  withDot?: boolean;
   className?: string;
 }
 
-export function Badge({ children, variant = "default", className = "" }: BadgeProps) {
-  const variantStyles: Record<BadgeVariant, string> = {
-    default: "bg-zinc-800 text-zinc-300 border-zinc-700",
-    success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-    warning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    danger: "bg-red-500/10 text-red-400 border-red-500/20",
-    info: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+export function Badge({
+  children,
+  variant = "default",
+  withDot = true,
+  className = "",
+}: BadgeProps) {
+  const variantStyles: Record<BadgeVariant, { container: string; dot: string }> = {
+    default: {
+      container: "bg-[#f4f4f5] text-[#71717a] border-[#e4e4e7]",
+      dot: "bg-[#71717a]",
+    },
+    neutral: {
+      container: "bg-[#f4f4f5] text-[#71717a] border-[#e4e4e7]",
+      dot: "bg-[#71717a]",
+    },
+    success: {
+      container: "bg-[#f0fdf4] text-[#16a34a] border-[#bbf7d0]",
+      dot: "bg-[#16a34a]",
+    },
+    warning: {
+      container: "bg-[#fffbeb] text-[#b45309] border-[#fde68a]",
+      dot: "bg-[#d97706]",
+    },
+    critical: {
+      container: "bg-[#fef2f2] text-[#dc2626] border-[#fecaca]",
+      dot: "bg-[#dc2626]",
+    },
+    danger: {
+      container: "bg-[#fef2f2] text-[#dc2626] border-[#fecaca]",
+      dot: "bg-[#dc2626]",
+    },
+    info: {
+      container: "bg-[#eff6ff] text-[#2563eb] border-[#bfdbfe]",
+      dot: "bg-[#2563eb]",
+    },
   };
+
+  const current = variantStyles[variant] || variantStyles.default;
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${variantStyles[variant]} ${className}`}
+      className={`inline-flex items-center gap-1.5 h-[22px] px-2 rounded-[4px] text-[11px] font-semibold tracking-[0.04em] border tabular-nums select-none ${current.container} ${className}`}
     >
-      {children}
+      {withDot && (
+        <span
+          className={`w-1.5 h-1.5 rounded-full shrink-0 ${current.dot}`}
+          aria-hidden="true"
+        />
+      )}
+      <span>{children}</span>
     </span>
   );
 }

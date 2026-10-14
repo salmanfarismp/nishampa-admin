@@ -3,17 +3,43 @@ import React from "react";
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
-  glow?: boolean;
 }
 
-export function Card({ children, className = "", glow = false, ...props }: CardProps) {
+export function Card({ children, className = "", ...props }: CardProps) {
   return (
     <div
-      className={`rounded-2xl bg-[#141720]/90 border border-[#222836] p-4 shadow-lg backdrop-blur-sm transition-all duration-200 ${
-        glow ? "shadow-blue-500/5 border-blue-500/30" : ""
-      } ${className}`}
+      className={`rounded-lg bg-canvas border border-border-default transition-colors ${className}`}
       {...props}
     >
+      {children}
+    </div>
+  );
+}
+
+interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function CardHeader({ children, className = "", ...props }: CardHeaderProps) {
+  return (
+    <div
+      className={`h-12 px-4 flex items-center justify-between border-b border-border-subtle bg-canvas ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function CardContent({ children, className = "", ...props }: CardContentProps) {
+  return (
+    <div className={`p-4 ${className}`} {...props}>
       {children}
     </div>
   );

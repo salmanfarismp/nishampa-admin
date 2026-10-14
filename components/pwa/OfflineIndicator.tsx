@@ -26,10 +26,10 @@ export default function OfflineIndicator() {
   return (
     <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm pointer-events-none transition-all duration-300">
       {!isOnline ? (
-        <div className="bg-amber-500/90 text-zinc-950 backdrop-blur-md px-3.5 py-2 rounded-xl shadow-lg shadow-amber-500/10 border border-amber-400/40 flex items-center justify-center gap-2 text-xs font-semibold">
+        <div className="bg-[#fffbeb] text-[#b45309] border border-[#fde68a] px-3.5 py-1.5 rounded-md shadow-xs flex items-center justify-center gap-2 text-xs font-semibold">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4 animate-pulse"
+            className="w-4 h-4 animate-pulse text-[#d97706]"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -46,10 +46,10 @@ export default function OfflineIndicator() {
           <span>Offline mode active (cached data)</span>
         </div>
       ) : showReconnected ? (
-        <div className="bg-emerald-600/90 text-white backdrop-blur-md px-3.5 py-2 rounded-xl shadow-lg shadow-emerald-500/10 border border-emerald-400/40 flex items-center justify-center gap-2 text-xs font-semibold">
+        <div className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] px-3.5 py-1.5 rounded-md shadow-xs flex items-center justify-center gap-2 text-xs font-semibold">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4"
+            className="w-4 h-4 text-[#16a34a]"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

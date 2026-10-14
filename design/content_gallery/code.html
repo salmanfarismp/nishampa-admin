@@ -1,0 +1,640 @@
+<!DOCTYPE html><html lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "tertiary-container": "#1f1a1a", "tertiary": "#000000", "primary-container": "#1c1b1d", "on-primary": "#ffffff", "inverse-primary": "#c8c6c8", "error": "#ba1a1a", "on-primary-fixed-variant": "#474649", "tertiary-fixed-dim": "#cec4c4", "surface-container-lowest": "#ffffff", "surface-bright": "#fbf8fc", "on-surface-variant": "#47464a", "on-secondary-container": "#63646c", "on-surface": "#1b1b1e", "surface-tint": "#5f5e60", "on-tertiary-container": "#8a8282", "secondary-fixed-dim": "#c6c5cf", "primary": "#000000", "on-tertiary-fixed-variant": "#4c4545", "surface-container": "#f0edf1", "background": "#fbf8fc", "secondary": "#5d5e66", "secondary-fixed": "#e3e1ec", "secondary-container": "#e3e1ec", "on-error": "#ffffff", "inverse-surface": "#303033", "tertiary-fixed": "#ebe0df", "surface": "#fbf8fc", "error-container": "#ffdad6", "outline-variant": "#c8c5ca", "surface-dim": "#dcd9dd", "on-primary-fixed": "#1c1b1d", "surface-container-high": "#eae7eb", "inverse-on-surface": "#f3f0f4", "surface-container-highest": "#e4e1e6", "surface-variant": "#e4e1e6", "primary-fixed": "#e5e1e4", "on-error-container": "#93000a", "on-secondary-fixed-variant": "#46464e", "on-primary-container": "#858386", "on-secondary-fixed": "#1a1b22", "surface-container-low": "#f6f2f7", "on-background": "#1b1b1e", "outline": "#78767b", "on-tertiary": "#ffffff", "primary-fixed-dim": "#c8c6c8", "on-tertiary-fixed": "#1f1a1a", "on-secondary": "#ffffff" }, borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, spacing: { "margin": "2rem", "space-xl": "2rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "gutter": "1.5rem", "margin-mobile": "1rem", "gutter-mobile": "0.75rem", "space-md": "0.75rem", "space-lg": "1.25rem" }, fontFamily: { "label-xs": ["Inter"], "body-sm": ["Inter"], "headline-xl-mobile": ["Inter"], "headline-lg": ["Inter"], "label-md": ["Inter"], "mono-data": ["JetBrains Mono"], "body-lg": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"], "headline-xl": ["Inter"], "label-sm": ["Inter"], "headline-sm": ["Inter"] }, fontSize: { "label-xs": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0.005em", "fontWeight": "400" }], "headline-xl-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "500" }], "mono-data": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "600" }], "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }], "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-14 px-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><span class="font-semibold text-headline-sm text-primary truncate">Westernswings</span></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="User Account" class="w-9 h-9 rounded-full bg-surface-container-low border border-outline-variant/30 flex items-center justify-center text-on-surface hover:text-primary transition-colors shadow-sm flex-shrink-0"><span class="material-symbols-outlined text-[20px]">person</span></button></div></div></header><main class="flex flex-col relative w-full pt-14 pb-20 bg-surface min-h-screen px-margin-mobile"><div class="flex flex-col w-full">
+<!-- Content Header & Context Controls -->
+<div class="flex flex-col gap-space-sm pt-space-xs pb-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface">Store Content</h1>
+
+</div>
+<div class="flex items-center gap-space-xs">
+<button aria-label="Content stats" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors" id="viewAnalyticsBtn">
+<span class="material-symbols-outlined text-[20px]">insights</span>
+</button>
+</div>
+</div>
+<!-- Segmented Control Switcher -->
+<div class="grid grid-cols-2 p-1 bg-surface-container-high rounded-lg mt-space-xs" role="tablist">
+<button aria-selected="true" class="flex items-center justify-center gap-space-xs py-2 px-space-sm rounded-lg bg-surface-container-lowest text-on-surface shadow-sm transition-all duration-150" id="tab-gallery-btn" role="tab">
+<span class="material-symbols-outlined text-[18px]">photo_library</span>
+<span class="font-label-md text-label-md">Gallery</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-container text-on-surface font-mono-data text-label-xs" id="gallery-count-badge">12</span>
+</button>
+<button aria-selected="false" class="flex items-center justify-center gap-space-xs py-2 px-space-sm rounded-lg text-on-surface-variant hover:text-on-surface transition-all duration-150" id="tab-faqs-btn" role="tab">
+<span class="material-symbols-outlined text-[18px]">help_outline</span>
+<span class="font-label-md text-label-md">FAQs</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono-data text-label-xs" id="faqs-count-badge">8</span>
+</button>
+</div>
+</div>
+<!-- SECTION 1: GALLERY MANAGEMENT -->
+<section aria-labelledby="tab-gallery-btn" class="flex flex-col gap-space-md" id="gallery-panel" role="tabpanel">
+<!-- Gallery Action Bar -->
+<div class="flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm rounded-xl"><div class="flex items-center gap-space-xs"><span class="font-label-md text-label-md text-on-surface font-semibold">Brand Assets</span><span class="px-1.5 py-0.5 rounded-full bg-surface-container font-mono-data text-label-xs text-on-surface-variant">12</span></div><div class="flex items-center gap-space-xs"><button id="selectPhotosBtn" class="flex items-center gap-space-xs px-3 py-2 bg-surface-container text-on-surface rounded-lg hover:bg-surface-container-high active:scale-[0.98] transition-all text-label-sm font-label-sm"><span class="material-symbols-outlined text-[18px]">checklist</span><span class="">Select</span></button></div></div>
+<!-- Gallery Grid -->
+<div class="grid grid-cols-2 gap-space-sm" id="galleryGrid">
+<!-- Upload Drop Target Tile -->
+<div class="flex flex-col items-center justify-center aspect-square rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer text-center p-space-sm group" id="dropTile"><div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center mb-space-xs group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-on-surface text-[22px]">add_photo_alternate</span></div><span class="font-label-md text-label-md text-on-surface">Upload</span></div>
+<!-- Image Item 1 -->
+<div class="relative group flex flex-col rounded-xl overflow-hidden bg-surface-container-lowest" data-card-id="gal-1"><div class="relative aspect-square w-full bg-surface-container overflow-hidden rounded-xl"><img alt="Nomad Minimalist Roll-Top Backpack Unboxed" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AEtjO1WiBMDZ6FS2AZkFbFp7f8d7QUSdRFbvJEkXK6n1tu9kVWUu-FKx6cdTDYvuHJNN0JBJ4JQCHWB00RzN3_sowtX2cC67bfvtmTUcdHCVax6qI0Qiq2MvvfV8khp2_3Qb4FM74PHO7dGlSlLHp6f1SNxmaAg3eop4Sris4juGoukp0MjZkoLB8fEpkRL05iz0P6tc22i_-yVivQyxFju2ggR7kQePsVx8_TtHtQkpAwuvX0ZWiEGGs0BFnfE"></div></div>
+<!-- Image Item 2 -->
+<div class="relative group flex flex-col rounded-xl overflow-hidden bg-surface-container-lowest" data-card-id="gal-2"><div class="relative aspect-square w-full bg-surface-container overflow-hidden rounded-xl"><img alt="Matte Black Adjustable Task Lamp" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AEtjO1Xq32gLyURFUZw1gnr0K_FlepCYIEJTdTPay8S17PmSxUFIZQvnuIy1DYmrJ36ZCCMZE9Ps41yhRi-CU5ddwFTtZgvF779rogtDEWqKEA1oqgu4J3CFYneI4fqLlKL60HurDpuqvbDMhqltYzPN8DrJ7F2kesiA7tKOWE6dN7pmjA0u7AUnMqut1f9g9BTS348lWvRn2k3g3dWPmCLgAvybQO5aKLhmzle3X6qfkWmjebLlWi63i9xXllg"></div></div>
+<!-- Image Item 3 -->
+<div class="relative group flex flex-col rounded-xl overflow-hidden bg-surface-container-lowest" data-card-id="gal-3"><div class="relative aspect-square w-full bg-surface-container overflow-hidden rounded-xl"><img alt="Oatmeal Cable-Knit Wool Sweater" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AEtjO1UGSLUlMoT2LdVxnWtS3NQusbSw0ILNiTJbjMHAOGgAV3YVh4MMIvQmpOWa0pGHsX5TVVkYo22P19faFoeUsu30FgChSHVpj5_TN7z30Cm9W8llKiBxEV6bjj3PH7wHi-XKu4Bm97tAUmWVZeFPOvzjnyy1gBKY2dS8msQ-ilK88AWT_hGLmVh32ZNVFAUUsyB-mgx4te0NTLf2KDRNHdbCQAgLCJyAV-M1BYb_Xn-G6RAxlYuSNuUMp9Mc"></div></div>
+<!-- Image Item 4 -->
+<div class="relative group flex flex-col rounded-xl overflow-hidden bg-surface-container-lowest" data-card-id="gal-4"><div class="relative aspect-square w-full bg-surface-container overflow-hidden rounded-xl"><img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="Monochrome minimalist ceramic water carafe and matching tumbler placed on a textured raw concrete surface with sharp diagonal architectural sun shadows. High fashion editorial product photography in stark black and white tone." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-25GmbZmTaCYejlOt9AQeS4aRh5LyXiqwEdg0AZPOrmn7LpUB1WSMa733MXXLsGEjLM2sR_lMfopkGAky5kpwUhbM9UGAYCmcSmYGw-HhCYH0tXg3uaYHlX3V1Bztb4Lo7owREBbvFJmE1JeFg3BZ5YqAV4BmjXXNGTeL-1_6OEFvbxo4Nk0h-yjNEWoNQmiFIkjhebdZbvZhxs6fl6h-tfh-pq7RpyTRQaxLksQ4DKp1Hd6cttm-_w"></div></div>
+<!-- Image Item 5 -->
+<div class="relative group flex flex-col rounded-xl overflow-hidden bg-surface-container-lowest" data-card-id="gal-5"><div class="relative aspect-square w-full bg-surface-container overflow-hidden rounded-xl"><img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="Brushed stainless steel mechanical wrist watch laid open on a genuine black full-grain leather organizer tray with precision tools in soft studio lighting. Ultra crisp macro product catalog aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_A_Lz-prGCnanoJpJ5S2bB7TyT1xAM8J4bZWtSmd7rJTBSgxq_jqX5ARc7Sf1qA5gY588Ib1OiZ1OwKc9iKmAMXR41JnHE5A9IFme9U2qc_p7HDs_E-ObBpl9X7vOXQ2qNRbyfnCIRo0-J-V4nadPoTR6QLmLP3QhHxloAZ1qVPXrlOK4V8HJh_Tr2L_vokSD8SAEGrws9JxVX_oddsKGEuUlu3PgkVTDgAElSZanlgai3qQb0bRtSw"></div></div>
+</div>
+<!-- Gallery Batch Footer Info -->
+
+</section>
+<!-- SECTION 2: FAQS MANAGEMENT -->
+<section aria-labelledby="tab-faqs-btn" class="hidden flex flex-col gap-space-md" id="faqs-panel" role="tabpanel">
+<!-- FAQ Header Controls -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full h-10 pl-9 pr-8 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" id="faqSearchInput" placeholder="Search questions..." type="text">
+<button class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface" id="clearSearchBtn">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<button class="flex items-center gap-space-xs h-10 px-space-md bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-container active:scale-[0.98] transition-all flex-shrink-0" id="openNewFaqBtn">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="font-label-md text-label-md">New FAQ</span>
+</button>
+</div>
+<!-- FAQ Quick Filter Chips -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 no-scrollbar">
+<button class="faq-filter-chip px-space-sm py-1 rounded-full bg-primary text-on-primary font-label-xs text-label-xs whitespace-nowrap" data-filter="all">All (8)</button>
+<button class="faq-filter-chip px-space-sm py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-xs text-label-xs whitespace-nowrap" data-filter="published">Published (7)</button>
+<button class="faq-filter-chip px-space-sm py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-xs text-label-xs whitespace-nowrap" data-filter="draft">Drafts (1)</button>
+<button class="faq-filter-chip px-space-sm py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-xs text-label-xs whitespace-nowrap" data-filter="shipping">Shipping</button>
+<button class="faq-filter-chip px-space-sm py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-xs text-label-xs whitespace-nowrap" data-filter="returns">Returns</button>
+</div>
+</div>
+<!-- FAQ Accordion List -->
+<div class="flex flex-col gap-space-sm" id="faqListContainer">
+<!-- FAQ Item 1 -->
+<div class="faq-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all duration-200" data-category="returns" data-status="published">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-mono-data text-label-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Published
+            </span>
+<span class="font-mono-data text-label-xs text-on-surface-variant">Returns</span>
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<button aria-label="Edit FAQ" class="edit-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-id="faq-1">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button aria-label="Delete FAQ" class="delete-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/40 transition-colors" data-id="faq-1">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+<button aria-label="Toggle answer" class="faq-toggle-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface hover:bg-surface-container transition-transform">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+</button>
+</div>
+</div>
+<button class="faq-question-btn text-left w-full mt-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">What is your 30-day return policy?</h2>
+</button>
+<div class="faq-answer-drawer hidden pt-space-xs mt-space-xs border-t border-surface-container">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            We provide full refunds within 30 calendar days of delivery. Items must be unworn, undamaged, with original tags intact and inside original protective packaging. Return shipping is complimentary on domestic US orders.
+          </p>
+</div>
+</div>
+<!-- FAQ Item 2 -->
+<div class="faq-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all duration-200" data-category="shipping" data-status="published">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-mono-data text-label-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Published
+            </span>
+<span class="font-mono-data text-label-xs text-on-surface-variant">Shipping</span>
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<button aria-label="Edit FAQ" class="edit-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-id="faq-2">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button aria-label="Delete FAQ" class="delete-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/40 transition-colors" data-id="faq-2">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+<button aria-label="Toggle answer" class="faq-toggle-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface hover:bg-surface-container transition-transform">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+</button>
+</div>
+</div>
+<button class="faq-question-btn text-left w-full mt-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">How long does standard delivery take?</h2>
+</button>
+<div class="faq-answer-drawer hidden pt-space-xs mt-space-xs border-t border-surface-container">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Standard ground shipping delivers within 3 to 5 business days for continental US addresses. Expedited air options (2-day and overnight) are accessible during checkout. International shipments typically take 6 to 10 days.
+          </p>
+</div>
+</div>
+<!-- FAQ Item 3 -->
+<div class="faq-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all duration-200" data-category="sustainability" data-status="published">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-mono-data text-label-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Published
+            </span>
+<span class="font-mono-data text-label-xs text-on-surface-variant">Materials</span>
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<button aria-label="Edit FAQ" class="edit-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-id="faq-3">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button aria-label="Delete FAQ" class="delete-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/40 transition-colors" data-id="faq-3">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+<button aria-label="Toggle answer" class="faq-toggle-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface hover:bg-surface-container transition-transform">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+</button>
+</div>
+</div>
+<button class="faq-question-btn text-left w-full mt-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Are all products sustainably sourced?</h2>
+</button>
+<div class="faq-answer-drawer hidden pt-space-xs mt-space-xs border-t border-surface-container">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Yes. Every item in the MonoCommerce catalog adheres to GOTS or OEKO-TEX certification. Our knitwear uses recycled virgin wool blends, and all hardware uses recycled aircraft-grade aluminum.
+          </p>
+</div>
+</div>
+<!-- FAQ Item 4 (Draft state) -->
+<div class="faq-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all duration-200" data-category="warranty" data-status="draft">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-mono-data text-label-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              Draft
+            </span>
+<span class="font-mono-data text-label-xs text-on-surface-variant">Warranty</span>
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<button aria-label="Edit FAQ" class="edit-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-id="faq-4">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button aria-label="Delete FAQ" class="delete-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/40 transition-colors" data-id="faq-4">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+<button aria-label="Toggle answer" class="faq-toggle-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface hover:bg-surface-container transition-transform">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+</button>
+</div>
+</div>
+<button class="faq-question-btn text-left w-full mt-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">What does the 2-Year Hardware Warranty cover?</h2>
+</button>
+<div class="faq-answer-drawer hidden pt-space-xs mt-space-xs border-t border-surface-container">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Covers structural defects, zipper breakage, buckle failures, and desk lamp internal wiring faults. Does not cover aesthetic patina or standard fabric abrasion.
+          </p>
+</div>
+</div>
+</div>
+</section>
+<!-- MODAL / BOTTOM SHEET: CREATE / EDIT FAQ -->
+<div class="hidden fixed inset-0 z-50 flex items-end justify-center bg-inverse-surface/40 backdrop-blur-sm p-0 transition-opacity" id="faqModal">
+<div class="w-full max-w-lg bg-surface-container-lowest rounded-t-2xl p-space-md flex flex-col gap-space-md shadow-xl animate-in slide-in-from-bottom duration-200">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-on-surface">quiz</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface" id="faqModalTitle">New FAQ Item</h3>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface" id="closeFaqModalBtn">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-sm">
+<label class="flex flex-col gap-1">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Question</span>
+<input class="w-full h-10 px-3 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary" id="faqQuestionInput" placeholder="e.g. How do I initiate a product exchange?" type="text">
+</label>
+<label class="flex flex-col gap-1">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Answer Details</span>
+<textarea class="w-full p-3 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary resize-none" id="faqAnswerInput" placeholder="Clear, friendly guidance for the shopper..." rows="4"></textarea>
+</label>
+<div class="grid grid-cols-2 gap-space-sm">
+<label class="flex flex-col gap-1">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Category Tag</span>
+<select class="w-full h-10 px-2 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none" id="faqCategoryInput">
+<option value="shipping">Shipping</option>
+<option value="returns">Returns</option>
+<option value="materials">Materials</option>
+<option value="warranty">Warranty</option>
+<option value="general">General</option>
+</select>
+</label>
+<label class="flex flex-col gap-1">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Visibility</span>
+<select class="w-full h-10 px-2 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none" id="faqStatusInput">
+<option value="published">Published</option>
+<option value="draft">Draft</option>
+</select>
+</label>
+</div>
+</div>
+<div class="flex items-center gap-space-xs pt-space-xs">
+<button class="flex-1 h-10 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" id="cancelFaqModalBtn">
+          Cancel
+        </button>
+<button class="flex-1 h-10 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container active:scale-[0.98] transition-all" id="saveFaqModalBtn">
+          Save FAQ
+        </button>
+</div>
+</div>
+</div>
+<!-- MODAL / BOTTOM SHEET: UPLOAD PHOTO DIALOG -->
+<div class="hidden fixed inset-0 z-50 flex items-end justify-center bg-inverse-surface/40 backdrop-blur-sm p-0 transition-opacity" id="uploadSheet">
+<div class="w-full max-w-lg bg-surface-container-lowest rounded-t-2xl p-space-md flex flex-col gap-space-md shadow-xl animate-in slide-in-from-bottom duration-200">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-on-surface">add_photo_alternate</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Add Photo Asset</h3>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface" id="closeUploadSheetBtn">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="flex flex-col items-center justify-center h-36 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer text-center p-space-md group">
+<span class="material-symbols-outlined text-[32px] text-on-surface mb-1 group-hover:-translate-y-0.5 transition-transform">cloud_upload</span>
+<span class="font-label-md text-label-md text-on-surface">Tap to choose image file</span>
+<span class="font-mono-data text-label-xs text-on-surface-variant mt-0.5">JPG, WEBP, PNG (max 15MB)</span>
+</div>
+<label class="flex flex-col gap-1">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Photo Tag / Label</span>
+<input class="w-full h-10 px-3 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary" id="newPhotoTagInput" placeholder="e.g. Lookbook FW25" type="text" value="Spring Showcase">
+</label>
+</div>
+<div class="flex items-center gap-space-xs pt-space-xs">
+<button class="flex-1 h-10 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" id="cancelUploadSheetBtn">
+          Cancel
+        </button>
+<button class="flex-1 h-10 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container active:scale-[0.98] transition-all" id="confirmUploadBtn">
+          Upload to CDN
+        </button>
+</div>
+</div>
+</div>
+<!-- Toast Notification Container -->
+<div class="fixed top-16 inset-x-4 z-50 hidden flex items-center justify-between p-space-sm rounded-lg bg-primary text-on-primary shadow-lg transition-transform duration-300 -translate-y-2" id="toastNotification">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="font-label-md text-label-md" id="toastMessage">Gallery updated successfully</span>
+</div>
+<button class="text-on-primary hover:opacity-80" id="closeToastBtn">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+<script>
+  (function initContentCMS() {
+    // Tab switching
+    const tabGalleryBtn = document.getElementById('tab-gallery-btn');
+    const tabFaqsBtn = document.getElementById('tab-faqs-btn');
+    const galleryPanel = document.getElementById('gallery-panel');
+    const faqsPanel = document.getElementById('faqs-panel');
+
+    function switchTab(target) {
+      if (target === 'gallery') {
+        tabGalleryBtn.classList.add('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        tabGalleryBtn.classList.remove('text-on-surface-variant');
+        tabGalleryBtn.setAttribute('aria-selected', 'true');
+
+        tabFaqsBtn.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        tabFaqsBtn.classList.add('text-on-surface-variant');
+        tabFaqsBtn.setAttribute('aria-selected', 'false');
+
+        galleryPanel.classList.remove('hidden');
+        faqsPanel.classList.add('hidden');
+      } else {
+        tabFaqsBtn.classList.add('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        tabFaqsBtn.classList.remove('text-on-surface-variant');
+        tabFaqsBtn.setAttribute('aria-selected', 'true');
+
+        tabGalleryBtn.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        tabGalleryBtn.classList.add('text-on-surface-variant');
+        tabGalleryBtn.setAttribute('aria-selected', 'false');
+
+        faqsPanel.classList.remove('hidden');
+        galleryPanel.classList.add('hidden');
+      }
+    }
+
+    tabGalleryBtn.addEventListener('click', () => switchTab('gallery'));
+    tabFaqsBtn.addEventListener('click', () => switchTab('faqs'));
+
+    // Toast helper
+    const toast = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    const closeToastBtn = document.getElementById('closeToastBtn');
+    let toastTimeout = null;
+
+    function showToast(msg) {
+      toastMessage.textContent = msg;
+      toast.classList.remove('hidden', '-translate-y-2');
+      toast.classList.add('translate-y-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    if (closeToastBtn) {
+      closeToastBtn.addEventListener('click', () => toast.classList.add('hidden'));
+    }
+
+    // Gallery deletion with animation
+    const galleryGrid = document.getElementById('galleryGrid');
+    const galleryCountBadge = document.getElementById('gallery-count-badge');
+
+    galleryGrid.addEventListener('click', (e) => {
+      const deleteBtn = e.target.closest('.delete-photo-btn');
+      if (deleteBtn) {
+        const card = deleteBtn.closest('[data-card-id]');
+        if (card) {
+          card.classList.add('opacity-0', 'scale-90', 'transition-all', 'duration-200');
+          setTimeout(() => {
+            card.remove();
+            const remaining = galleryGrid.querySelectorAll('[data-card-id]').length;
+            if (galleryCountBadge) galleryCountBadge.textContent = remaining;
+            showToast('Photo removed from brand gallery');
+          }, 200);
+        }
+      }
+    });
+
+    // Upload Sheet modal handlers
+    const uploadSheet = document.getElementById('uploadSheet');
+    const openUploadSheetBtn = document.getElementById('openUploadSheetBtn');
+    const dropTile = document.getElementById('dropTile');
+    const closeUploadSheetBtn = document.getElementById('closeUploadSheetBtn');
+    const cancelUploadSheetBtn = document.getElementById('cancelUploadSheetBtn');
+    const confirmUploadBtn = document.getElementById('confirmUploadBtn');
+
+    function openUploadModal() {
+      uploadSheet.classList.remove('hidden');
+    }
+    function closeUploadModal() {
+      uploadSheet.classList.add('hidden');
+    }
+
+    if (openUploadSheetBtn) openUploadSheetBtn.addEventListener('click', openUploadModal);
+    if (dropTile) dropTile.addEventListener('click', openUploadModal);
+    if (closeUploadSheetBtn) closeUploadSheetBtn.addEventListener('click', closeUploadModal);
+    if (cancelUploadSheetBtn) cancelUploadSheetBtn.addEventListener('click', closeUploadModal);
+
+    if (confirmUploadBtn) {
+      confirmUploadBtn.addEventListener('click', () => {
+        closeUploadModal();
+        showToast('Photo uploaded and queued for CDN deploy');
+        // Add optimistic tile
+        const newCard = document.createElement('div');
+        newCard.className = 'relative group flex flex-col rounded-xl overflow-hidden bg-surface-container-lowest animate-in fade-in duration-200';
+        newCard.setAttribute('data-card-id', 'gal-' + Date.now());
+        newCard.innerHTML = `
+          <div class="relative aspect-square w-full bg-surface-container overflow-hidden">
+            <img src="placeholder" data-alt="Minimalist design lookbook photo showcasing sleek modern artisan crafts in high contrast studio light" class="w-full h-full object-cover"/>
+            <div class="absolute inset-x-0 bottom-0 p-space-xs bg-gradient-to-t from-primary/80 via-primary/30 to-transparent flex items-end justify-between">
+              <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest/90 backdrop-blur-md text-primary font-mono-data text-label-xs">New Upload</span>
+              <button aria-label="Remove item" class="delete-photo-btn w-7 h-7 rounded-full bg-surface-container-lowest text-error flex items-center justify-center shadow hover:bg-error-container hover:text-on-error-container transition-colors">
+                <span class="material-symbols-outlined text-[16px]">delete</span>
+              </button>
+            </div>
+          </div>
+          <div class="p-space-xs flex items-center justify-between">
+            <span class="font-label-xs text-label-xs text-on-surface truncate">Custom Showcase</span>
+            <span class="font-mono-data text-label-xs text-on-surface-variant">Just now</span>
+          </div>
+        `;
+        galleryGrid.insertBefore(newCard, galleryGrid.children[1]);
+        const currentCount = parseInt(galleryCountBadge.textContent || '0', 10);
+        galleryCountBadge.textContent = currentCount + 1;
+      });
+    }
+
+    // FAQ Accordion expansion
+    const faqListContainer = document.getElementById('faqListContainer');
+
+    faqListContainer.addEventListener('click', (e) => {
+      const toggleTrigger = e.target.closest('.faq-toggle-btn') || e.target.closest('.faq-question-btn');
+      if (toggleTrigger) {
+        const card = toggleTrigger.closest('.faq-card');
+        const drawer = card.querySelector('.faq-answer-drawer');
+        const arrow = card.querySelector('.faq-toggle-btn span');
+        const isOpen = !drawer.classList.contains('hidden');
+
+        if (isOpen) {
+          drawer.classList.add('hidden');
+          if (arrow) arrow.style.transform = 'rotate(0deg)';
+        } else {
+          drawer.classList.remove('hidden');
+          if (arrow) arrow.style.transform = 'rotate(180deg)';
+        }
+      }
+
+      // Delete FAQ item
+      const deleteBtn = e.target.closest('.delete-faq-btn');
+      if (deleteBtn) {
+        const card = deleteBtn.closest('.faq-card');
+        if (card) {
+          card.classList.add('opacity-0', 'scale-95', 'transition-all', 'duration-150');
+          setTimeout(() => {
+            card.remove();
+            showToast('FAQ item deleted');
+            const total = faqListContainer.querySelectorAll('.faq-card').length;
+            const badge = document.getElementById('faqs-count-badge');
+            if (badge) badge.textContent = total;
+          }, 150);
+        }
+      }
+
+      // Edit FAQ item
+      const editBtn = e.target.closest('.edit-faq-btn');
+      if (editBtn) {
+        const card = editBtn.closest('.faq-card');
+        const qTitle = card.querySelector('h2').textContent;
+        const aDesc = card.querySelector('.faq-answer-drawer p').textContent.trim();
+        openFaqEditModal(qTitle, aDesc);
+      }
+    });
+
+    // FAQ Modal handlers
+    const faqModal = document.getElementById('faqModal');
+    const openNewFaqBtn = document.getElementById('openNewFaqBtn');
+    const closeFaqModalBtn = document.getElementById('closeFaqModalBtn');
+    const cancelFaqModalBtn = document.getElementById('cancelFaqModalBtn');
+    const saveFaqModalBtn = document.getElementById('saveFaqModalBtn');
+    const faqModalTitle = document.getElementById('faqModalTitle');
+    const faqQuestionInput = document.getElementById('faqQuestionInput');
+    const faqAnswerInput = document.getElementById('faqAnswerInput');
+
+    function openFaqCreateModal() {
+      faqModalTitle.textContent = 'New FAQ Item';
+      faqQuestionInput.value = '';
+      faqAnswerInput.value = '';
+      faqModal.classList.remove('hidden');
+    }
+
+    function openFaqEditModal(q, a) {
+      faqModalTitle.textContent = 'Edit FAQ Item';
+      faqQuestionInput.value = q;
+      faqAnswerInput.value = a;
+      faqModal.classList.remove('hidden');
+    }
+
+    function closeFaqModal() {
+      faqModal.classList.add('hidden');
+    }
+
+    if (openNewFaqBtn) openNewFaqBtn.addEventListener('click', openFaqCreateModal);
+    if (closeFaqModalBtn) closeFaqModalBtn.addEventListener('click', closeFaqModal);
+    if (cancelFaqModalBtn) cancelFaqModalBtn.addEventListener('click', closeFaqModal);
+
+    if (saveFaqModalBtn) {
+      saveFaqModalBtn.addEventListener('click', () => {
+        const q = faqQuestionInput.value.trim();
+        const a = faqAnswerInput.value.trim();
+        if (!q) {
+          alert('Please enter a question');
+          return;
+        }
+        closeFaqModal();
+        showToast('FAQ successfully saved and live');
+
+        // Append new card if it was new
+        if (faqModalTitle.textContent.includes('New')) {
+          const newFaq = document.createElement('div');
+          newFaq.className = 'faq-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all duration-200 animate-in fade-in';
+          newFaq.setAttribute('data-category', 'general');
+          newFaq.setAttribute('data-status', 'published');
+          newFaq.innerHTML = `
+            <div class="flex items-start justify-between gap-space-sm">
+              <div class="flex items-center gap-space-xs flex-wrap mb-1">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-mono-data text-label-xs">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Published
+                </span>
+                <span class="font-mono-data text-label-xs text-on-surface-variant">General</span>
+              </div>
+              <div class="flex items-center gap-space-xs flex-shrink-0">
+                <button aria-label="Edit FAQ" class="edit-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors">
+                  <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+                <button aria-label="Delete FAQ" class="delete-faq-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/40 transition-colors">
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+                <button aria-label="Toggle answer" class="faq-toggle-btn w-8 h-8 rounded-lg flex items-center justify-center text-on-surface hover:bg-surface-container transition-transform">
+                  <span class="material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                </button>
+              </div>
+            </div>
+            <button class="faq-question-btn text-left w-full mt-1">
+              <h2 class="font-headline-sm text-headline-sm text-on-surface">${q}</h2>
+            </button>
+            <div class="faq-answer-drawer hidden pt-space-xs mt-space-xs border-t border-surface-container">
+              <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">${a || 'Check back for detailed guidance.'}</p>
+            </div>
+          `;
+          faqListContainer.prepend(newFaq);
+          const total = faqListContainer.querySelectorAll('.faq-card').length;
+          const badge = document.getElementById('faqs-count-badge');
+          if (badge) badge.textContent = total;
+        }
+      });
+    }
+
+    // FAQ Search & Filter Filter Logic
+    const faqSearchInput = document.getElementById('faqSearchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const filterChips = document.querySelectorAll('.faq-filter-chip');
+
+    let currentFilter = 'all';
+
+    function applyFilterAndSearch() {
+      const term = (faqSearchInput ? faqSearchInput.value.toLowerCase().trim() : '');
+      const cards = faqListContainer.querySelectorAll('.faq-card');
+
+      if (clearSearchBtn) {
+        if (term.length > 0) {
+          clearSearchBtn.classList.remove('hidden');
+        } else {
+          clearSearchBtn.classList.add('hidden');
+        }
+      }
+
+      cards.forEach((card) => {
+        const text = card.textContent.toLowerCase();
+        const matchesSearch = !term || text.includes(term);
+        const cardStatus = card.getAttribute('data-status');
+        const cardCat = card.getAttribute('data-category');
+
+        let matchesFilter = true;
+        if (currentFilter === 'published') matchesFilter = cardStatus === 'published';
+        else if (currentFilter === 'draft') matchesFilter = cardStatus === 'draft';
+        else if (currentFilter === 'shipping') matchesFilter = cardCat === 'shipping';
+        else if (currentFilter === 'returns') matchesFilter = cardCat === 'returns';
+
+        if (matchesSearch && matchesFilter) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    if (faqSearchInput) {
+      faqSearchInput.addEventListener('input', applyFilterAndSearch);
+    }
+
+    if (clearSearchBtn) {
+      clearSearchBtn.addEventListener('click', () => {
+        faqSearchInput.value = '';
+        applyFilterAndSearch();
+      });
+    }
+
+    filterChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        filterChips.forEach((c) => {
+          c.classList.remove('bg-primary', 'text-on-primary');
+          c.classList.add('bg-surface-container-highest', 'text-on-surface-variant');
+        });
+        chip.classList.add('bg-primary', 'text-on-primary');
+        chip.classList.remove('bg-surface-container-highest', 'text-on-surface-variant');
+        currentFilter = chip.getAttribute('data-filter') || 'all';
+        applyFilterAndSearch();
+      });
+    });
+
+    const viewAnalyticsBtn = document.getElementById('viewAnalyticsBtn');
+    if (viewAnalyticsBtn) {
+      viewAnalyticsBtn.addEventListener('click', () => {
+        showToast('Syncing real-time CDN stats & query hits');
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-label-md"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="products" href="#"><span class="material-symbols-outlined text-[22px]">inventory_2</span><span class="font-label-xs text-label-xs">Products</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="orders" href="#"><span class="material-symbols-outlined text-[22px]">shopping_bag</span><span class="font-label-xs text-label-xs">Orders</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="reviews" href="#"><span class="material-symbols-outlined text-[22px]">rate_review</span><span class="font-label-xs text-label-xs">Reviews</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-space-xs transition-colors text-primary font-label-md" data-path="content" href="#"><span class="material-symbols-outlined text-[22px]">perm_media</span><span class="font-label-xs text-label-xs">Content</span></a></div></nav>
+
+</body></html>

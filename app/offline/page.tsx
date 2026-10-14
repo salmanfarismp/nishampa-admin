@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
 export default function OfflinePage() {
   const handleReload = () => {
@@ -13,14 +14,14 @@ export default function OfflinePage() {
   return (
     <div className="flex flex-col items-center justify-center flex-1 text-center px-4 py-12">
       {/* Offline Icon Container */}
-      <div className="w-20 h-20 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-6 shadow-lg shadow-amber-500/5">
+      <div className="w-16 h-16 rounded-lg bg-surface-subtle border border-border-default flex items-center justify-center mb-5 text-[#b45309]">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth="1.5"
           stroke="currentColor"
-          className="w-10 h-10 text-amber-400"
+          className="w-8 h-8"
         >
           <path
             strokeLinecap="round"
@@ -30,22 +31,25 @@ export default function OfflinePage() {
         </svg>
       </div>
 
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
-        Offline Mode
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-[11px] font-semibold tracking-wider bg-[#fffbeb] text-[#b45309] border border-[#fde68a] mb-3">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#d97706] animate-pulse" />
+        OFFLINE TELEMETRY
       </span>
 
-      <h1 className="text-2xl font-bold tracking-tight text-white mb-2">
+      <h1 className="type-headline-md text-text-primary mb-2">
         You&apos;re Currently Offline
       </h1>
 
-      <p className="text-sm text-zinc-400 max-w-xs mb-8 leading-relaxed">
-        Western Admin is running in offline cache mode. Check your internet connection to sync real-time administrative updates.
+      <p className="type-body-sm text-text-secondary max-w-xs mb-8 leading-relaxed">
+        Western Admin is serving from the offline application cache. Check your network connection to sync real-time administrative telemetry.
       </p>
 
-      <div className="flex flex-col w-full max-w-xs gap-3">
-        <button
+      <div className="flex flex-col w-full max-w-xs gap-2.5">
+        <Button
           onClick={handleReload}
-          className="w-full py-3 px-4 rounded-xl font-medium text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/25 transition active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+          variant="primary"
+          size="md"
+          className="w-full"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -62,18 +66,18 @@ export default function OfflinePage() {
             />
           </svg>
           Try Reconnecting
-        </button>
+        </Button>
 
         <Link
           href="/"
-          className="w-full py-3 px-4 rounded-xl font-medium text-sm bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 transition active:scale-[0.98] text-center"
+          className="w-full h-9 rounded-md font-medium text-sm bg-canvas border border-border-default text-text-primary hover:bg-surface-hover transition active:scale-[0.98] flex items-center justify-center"
         >
           Return to Cached Dashboard
         </Link>
       </div>
 
-      <div className="mt-12 text-xs text-zinc-600 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+      <div className="mt-12 type-mono-data text-text-subtle flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a]"></span>
         Service Worker Cache Active
       </div>
     </div>

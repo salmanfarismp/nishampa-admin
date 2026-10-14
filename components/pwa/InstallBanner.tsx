@@ -31,12 +31,12 @@ export default function InstallBanner() {
 
   return (
     <>
-      <div className="mx-4 my-2 p-3 rounded-2xl bg-gradient-to-r from-blue-900/40 via-indigo-900/30 to-purple-900/30 border border-blue-500/20 backdrop-blur-md shadow-lg shadow-black/20 flex items-center justify-between gap-3 text-xs">
+      <div className="mx-4 my-2 p-3 rounded-lg bg-canvas border border-border-default shadow-xs flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-md bg-surface-subtle border border-border-default flex items-center justify-center shrink-0 text-text-primary">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5 text-blue-400"
+              className="w-4 h-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -50,22 +50,22 @@ export default function InstallBanner() {
             </svg>
           </div>
           <div className="truncate">
-            <p className="font-semibold text-white tracking-tight">Install Western Admin</p>
-            <p className="text-[11px] text-zinc-400 truncate">Fast standalone mobile experience</p>
+            <p className="font-semibold text-text-primary tracking-tight">Install Western Admin</p>
+            <p className="text-[11px] text-text-secondary truncate">Fast offline administration workspace</p>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={handleInstallClick}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-medium rounded-xl shadow-md shadow-blue-600/30 transition text-xs cursor-pointer"
+            className="h-8 px-3 bg-text-primary hover:bg-[#27272a] active:scale-95 text-text-inverted font-medium rounded-md transition text-xs cursor-pointer select-none"
           >
             Install
           </button>
           <button
             onClick={handleDismiss}
             aria-label="Dismiss banner"
-            className="p-1.5 text-zinc-400 hover:text-zinc-200 transition"
+            className="p-1.5 text-text-subtle hover:text-text-primary transition cursor-pointer"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -83,52 +83,52 @@ export default function InstallBanner() {
 
       {/* iOS Instructions Modal */}
       {showIOSModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end justify-center p-4">
-          <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-3xl p-5 text-zinc-200 shadow-2xl animate-in fade-in slide-in-from-bottom-6 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
-              <h3 className="font-bold text-white text-base">Install on iOS</h3>
+        <div className="fixed inset-0 z-50 bg-[#09090b]/40 backdrop-blur-xs flex items-end justify-center p-4">
+          <div className="w-full max-w-sm bg-canvas border border-border-default rounded-xl p-5 text-text-primary shadow-level-2 animate-in fade-in slide-in-from-bottom-4 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+              <h3 className="font-semibold text-text-primary text-sm">Install on iOS</h3>
               <button
                 onClick={() => setShowIOSModal(false)}
-                className="text-zinc-400 hover:text-zinc-200 p-1"
+                className="text-text-subtle hover:text-text-primary p-1 cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <ol className="space-y-3.5 text-xs text-zinc-300">
+            <ol className="space-y-3 text-xs text-text-secondary">
               <li className="flex items-start gap-2.5">
-                <span className="w-5 h-5 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-[11px] shrink-0">
+                <span className="w-5 h-5 rounded-md bg-surface-subtle border border-border-default text-text-primary flex items-center justify-center font-bold text-[11px] shrink-0">
                   1
                 </span>
                 <span>
-                  Tap the <strong className="text-white">Share</strong> button in Safari&apos;s bottom toolbar{" "}
-                  <span className="inline-block px-1 py-0.5 bg-zinc-800 rounded text-[11px]">⎋</span>
+                  Tap the <strong className="text-text-primary">Share</strong> button in Safari&apos;s bottom toolbar{" "}
+                  <span className="inline-block px-1 py-0.5 bg-surface-hover border border-border-default rounded text-[10px]">⎋</span>
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
-                <span className="w-5 h-5 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-[11px] shrink-0">
+                <span className="w-5 h-5 rounded-md bg-surface-subtle border border-border-default text-text-primary flex items-center justify-center font-bold text-[11px] shrink-0">
                   2
                 </span>
                 <span>
-                  Scroll down and tap <strong className="text-white">Add to Home Screen</strong>{" "}
-                  <span className="inline-block px-1 py-0.5 bg-zinc-800 rounded text-[11px]">➕</span>
+                  Scroll down and tap <strong className="text-text-primary">Add to Home Screen</strong>{" "}
+                  <span className="inline-block px-1 py-0.5 bg-surface-hover border border-border-default rounded text-[10px]">➕</span>
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
-                <span className="w-5 h-5 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-[11px] shrink-0">
+                <span className="w-5 h-5 rounded-md bg-surface-subtle border border-border-default text-text-primary flex items-center justify-center font-bold text-[11px] shrink-0">
                   3
                 </span>
                 <span>
-                  Tap <strong className="text-white">Add</strong> in the top right to complete installation.
+                  Tap <strong className="text-text-primary">Add</strong> in the top right to complete installation.
                 </span>
               </li>
             </ol>
 
             <button
               onClick={() => setShowIOSModal(false)}
-              className="mt-6 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-semibold transition"
+              className="mt-5 w-full h-9 bg-text-primary hover:bg-[#27272a] text-text-inverted rounded-md text-xs font-semibold transition cursor-pointer"
             >
-              Got it
+              Done
             </button>
           </div>
         </div>
