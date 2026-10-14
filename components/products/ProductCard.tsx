@@ -58,13 +58,13 @@ export function ProductCard({ product, onEdit, onMore }: ProductCardProps) {
 
         {/* Middle Details: SKU + Status, Title, Price */}
         <div className="min-w-0 flex-1 pr-1">
-          {/* Top Row: SKU and Status Badge */}
+          {/* Top Row: SKU, Status Badge, and Colors */}
           <div className="flex items-center gap-2 mb-0.5">
             <span className="font-mono text-[11px] text-on-surface-variant font-medium tracking-tight">
               {product.sku}
             </span>
 
-            {/* Status Pill matching screen.png: Active (solid black dot), Draft (muted gray dot) */}
+            {/* Status Pill: Active (solid black/primary dot), Draft (muted gray dot) */}
             <span
               className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
                 product.is_active
@@ -79,6 +79,25 @@ export function ProductCard({ product, onEdit, onMore }: ProductCardProps) {
               />
               <span>{product.is_active ? "Active" : "Draft"}</span>
             </span>
+
+            {/* Subtle color dots if present */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="hidden xs:flex items-center gap-1 ml-auto">
+                {product.colors.slice(0, 3).map((col) => (
+                  <span
+                    key={col.id}
+                    title={col.name}
+                    className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0"
+                    style={{ backgroundColor: col.hex }}
+                  />
+                ))}
+                {product.colors.length > 3 && (
+                  <span className="text-[9px] text-on-surface-variant font-medium">
+                    +{product.colors.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Product Title */}
@@ -86,10 +105,17 @@ export function ProductCard({ product, onEdit, onMore }: ProductCardProps) {
             {product.title}
           </h3>
 
-          {/* Price */}
-          <p className="font-mono text-[13px] text-on-surface mt-0.5 font-medium tabular-nums">
-            ${product.price.toFixed(2)}
-          </p>
+          {/* Price with optional original price strike */}
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="font-mono text-[13px] text-on-surface font-semibold tabular-nums">
+              ₹{product.price.toLocaleString("en-IN")}
+            </p>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <p className="font-mono text-[11px] text-on-surface-variant line-through tabular-nums">
+                ₹{product.originalPrice.toLocaleString("en-IN")}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

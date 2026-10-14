@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { ProductItem } from "./types";
 
@@ -8,31 +8,22 @@ interface ProductActionSheetProps {
   product: ProductItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateStock: (productId: string, newStock: number) => void;
   onToggleStatus: (productId: string) => void;
   onDeleteProduct: (productId: string) => void;
   onDuplicateProduct: (product: ProductItem) => void;
+  isUpdating?: boolean;
 }
 
 export function ProductActionSheet({
   product,
   isOpen,
   onClose,
-  onUpdateStock,
   onToggleStatus,
   onDeleteProduct,
   onDuplicateProduct,
+  isUpdating = false,
 }: ProductActionSheetProps) {
-  const [pulse, setPulse] = useState(false);
-
   if (!isOpen || !product) return null;
-
-  const handleStockChange = (delta: number) => {
-    const updated = Math.max(0, product.stockCount + delta);
-    onUpdateStock(product.id, updated);
-    setPulse(true);
-    setTimeout(() => setPulse(false), 200);
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center select-none">
@@ -61,8 +52,8 @@ export function ProductActionSheet({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-surface-container flex items-center justify-center text-xs">
-                IMG
+              <div className="w-full h-full bg-surface-container flex items-center justify-center text-xs text-on-surface-variant/40">
+                SWING
               </div>
             )}
           </div>
@@ -89,9 +80,16 @@ export function ProductActionSheet({
             <h4 className="text-[14px] font-semibold text-text-primary truncate">
               {product.title}
             </h4>
-            <p className="font-mono text-[12px] text-text-primary mt-0.5 font-medium">
-              ${product.price.toFixed(2)}
-            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="font-mono text-[12px] text-text-primary font-semibold">
+                ₹{product.price.toLocaleString("en-IN")}
+              </p>
+              {product.categoryName && (
+                <span className="text-[11px] text-text-secondary">
+                  • {product.categoryName}
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -112,52 +110,39 @@ export function ProductActionSheet({
           </button>
         </div>
 
-        {/* Quick Operations List */}
-        <div className="py-3 flex flex-col gap-3">
-          {/* 1. Quick Stock Count Adjustment */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-surface-subtle border border-border-default">
-            <div>
-              <p className="text-[13px] font-medium text-text-primary">
-                Inventory Stock
-              </p>
-              <p className="text-[11px] text-text-secondary">
-                Warehouse fulfillment units
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleStockChange(-1)}
-                type="button"
-                className="w-8 h-8 rounded-lg bg-canvas border border-border-default flex items-center justify-center text-text-primary font-bold active:scale-95 transition-all cursor-pointer shadow-xs"
-                title="Decrease stock"
-              >
-                -
-              </button>
-              <span
-                className={`font-mono text-[14px] font-semibold w-9 text-center tabular-nums transition-transform ${
-                  pulse ? "scale-125 text-primary" : ""
-                }`}
-              >
-                {product.stockCount}
-              </span>
-              <button
-                onClick={() => handleStockChange(1)}
-                type="button"
-                className="w-8 h-8 rounded-lg bg-canvas border border-border-default flex items-center justify-center text-text-primary font-bold active:scale-95 transition-all cursor-pointer shadow-xs"
-                title="Increase stock"
-              >
-                +
-              </button>
+        {/* Colors Row if available */}
+        {product.colors && product.colors.length > 0 && (
+          <div className="pt-3 pb-1 border-b border-border-default">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+              Available Finishes ({product.colors.length})
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {product.colors.map((c) => (
+                <div
+                  key={c.id}
+                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-subtle border border-border-default text-[11px] text-text-primary"
+                >
+                  <span
+                    className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0"
+                    style={{ backgroundColor: c.hex }}
+                  />
+                  <span>{c.name}</span>
+                </div>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* 2. Toggle Status (is_active boolean) */}
+        {/* Quick Operations List */}
+        <div className="py-3 flex flex-col gap-2.5">
+          {/* 1. Toggle Status (is_active boolean) */}
           <button
+            disabled={isUpdating}
             onClick={() => {
               onToggleStatus(product.id);
             }}
             type="button"
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-canvas border border-border-default hover:bg-surface-hover active:scale-[0.99] transition-all text-left cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-canvas border border-border-default hover:bg-surface-hover active:scale-[0.99] transition-all text-left cursor-pointer disabled:opacity-50"
           >
             <div className="flex items-center gap-2.5">
               <div
@@ -195,11 +180,11 @@ export function ProductActionSheet({
                   : "bg-[#f4f4f5] text-[#71717a] border-[#e4e4e7]"
               }`}
             >
-              Toggle
+              {isUpdating ? "Saving..." : "Toggle"}
             </span>
           </button>
 
-          {/* 3. Duplicate Product */}
+          {/* 2. Duplicate Product */}
           <button
             onClick={() => {
               onDuplicateProduct(product);
@@ -231,14 +216,17 @@ export function ProductActionSheet({
             </div>
           </button>
 
-          {/* 4. Delete Product */}
+          {/* 3. Delete Product */}
           <button
+            disabled={isUpdating}
             onClick={() => {
-              onDeleteProduct(product.id);
-              onClose();
+              if (window.confirm(`Are you sure you want to delete "${product.title}"?`)) {
+                onDeleteProduct(product.id);
+                onClose();
+              }
             }}
             type="button"
-            className="w-full flex items-center gap-2.5 p-3 rounded-xl bg-canvas border border-[#fecaca] hover:bg-[#fef2f2] active:scale-[0.99] transition-all text-left cursor-pointer text-[#dc2626]"
+            className="w-full flex items-center gap-2.5 p-3 rounded-xl bg-canvas border border-[#fecaca] hover:bg-[#fef2f2] active:scale-[0.99] transition-all text-left cursor-pointer text-[#dc2626] disabled:opacity-50"
           >
             <div className="w-7 h-7 rounded-lg bg-[#fef2f2] text-[#dc2626] flex items-center justify-center">
               <svg

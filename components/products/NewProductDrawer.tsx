@@ -1,52 +1,61 @@
 "use client";
 
 import React, { useState } from "react";
-import { ProductCategory, ProductItem } from "./types";
+import { AdminCategoryOption } from "@/lib/api/mappers";
 
 interface NewProductDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProduct: (product: ProductItem) => void;
+  onAddProduct: (productData: {
+    name: string;
+    sku?: string;
+    price: number;
+    categoryId?: number | null;
+    isActive: boolean;
+    description?: string;
+  }) => Promise<void> | void;
+  categories: AdminCategoryOption[];
+  isSubmitting?: boolean;
 }
 
 export function NewProductDrawer({
   isOpen,
   onClose,
   onAddProduct,
+  categories,
+  isSubmitting = false,
 }: NewProductDrawerProps) {
   const [title, setTitle] = useState("");
   const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState<ProductCategory>("apparel");
+  const [categoryId, setCategoryId] = useState<string>(
+    categories[0]?.dbId ? String(categories[0].dbId) : ""
+  );
+  const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
-  const [stockCount, setStockCount] = useState(10);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || !price) return;
 
-    const newProd: ProductItem = {
-      id: `prod-${Date.now()}`,
-      sku: sku.trim() || `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
-      title: title.trim(),
-      price: parseFloat(price) || 99.0,
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDSYu3JQLEMz0Agbbklul3buW693iKU8i6M6J8yqDCESw1HETmPAcmRbFy77XzqlwC1TZbKTFi8HTb1bjNFEWT1N2OXhsTs0CUjOYHN8tH3yt97LXe3LcI2AfRSgPWJOn52PAgV9e856_RFvJmcOvDZBe7R8rUcOiq3ySMgBqS_MwoeuOqKUER38CjmklWfI3vP9FTY7r8ebcPiZaUffWMk9hoPBnbndSbr5U8eezNB6q-WTdUqVAN2FQ",
-      imageAlt: title.trim(),
-      is_active: isActive,
-      category,
-      stockCount: Math.max(0, stockCount),
-    };
+    await onAddProduct({
+      name: title.trim(),
+      sku: sku.trim() || undefined,
+      price: parseFloat(price) || 0,
+      categoryId: categoryId ? parseInt(categoryId, 10) : null,
+      isActive,
+      description: description.trim() || undefined,
+    });
 
-    onAddProduct(newProd);
     onClose();
     // Reset form
     setTitle("");
     setSku("");
     setPrice("");
-    setStockCount(10);
+    setDescription("");
+    setIsActive(true);
   };
 
   return (
@@ -95,7 +104,7 @@ export function NewProductDrawer({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Minimalist Studio Overshirt"
+              placeholder="e.g. Aspen Cedar Log 3-Seater Swing"
               className="w-full h-10 px-3 rounded-lg bg-surface-subtle border border-border-default text-xs text-text-primary focus:outline-none focus:border-border-strong"
             />
           </div>
@@ -103,59 +112,60 @@ export function NewProductDrawer({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary block mb-1">
-                SKU
+                SKU / Ref ID
               </label>
               <input
                 value={sku}
                 onChange={(e) => setSku(e.target.value)}
-                placeholder="MK-8921"
+                placeholder="TRE-0967BA"
                 className="w-full h-10 px-3 rounded-lg bg-surface-subtle border border-border-default font-mono text-xs text-text-primary focus:outline-none focus:border-border-strong"
               />
             </div>
             <div>
               <label className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary block mb-1">
-                Price ($) *
+                Price (₹) *
               </label>
               <input
                 required
                 type="number"
-                step="0.01"
+                min="0"
+                step="1"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                placeholder="120.00"
+                placeholder="27999"
                 className="w-full h-10 px-3 rounded-lg bg-surface-subtle border border-border-default font-mono text-xs text-text-primary focus:outline-none focus:border-border-strong"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary block mb-1">
-                Category
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as ProductCategory)}
-                className="w-full h-10 px-3 rounded-lg bg-surface-subtle border border-border-default text-xs text-text-primary focus:outline-none focus:border-border-strong"
-              >
-                <option value="apparel">Apparel</option>
-                <option value="footwear">Footwear</option>
-                <option value="accessories">Accessories</option>
-                <option value="home_living">Home & Living</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary block mb-1">
-                Initial Stock
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={stockCount}
-                onChange={(e) => setStockCount(parseInt(e.target.value, 10) || 0)}
-                className="w-full h-10 px-3 rounded-lg bg-surface-subtle border border-border-default font-mono text-xs text-text-primary focus:outline-none focus:border-border-strong"
-              />
-            </div>
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary block mb-1">
+              Category
+            </label>
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full h-10 px-3 rounded-lg bg-surface-subtle border border-border-default text-xs text-text-primary focus:outline-none focus:border-border-strong"
+            >
+              {categories.map((c) => (
+                <option key={c.id} value={c.dbId ?? ""}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary block mb-1">
+              Description (Optional)
+            </label>
+            <textarea
+              rows={2}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Key specifications, material, cushions..."
+              className="w-full p-2 rounded-lg bg-surface-subtle border border-border-default text-xs text-text-primary focus:outline-none focus:border-border-strong resize-none"
+            />
           </div>
 
           <div>
@@ -194,9 +204,10 @@ export function NewProductDrawer({
         <div className="pt-2 border-t border-border-default">
           <button
             type="submit"
-            className="w-full h-11 rounded-lg bg-primary text-on-primary text-xs font-semibold shadow-sm active:scale-95 transition-all cursor-pointer"
+            disabled={isSubmitting}
+            className="w-full h-11 rounded-lg bg-primary text-on-primary text-xs font-semibold shadow-sm active:scale-95 transition-all cursor-pointer disabled:opacity-50"
           >
-            Create Product
+            {isSubmitting ? "Creating..." : "Create Product"}
           </button>
         </div>
       </form>

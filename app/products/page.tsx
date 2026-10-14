@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { ProductItem, ProductCategory, SortOption, FilterState } from "@/components/products/types";
-import { INITIAL_PRODUCTS } from "@/components/products/mockData";
 import { ProductSearchBar } from "@/components/products/ProductSearchBar";
 import { CategoryFilterPills } from "@/components/products/CategoryFilterPills";
 import { ProductSummaryRow } from "@/components/products/ProductSummaryRow";
@@ -11,10 +10,25 @@ import { ProductFloatingAction } from "@/components/products/ProductFloatingActi
 import { ProductActionSheet } from "@/components/products/ProductActionSheet";
 import { ProductFilterDrawer } from "@/components/products/ProductFilterDrawer";
 import { NewProductDrawer } from "@/components/products/NewProductDrawer";
+import {
+  getProducts,
+  getCategories,
+  updateProductStatus,
+  deleteProduct,
+  createProduct,
+  CreateProductInput,
+} from "@/lib/api/products";
+import { AdminCategoryOption } from "@/lib/api/mappers";
 
 export default function ProductsScreen() {
   // Catalog State
-  const [products, setProducts] = useState<ProductItem[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [categories, setCategories] = useState<AdminCategoryOption[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isActionPending, setIsActionPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Filters & Sorting
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>("all");
   const [currentSort, setCurrentSort] = useState<SortOption>("newest");
@@ -29,13 +43,69 @@ export default function ProductsScreen() {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isNewProductDrawerOpen, setIsNewProductDrawerOpen] = useState(false);
 
+  // Fetch initial catalog data from Supabase
+  useEffect(() => {
+    let cancelled = false;
+    async function init() {
+      try {
+        const [fetchedProducts, fetchedCategories] = await Promise.all([
+          getProducts(),
+          getCategories(),
+        ]);
+        if (!cancelled) {
+          setProducts(fetchedProducts);
+          setCategories(fetchedCategories);
+          setIsLoading(false);
+        }
+      } catch (err: unknown) {
+        if (!cancelled) {
+          console.error("Error loading products from Supabase:", err);
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to connect to Supabase. Please check your network and credentials."
+          );
+          setIsLoading(false);
+        }
+      }
+    }
+    init();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleRetry = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [fetchedProducts, fetchedCategories] = await Promise.all([
+        getProducts(),
+        getCategories(),
+      ]);
+      setProducts(fetchedProducts);
+      setCategories(fetchedCategories);
+    } catch (err: unknown) {
+      console.error("Error reloading products from Supabase:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to connect to Supabase. Please check your network and credentials."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Filter & Sort Pipeline
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => {
-        // 1. Category Filter
-        if (selectedCategory !== "all" && p.category !== selectedCategory) {
-          return false;
+        // 1. Category Filter (by slug or db id)
+        if (selectedCategory !== "all") {
+          const matchSlug = p.category === selectedCategory;
+          const matchId = p.categoryId && String(p.categoryId) === selectedCategory;
+          if (!matchSlug && !matchId) return false;
         }
 
         // 2. Status Filter (is_active boolean)
@@ -47,13 +117,14 @@ export default function ProductsScreen() {
           return false;
         }
 
-        // 4. Search Filter (Title, SKU, Barcode)
+        // 4. Search Filter (Title, SKU, Category, Description)
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase().trim();
           const matchTitle = p.title.toLowerCase().includes(q);
           const matchSku = p.sku.toLowerCase().includes(q);
-          const matchBarcode = p.barcode ? p.barcode.includes(q) : false;
-          if (!matchTitle && !matchSku && !matchBarcode) return false;
+          const matchCat = p.categoryName ? p.categoryName.toLowerCase().includes(q) : false;
+          const matchDesc = p.description ? p.description.toLowerCase().includes(q) : false;
+          if (!matchTitle && !matchSku && !matchCat && !matchDesc) return false;
         }
 
         return true;
@@ -64,11 +135,11 @@ export default function ProductsScreen() {
             return a.price - b.price;
           case "price_desc":
             return b.price - a.price;
-          case "stock_asc":
-            return a.stockCount - b.stockCount;
+          case "name_asc":
+            return a.title.localeCompare(b.title);
           case "newest":
           default:
-            return 0; // retain exact curated catalog order matching screen.png
+            return 0; // retain database ordering (created_at desc)
         }
       });
   }, [products, selectedCategory, filterState, searchQuery, currentSort]);
@@ -84,48 +155,100 @@ export default function ProductsScreen() {
     setIsActionSheetOpen(true);
   };
 
-  const handleUpdateStock = (productId: string, newStock: number) => {
-    setProducts((prev) =>
-      prev.map((item) =>
-        item.id === productId ? { ...item, stockCount: newStock } : item
-      )
-    );
-    if (selectedProduct && selectedProduct.id === productId) {
-      setSelectedProduct((prev) => (prev ? { ...prev, stockCount: newStock } : null));
-    }
-  };
+  const handleToggleStatus = async (productId: string) => {
+    const target = products.find((p) => p.id === productId);
+    if (!target) return;
 
-  const handleToggleStatus = (productId: string) => {
+    const nextStatus = !target.is_active;
+
+    // Optimistic update
     setProducts((prev) =>
       prev.map((item) =>
-        item.id === productId ? { ...item, is_active: !item.is_active } : item
+        item.id === productId ? { ...item, is_active: nextStatus } : item
       )
     );
     if (selectedProduct && selectedProduct.id === productId) {
-      setSelectedProduct((prev) =>
-        prev ? { ...prev, is_active: !prev.is_active } : null
+      setSelectedProduct((prev) => (prev ? { ...prev, is_active: nextStatus } : null));
+    }
+
+    try {
+      setIsActionPending(true);
+      await updateProductStatus(productId, nextStatus);
+    } catch (err) {
+      console.error("Failed to update status in Supabase:", err);
+      // Revert optimistic update
+      setProducts((prev) =>
+        prev.map((item) =>
+          item.id === productId ? { ...item, is_active: target.is_active } : item
+        )
       );
+      if (selectedProduct && selectedProduct.id === productId) {
+        setSelectedProduct(target);
+      }
+      alert("Failed to update product status. Please try again.");
+    } finally {
+      setIsActionPending(false);
     }
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
+    const backup = [...products];
+    // Optimistic update
     setProducts((prev) => prev.filter((item) => item.id !== productId));
     setSelectedProduct(null);
+
+    try {
+      setIsActionPending(true);
+      await deleteProduct(productId);
+    } catch (err) {
+      console.error("Failed to delete product in Supabase:", err);
+      // Revert optimistic delete
+      setProducts(backup);
+      alert("Failed to delete product. Please check database permissions.");
+    } finally {
+      setIsActionPending(false);
+    }
   };
 
-  const handleDuplicateProduct = (prod: ProductItem) => {
-    const cloned: ProductItem = {
-      ...prod,
-      id: `prod-${Date.now()}`,
-      sku: `${prod.sku}-COPY`,
-      title: `${prod.title} (Copy)`,
-      is_active: false, // cloned items default to draft
-    };
-    setProducts((prev) => [cloned, ...prev]);
+  const handleDuplicateProduct = async (prod: ProductItem) => {
+    try {
+      setIsActionPending(true);
+      const cloned = await createProduct({
+        name: `${prod.title} (Copy)`,
+        price: prod.price,
+        categoryId: prod.categoryId,
+        isActive: false, // duplicate as draft
+        sku: `${prod.sku}-COPY`,
+        description: prod.description,
+      });
+      setProducts((prev) => [cloned, ...prev]);
+    } catch (err) {
+      console.error("Failed to clone product in Supabase:", err);
+      // Fallback local clone if insert restricted
+      const localClone: ProductItem = {
+        ...prod,
+        id: `local-copy-${Date.now()}`,
+        sku: `${prod.sku}-COPY`,
+        title: `${prod.title} (Copy)`,
+        is_active: false,
+      };
+      setProducts((prev) => [localClone, ...prev]);
+    } finally {
+      setIsActionPending(false);
+    }
   };
 
-  const handleAddProduct = (newProd: ProductItem) => {
-    setProducts((prev) => [newProd, ...prev]);
+  const handleAddProduct = async (input: CreateProductInput) => {
+    try {
+      setIsActionPending(true);
+      const newProd = await createProduct(input);
+      setProducts((prev) => [newProd, ...prev]);
+    } catch (err) {
+      console.error("Failed to create product in Supabase:", err);
+      alert("Failed to save product to Supabase. Check database permissions.");
+    } finally {
+      setIsActionPending(false);
+    }
   };
 
   // Active filter badge counter
@@ -135,7 +258,7 @@ export default function ProductsScreen() {
 
   return (
     <div className="flex flex-col w-full pb-16">
-      {/* 1. Search Bar with Barcode Icon & Filter Trigger */}
+      {/* 1. Search Bar with Filter Trigger */}
       <ProductSearchBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -148,6 +271,7 @@ export default function ProductsScreen() {
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
         totalCount={products.length}
+        categories={categories}
       />
 
       {/* 3. Catalog Products Count & Sort Header */}
@@ -157,9 +281,58 @@ export default function ProductsScreen() {
         onSortChange={setCurrentSort}
       />
 
-      {/* 4. Product Cards List */}
+      {/* 4. Product Cards List or Loading Skeletons */}
       <div className="flex flex-col gap-2.5" id="product-list">
-        {filteredProducts.length > 0 ? (
+        {isLoading ? (
+          // Loading Skeletons
+          Array.from({ length: 6 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-surface-container-lowest rounded-xl p-3 border border-surface-container flex items-center justify-between animate-pulse"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-14 h-14 rounded-lg bg-surface-container shrink-0" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="h-3 bg-surface-container rounded w-24" />
+                  <div className="h-4 bg-surface-container rounded w-44" />
+                  <div className="h-3.5 bg-surface-container rounded w-16" />
+                </div>
+              </div>
+              <div className="w-14 h-8 bg-surface-container rounded-lg shrink-0 ml-2" />
+            </div>
+          ))
+        ) : error ? (
+          // Error Display with Retry
+          <div className="flex flex-col items-center justify-center p-8 bg-surface-container-lowest rounded-xl border border-[#fecaca] text-center mt-2">
+            <div className="w-10 h-10 rounded-full bg-[#fef2f2] text-[#dc2626] flex items-center justify-center mb-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <p className="text-[13px] font-semibold text-text-primary">
+              Failed to load catalog
+            </p>
+            <p className="text-[11px] text-text-secondary mt-1 max-w-xs">
+              {error}
+            </p>
+            <button
+              onClick={handleRetry}
+              type="button"
+              className="mt-3 px-3.5 py-1.5 rounded-lg bg-primary text-on-primary text-[12px] font-medium active:scale-95 transition-all cursor-pointer shadow-xs"
+            >
+              Retry Connection
+            </button>
+          </div>
+        ) : filteredProducts.length > 0 ? (
           filteredProducts.map((prod) => (
             <ProductCard
               key={prod.id}
@@ -213,10 +386,10 @@ export default function ProductsScreen() {
         product={selectedProduct}
         isOpen={isActionSheetOpen}
         onClose={() => setIsActionSheetOpen(false)}
-        onUpdateStock={handleUpdateStock}
         onToggleStatus={handleToggleStatus}
         onDeleteProduct={handleDeleteProduct}
         onDuplicateProduct={handleDuplicateProduct}
+        isUpdating={isActionPending}
       />
 
       {/* 7. Filter Slide-Up Drawer */}
@@ -232,6 +405,8 @@ export default function ProductsScreen() {
         isOpen={isNewProductDrawerOpen}
         onClose={() => setIsNewProductDrawerOpen(false)}
         onAddProduct={handleAddProduct}
+        categories={categories}
+        isSubmitting={isActionPending}
       />
     </div>
   );

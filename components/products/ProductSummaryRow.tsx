@@ -13,7 +13,7 @@ const SORT_LABELS: Record<SortOption, string> = {
   newest: "Sorted by Newest",
   price_asc: "Price: Low to High",
   price_desc: "Price: High to Low",
-  stock_asc: "Stock: Low to High",
+  name_asc: "Name: A to Z",
 };
 
 export function ProductSummaryRow({
@@ -22,7 +22,7 @@ export function ProductSummaryRow({
   onSortChange,
 }: ProductSummaryRowProps) {
   const cycleSort = () => {
-    const sequence: SortOption[] = ["newest", "price_asc", "price_desc", "stock_asc"];
+    const sequence: SortOption[] = ["newest", "price_asc", "price_desc", "name_asc"];
     const currentIndex = sequence.indexOf(currentSort);
     const nextIndex = (currentIndex + 1) % sequence.length;
     onSortChange(sequence[nextIndex]);
@@ -54,7 +54,7 @@ export function ProductSummaryRow({
         >
           <path d="M3 6h18M6 12h12m-9 6h6" />
         </svg>
-        <span>{SORT_LABELS[currentSort]}</span>
+        <span>{SORT_LABELS[currentSort] || "Sort"}</span>
       </button>
     </div>
   );

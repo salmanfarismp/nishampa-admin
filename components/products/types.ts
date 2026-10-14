@@ -1,29 +1,35 @@
-export type ProductCategory =
-  | "all"
-  | "apparel"
-  | "footwear"
-  | "accessories"
-  | "home_living";
+export type ProductCategory = string;
+
+export interface ProductColorItem {
+  id: number;
+  name: string;
+  hex: string;
+}
 
 export interface ProductItem {
   id: string;
   sku: string;
   title: string;
   price: number;
+  originalPrice?: number;
   imageUrl: string;
   imageAlt: string;
-  is_active: boolean; // boolean: true -> Active, false -> Draft
-  category: ProductCategory;
-  stockCount: number;
+  is_active: boolean; // true -> Active, false -> Draft
+  category: string;
+  categoryName?: string;
+  categoryId?: number | null;
   barcode?: string;
   description?: string;
+  subtitle?: string;
+  slug?: string;
+  colors?: ProductColorItem[];
 }
 
-export type SortOption = "newest" | "price_asc" | "price_desc" | "stock_asc";
+export type SortOption = "newest" | "price_asc" | "price_desc" | "name_asc";
 
 export interface FilterState {
   status: "all" | "active" | "draft";
-  category: ProductCategory;
+  category: string;
   minPrice?: number;
   maxPrice?: number;
 }

@@ -10,6 +10,8 @@ interface ProductFilterDrawerProps {
   onApplyFilter: (newFilter: FilterState) => void;
 }
 
+const MAX_FILTER_CEILING = 60000;
+
 export function ProductFilterDrawer({
   isOpen,
   onClose,
@@ -20,7 +22,7 @@ export function ProductFilterDrawer({
     currentFilter.status
   );
   const [maxPrice, setMaxPrice] = useState<number>(
-    currentFilter.maxPrice ?? 250
+    currentFilter.maxPrice ?? MAX_FILTER_CEILING
   );
 
   if (!isOpen) return null;
@@ -29,14 +31,14 @@ export function ProductFilterDrawer({
     onApplyFilter({
       ...currentFilter,
       status: localStatus,
-      maxPrice: maxPrice < 250 ? maxPrice : undefined,
+      maxPrice: maxPrice < MAX_FILTER_CEILING ? maxPrice : undefined,
     });
     onClose();
   };
 
   const handleReset = () => {
     setLocalStatus("all");
-    setMaxPrice(250);
+    setMaxPrice(MAX_FILTER_CEILING);
     onApplyFilter({
       ...currentFilter,
       status: "all",
@@ -112,18 +114,24 @@ export function ProductFilterDrawer({
                 Max Price
               </label>
               <span className="font-mono text-xs font-semibold text-text-primary tabular-nums">
-                {maxPrice >= 250 ? "Any Price" : `Under $${maxPrice}`}
+                {maxPrice >= MAX_FILTER_CEILING
+                  ? "Any Price"
+                  : `Under ₹${maxPrice.toLocaleString("en-IN")}`}
               </span>
             </div>
             <input
               type="range"
-              min={30}
-              max={250}
-              step={10}
+              min={2000}
+              max={MAX_FILTER_CEILING}
+              step={1000}
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
               className="w-full accent-primary h-1.5 bg-surface-hover rounded-lg cursor-pointer"
             />
+            <div className="flex justify-between text-[10px] text-text-secondary mt-1">
+              <span>₹2,000</span>
+              <span>₹60,000+</span>
+            </div>
           </div>
         </div>
 
@@ -132,14 +140,14 @@ export function ProductFilterDrawer({
           <button
             onClick={handleReset}
             type="button"
-            className="flex-1 h-10 rounded-lg border border-border-default bg-canvas text-xs font-semibold text-text-secondary hover:text-text-primary active:scale-95 transition-all"
+            className="flex-1 h-10 rounded-lg border border-border-default bg-canvas text-xs font-semibold text-text-secondary hover:text-text-primary active:scale-95 transition-all cursor-pointer"
           >
             Reset
           </button>
           <button
             onClick={handleApply}
             type="button"
-            className="flex-1 h-10 rounded-lg bg-primary text-on-primary text-xs font-semibold active:scale-95 transition-all shadow-xs"
+            className="flex-1 h-10 rounded-lg bg-primary text-on-primary text-xs font-semibold active:scale-95 transition-all shadow-xs cursor-pointer"
           >
             Apply Filters
           </button>
