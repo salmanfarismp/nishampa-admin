@@ -255,3 +255,22 @@ table,
   background-color: rgba(9, 9, 11, 0.40);
   backdrop-filter: blur(2px);
 }
+
+/* Mobile PWA Insets & Viewport Utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

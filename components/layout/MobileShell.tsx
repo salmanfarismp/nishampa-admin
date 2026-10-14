@@ -11,7 +11,7 @@ interface MobileShellProps {
 
 export default function MobileShell({ children }: MobileShellProps) {
   return (
-    <div className="w-full max-w-md h-full bg-canvas text-text-primary flex flex-col relative sm:border-x sm:border-border-default shadow-xs overflow-hidden">
+    <div className="w-full max-w-md h-full bg-surface text-on-surface flex flex-col relative sm:border-x sm:border-border-default shadow-xs overflow-hidden">
       {/* Top Mobile Admin Header */}
       <AdminHeader />
 

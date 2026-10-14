@@ -5,13 +5,10 @@ import { usePwaInstall } from "@/lib/hooks/usePwaInstall";
 
 export default function InstallBanner() {
   const { isInstallable, isStandalone, isIOS, promptInstall } = usePwaInstall();
-  const [dismissed, setDismissed] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return Boolean(sessionStorage.getItem("pwa_install_dismissed"));
-  });
+  const [dismissed, setDismissed] = useState(true);
   const [showIOSModal, setShowIOSModal] = useState(false);
 
-  // If installed or dismissed or not installable yet (and not iOS), don't show banner
+  // Keep dismissed by default so it does not clutter the screen
   if (isStandalone || dismissed || (!isInstallable && !isIOS)) return null;
 
   const handleDismiss = () => {
