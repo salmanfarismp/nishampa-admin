@@ -36,11 +36,12 @@ export default function ContentPage() {
   const [activeTab, setActiveTab] = useState<ContentTab>("gallery");
 
   // Gallery State
-  const [galleryAssets, setGalleryAssets] =
-    useState<GalleryAsset[]>(INITIAL_GALLERY_ASSETS);
+  const [galleryAssets, setGalleryAssets] = useState<GalleryAsset[]>(
+    INITIAL_GALLERY_ASSETS,
+  );
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [activeDetailAsset, setActiveDetailAsset] =
@@ -176,7 +177,9 @@ export default function ContentPage() {
     setGalleryAssets((prev) => prev.filter((a) => !selectedAssetIds.has(a.id)));
     setSelectedAssetIds(new Set());
     setIsSelecting(false);
-    showToast(`${count} photo${count > 1 ? "s" : ""} removed from brand gallery`);
+    showToast(
+      `${count} photo${count > 1 ? "s" : ""} removed from brand gallery`,
+    );
   };
 
   // FAQ Actions
@@ -200,8 +203,8 @@ export default function ContentPage() {
                 status: data.status,
                 updatedAt: "Updated just now",
               }
-            : f
-        )
+            : f,
+        ),
       );
       showToast("FAQ updated successfully");
     } else {
@@ -218,7 +221,7 @@ export default function ContentPage() {
       showToast(
         data.status === "published"
           ? "New FAQ published to storefront"
-          : "FAQ saved to drafts"
+          : "FAQ saved to drafts",
       );
     }
     setFaqToEdit(null);
@@ -235,13 +238,13 @@ export default function ContentPage() {
               status: nextStatus,
               updatedAt: "Status updated just now",
             }
-          : f
-      )
+          : f,
+      ),
     );
     showToast(
       nextStatus === "published"
         ? "FAQ published to storefront"
-        : "FAQ moved to drafts"
+        : "FAQ moved to drafts",
     );
   };
 
@@ -280,7 +283,6 @@ export default function ContentPage() {
         }}
         galleryCount={galleryAssets.length}
         faqCount={faqs.length}
-        onOpenAnalytics={() => setIsAnalyticsOpen(true)}
       />
 
       {/* VIEW 1: GALLERY MANAGEMENT */}
@@ -434,13 +436,6 @@ export default function ContentPage() {
         onToggleStatus={handleToggleFaqStatus}
         onDuplicate={handleDuplicateFaq}
         onDelete={handleDeleteFaq}
-      />
-
-      {/* 5. Telemetry Analytics Sheet */}
-      <ContentAnalyticsModal
-        isOpen={isAnalyticsOpen}
-        onClose={() => setIsAnalyticsOpen(false)}
-        stats={stats}
       />
     </div>
   );
