@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 import AdminHeader from "./AdminHeader";
 import BottomNavigation from "./BottomNavigation";
 import InstallBanner from "@/components/pwa/InstallBanner";
@@ -10,6 +11,18 @@ interface MobileShellProps {
 }
 
 export default function MobileShell({ children }: MobileShellProps) {
+  const pathname = usePathname();
+  const isAuthPage =
+    pathname.startsWith("/login") || pathname.startsWith("/unauthorized");
+
+  if (isAuthPage) {
+    return (
+      <div className="w-full max-w-md h-full bg-canvas text-on-surface flex flex-col relative sm:border-x sm:border-border-default shadow-xs overflow-y-auto">
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-md h-full bg-surface text-on-surface flex flex-col relative sm:border-x sm:border-border-default shadow-xs overflow-hidden">
       {/* Top Mobile Admin Header */}

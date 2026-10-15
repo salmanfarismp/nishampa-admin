@@ -47,6 +47,8 @@ export function mapProductJoinedToItem(row: ProductJoined): ProductItem {
     description: row.description || "",
     subtitle: row.subtitle || "",
     slug: row.slug || row.id,
+    badge: row.badge,
+    has_hanging_kit: row.has_hanging_kit,
     colors,
   };
 }

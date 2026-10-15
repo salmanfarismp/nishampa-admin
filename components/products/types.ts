@@ -22,6 +22,8 @@ export interface ProductItem {
   description?: string;
   subtitle?: string;
   slug?: string;
+  badge?: string | null;
+  has_hanging_kit?: boolean | null;
   colors?: ProductColorItem[];
 }
 

@@ -16,14 +16,17 @@ import {
   updateProductStatus,
   deleteProduct,
   createProduct,
+  getColors,
   CreateProductInput,
 } from "@/lib/api/products";
 import { AdminCategoryOption } from "@/lib/api/mappers";
+import { ColorRow } from "@/types/database";
 
 export default function ProductsScreen() {
   // Catalog State
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [categories, setCategories] = useState<AdminCategoryOption[]>([]);
+  const [colors, setColors] = useState<ColorRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isActionPending, setIsActionPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,13 +51,15 @@ export default function ProductsScreen() {
     let cancelled = false;
     async function init() {
       try {
-        const [fetchedProducts, fetchedCategories] = await Promise.all([
+        const [fetchedProducts, fetchedCategories, fetchedColors] = await Promise.all([
           getProducts(),
           getCategories(),
+          getColors(),
         ]);
         if (!cancelled) {
           setProducts(fetchedProducts);
           setCategories(fetchedCategories);
+          setColors(fetchedColors);
           setIsLoading(false);
         }
       } catch (err: unknown) {
@@ -79,12 +84,14 @@ export default function ProductsScreen() {
     setIsLoading(true);
     setError(null);
     try {
-      const [fetchedProducts, fetchedCategories] = await Promise.all([
+      const [fetchedProducts, fetchedCategories, fetchedColors] = await Promise.all([
         getProducts(),
         getCategories(),
+        getColors(),
       ]);
       setProducts(fetchedProducts);
       setCategories(fetchedCategories);
+      setColors(fetchedColors);
     } catch (err: unknown) {
       console.error("Error reloading products from Supabase:", err);
       setError(
@@ -243,9 +250,10 @@ export default function ProductsScreen() {
       setIsActionPending(true);
       const newProd = await createProduct(input);
       setProducts((prev) => [newProd, ...prev]);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to create product in Supabase:", err);
-      alert("Failed to save product to Supabase. Check database permissions.");
+      const msg = err instanceof Error ? err.message : "Check database permissions or network.";
+      alert(`Failed to save product to Supabase: ${msg}`);
     } finally {
       setIsActionPending(false);
     }
@@ -406,6 +414,7 @@ export default function ProductsScreen() {
         onClose={() => setIsNewProductDrawerOpen(false)}
         onAddProduct={handleAddProduct}
         categories={categories}
+        colors={colors}
         isSubmitting={isActionPending}
       />
     </div>

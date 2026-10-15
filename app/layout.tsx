@@ -47,6 +47,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+import { AuthProvider } from "@/components/auth/AuthProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -64,9 +66,11 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="h-full overflow-hidden bg-canvas text-text-primary flex justify-center items-start">
-        <PwaRegister />
-        <OfflineIndicator />
-        <MobileShell>{children}</MobileShell>
+        <AuthProvider>
+          <PwaRegister />
+          <OfflineIndicator />
+          <MobileShell>{children}</MobileShell>
+        </AuthProvider>
       </body>
     </html>
   );

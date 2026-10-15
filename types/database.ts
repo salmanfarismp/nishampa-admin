@@ -8,6 +8,8 @@ export interface ProductCategoryRow {
   prefix: string | null;
 }
 
+export type ProductBadge = "STAND INCLUDED" | "NEW" | "POPULAR" | null;
+
 export interface ProductRow {
   id: string;
   created_at: string;
@@ -19,8 +21,8 @@ export interface ProductRow {
   original_price: number | null;
   computed_rating: number | null;
   computed_review_count: number | null;
-  badge: number | null;
-  slug: string;
+  badge: ProductBadge;
+  slug?: string;
   has_hanging_kit: boolean | null;
   ref_id: string | null;
   is_active: boolean;
