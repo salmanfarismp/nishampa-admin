@@ -48,9 +48,6 @@ function LoginContent() {
           <h1 className="text-2xl font-bold tracking-tight text-on-surface">
             Westernswings
           </h1>
-          <p className="text-xs font-mono uppercase tracking-wider text-text-secondary mt-1">
-            Commerce Studio Admin
-          </p>
         </div>
 
         {/* Auth Action Card */}
@@ -60,7 +57,8 @@ function LoginContent() {
               Administrator Sign In
             </h2>
             <p className="text-xs text-text-secondary leading-relaxed">
-              Sign in with your authorized Google Workspace or email account to manage products, orders, and content.
+              Sign in with your authorized Google Workspace or email account to
+              manage products, orders, and content.
             </p>
           </div>
 
@@ -83,7 +81,9 @@ function LoginContent() {
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
-              <div className="flex-1 font-medium leading-snug">{loginError}</div>
+              <div className="flex-1 font-medium leading-snug">
+                {loginError}
+              </div>
             </div>
           )}
 
@@ -148,23 +148,6 @@ function LoginContent() {
               </>
             )}
           </button>
-
-          {/* Security Notice */}
-          <div className="pt-2 border-t border-border-subtle flex items-center justify-center gap-1.5 text-[11px] text-text-subtle font-mono">
-            <svg
-              className="w-3.5 h-3.5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            <span>Secured via Supabase SSR & OAuth 2.0</span>
-          </div>
         </div>
 
         {/* Footer info */}

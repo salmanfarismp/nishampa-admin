@@ -42,7 +42,8 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/login") || pathname.startsWith("/auth/callback");
   const isUnauthorizedRoute = pathname.startsWith("/unauthorized");
 
-  // Optional Admin email allowlist check
+  // Fail-secure Admin email allowlist check:
+  // If ADMIN_EMAILS is omitted or empty, nobody is allowed.
   const adminEmailsEnv = process.env.ADMIN_EMAILS;
   const adminEmails = adminEmailsEnv
     ? adminEmailsEnv
@@ -51,10 +52,12 @@ export async function updateSession(request: NextRequest) {
         .filter(Boolean)
     : [];
 
-  const isAllowedAdmin =
-    !user ||
-    adminEmails.length === 0 ||
-    (user.email && adminEmails.includes(user.email.toLowerCase()));
+  const isAllowedAdmin = Boolean(
+    user &&
+    user.email &&
+    adminEmails.length > 0 &&
+    adminEmails.includes(user.email.toLowerCase())
+  );
 
   // Helper to carry over refreshed cookies into redirect responses
   const createRedirectWithCookies = (url: URL) => {
