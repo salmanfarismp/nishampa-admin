@@ -10,14 +10,17 @@ import { ProductFloatingAction } from "@/components/products/ProductFloatingActi
 import { ProductActionSheet } from "@/components/products/ProductActionSheet";
 import { ProductFilterDrawer } from "@/components/products/ProductFilterDrawer";
 import { NewProductDrawer } from "@/components/products/NewProductDrawer";
+import { EditProductDrawer } from "@/components/products/EditProductDrawer";
 import {
   getProducts,
   getCategories,
   updateProductStatus,
   deleteProduct,
   createProduct,
+  updateProduct,
   getColors,
   CreateProductInput,
+  UpdateProductInput,
 } from "@/lib/api/products";
 import { AdminCategoryOption } from "@/lib/api/mappers";
 import { ColorRow } from "@/types/database";
@@ -45,6 +48,8 @@ export default function ProductsScreen() {
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isNewProductDrawerOpen, setIsNewProductDrawerOpen] = useState(false);
+  const [productToEdit, setProductToEdit] = useState<ProductItem | null>(null);
+  const [isEditProductDrawerOpen, setIsEditProductDrawerOpen] = useState(false);
 
   // Fetch initial catalog data from Supabase
   useEffect(() => {
@@ -153,8 +158,8 @@ export default function ProductsScreen() {
 
   // Handlers for Product Actions
   const handleEditProduct = (prod: ProductItem) => {
-    setSelectedProduct(prod);
-    setIsActionSheetOpen(true);
+    setProductToEdit(prod);
+    setIsEditProductDrawerOpen(true);
   };
 
   const handleMoreProduct = (prod: ProductItem) => {
@@ -254,6 +259,25 @@ export default function ProductsScreen() {
       console.error("Failed to create product in Supabase:", err);
       const msg = err instanceof Error ? err.message : "Check database permissions or network.";
       alert(`Failed to save product to Supabase: ${msg}`);
+    } finally {
+      setIsActionPending(false);
+    }
+  };
+
+  const handleUpdateProduct = async (input: UpdateProductInput) => {
+    try {
+      setIsActionPending(true);
+      const updated = await updateProduct(input);
+      setProducts((prev) =>
+        prev.map((item) => (item.id === updated.id ? updated : item))
+      );
+      if (selectedProduct && selectedProduct.id === updated.id) {
+        setSelectedProduct(updated);
+      }
+    } catch (err: unknown) {
+      console.error("Failed to update product in Supabase:", err);
+      const msg = err instanceof Error ? err.message : "Check database permissions or network.";
+      alert(`Failed to update product in Supabase: ${msg}`);
     } finally {
       setIsActionPending(false);
     }
@@ -397,6 +421,7 @@ export default function ProductsScreen() {
         onToggleStatus={handleToggleStatus}
         onDeleteProduct={handleDeleteProduct}
         onDuplicateProduct={handleDuplicateProduct}
+        onEditProduct={handleEditProduct}
         isUpdating={isActionPending}
       />
 
@@ -413,6 +438,20 @@ export default function ProductsScreen() {
         isOpen={isNewProductDrawerOpen}
         onClose={() => setIsNewProductDrawerOpen(false)}
         onAddProduct={handleAddProduct}
+        categories={categories}
+        colors={colors}
+        isSubmitting={isActionPending}
+      />
+
+      {/* 9. Edit Product Drawer */}
+      <EditProductDrawer
+        product={productToEdit}
+        isOpen={isEditProductDrawerOpen}
+        onClose={() => {
+          setIsEditProductDrawerOpen(false);
+          setProductToEdit(null);
+        }}
+        onUpdateProduct={handleUpdateProduct}
         categories={categories}
         colors={colors}
         isSubmitting={isActionPending}

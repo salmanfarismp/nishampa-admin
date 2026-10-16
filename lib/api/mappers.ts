@@ -1,5 +1,5 @@
 import { ProductJoined, ProductCategoryRow } from "@/types/database";
-import { ProductItem, ProductColorItem } from "@/components/products/types";
+import { ProductItem, ProductColorItem, ProductImageItem } from "@/components/products/types";
 import { resolveMediaUrl } from "@/lib/utils/media";
 
 export function mapProductJoinedToItem(row: ProductJoined): ProductItem {
@@ -15,6 +15,15 @@ export function mapProductJoinedToItem(row: ProductJoined): ProductItem {
   const primaryImage = images[0];
   const imageUrl = primaryImage ? resolveMediaUrl(primaryImage.img_url) : "";
   const imageAlt = primaryImage?.alt || row.name;
+
+  const mappedImages: ProductImageItem[] = images.map((img, idx) => ({
+    id: img.id,
+    imgUrl: img.img_url,
+    url: resolveMediaUrl(img.img_url),
+    alt: img.alt,
+    displayOrder: img.display_order ?? idx,
+    isPrimary: Boolean(img.is_primary),
+  }));
 
   const colors: ProductColorItem[] = (row.ProductColor || [])
     .filter((pc) => pc.Color)
@@ -50,6 +59,7 @@ export function mapProductJoinedToItem(row: ProductJoined): ProductItem {
     badge: row.badge,
     has_hanging_kit: row.has_hanging_kit,
     colors,
+    images: mappedImages,
   };
 }
 

@@ -5,6 +5,7 @@ import {
   updateProductStatusAction,
   deleteProductAction,
   createProductAction,
+  updateProductAction,
 } from "@/app/actions/products";
 import { ProductItem } from "@/components/products/types";
 import { AdminCategoryOption } from "./mappers";
@@ -26,6 +27,23 @@ export interface CreateProductInput {
   images?: File[];
   heroImage?: File | null;
   galleryImages?: (File | null)[];
+}
+
+export interface UpdateProductInput {
+  id: string;
+  name: string;
+  subtitle?: string;
+  description?: string;
+  price: number;
+  originalPrice?: number | null;
+  categoryId?: number | null;
+  badge?: ProductBadge;
+  hasHangingKit?: boolean;
+  isActive?: boolean;
+  colorIds?: number[];
+  keptImages: { id: number; displayOrder: number; isPrimary: boolean }[];
+  deletedImageIds: number[];
+  newImages: { file: File; displayOrder: number; isPrimary: boolean }[];
 }
 
 /**
@@ -121,4 +139,60 @@ export async function createProduct(
   }
 
   return await createProductAction(formData);
+}
+
+/**
+ * Update an existing product:
+ * 1. Optimizes newly uploaded image files client-side.
+ * 2. Bundles updated values, color links, and image orders into FormData.
+ * 3. Submits via secure Server Action (app/actions/products.ts).
+ */
+export async function updateProduct(
+  input: UpdateProductInput
+): Promise<ProductItem> {
+  const formData = new FormData();
+
+  formData.append("productId", input.id);
+  formData.append("name", input.name);
+  if (input.subtitle) formData.append("subtitle", input.subtitle);
+  if (input.description) formData.append("description", input.description);
+  formData.append("price", String(input.price));
+  if (input.originalPrice !== undefined && input.originalPrice !== null) {
+    formData.append("originalPrice", String(input.originalPrice));
+  }
+  if (input.categoryId !== undefined && input.categoryId !== null) {
+    formData.append("categoryId", String(input.categoryId));
+  }
+  if (input.badge) formData.append("badge", input.badge);
+  formData.append("hasHangingKit", String(Boolean(input.hasHangingKit)));
+  formData.append("isActive", String(input.isActive ?? true));
+
+  if (input.colorIds && input.colorIds.length > 0) {
+    formData.append("colorIds", JSON.stringify(input.colorIds));
+  }
+
+  formData.append("keptImages", JSON.stringify(input.keptImages || []));
+  formData.append("deletedImageIds", JSON.stringify(input.deletedImageIds || []));
+
+  const newImagesOrder = (input.newImages || []).map((img, idx) => ({
+    tempIndex: idx,
+    displayOrder: img.displayOrder,
+    isPrimary: img.isPrimary,
+  }));
+  formData.append("newImagesOrder", JSON.stringify(newImagesOrder));
+
+  for (const newImg of input.newImages || []) {
+    let optimized = newImg.file;
+    try {
+      optimized = await optimizeImage(newImg.file, {
+        maxWidth: 1080,
+        quality: 0.8,
+      });
+    } catch (e) {
+      console.warn("Client image optimization failed, using original:", e);
+    }
+    formData.append("newImages", optimized);
+  }
+
+  return await updateProductAction(formData);
 }

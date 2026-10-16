@@ -267,170 +267,71 @@ export function NewProductDrawer({
               }}
             />
 
-            {/* Main / Hero Image Card (images[0]) */}
-            {images.length > 0 ? (
-              <div className="relative w-full h-48 sm:h-52 rounded-xl border border-border-default overflow-hidden bg-surface-subtle group shadow-xs">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={images[0].previewUrl}
-                  alt="Main Display"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
-                />
-                {/* Top Overlay Badges */}
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                  <span className="px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-[2px] text-white text-[10px] font-semibold tracking-wide">
-                    MAIN HERO IMAGE
-                  </span>
-                </div>
-
-                {/* Top-Right Delete Button */}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(0)}
-                  disabled={isSubmitting}
-                  className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all active:scale-90 cursor-pointer shadow-md"
-                  title="Remove Main Image"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
+            {/* Responsive Media Container: Square Hero on Left, 2x2 Square Grid on Right */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Left Column: Main / Hero Image Card (images[0]) */}
+              <div className="w-full">
+                {images.length > 0 ? (
+                  <div className="relative aspect-square w-full max-w-[320px] sm:max-w-none mx-auto rounded-xl border border-border-default overflow-hidden bg-surface-subtle group shadow-xs">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={images[0].previewUrl}
+                      alt="Main Display"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
                     />
-                  </svg>
-                </button>
+                    {/* Top Overlay Badges */}
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-[2px] text-white text-[10px] font-semibold tracking-wide">
+                        MAIN HERO IMAGE
+                      </span>
+                    </div>
 
-                {/* Bottom Change Button on Hover */}
-                <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex justify-end">
+                    {/* Top-Right Delete Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(0)}
+                      disabled={isSubmitting}
+                      className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all active:scale-90 cursor-pointer shadow-md"
+                      title="Remove Main Image"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+
+                    {/* Bottom Change Button on Hover */}
+                    <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isSubmitting}
+                        className="px-2.5 py-1 rounded bg-white/90 hover:bg-white text-text-primary text-[10px] font-semibold shadow-xs cursor-pointer"
+                      >
+                        Add More Photos
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Empty Main Image Dropzone (1:1 square) */
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isSubmitting}
-                    className="px-2.5 py-1 rounded bg-white/90 hover:bg-white text-text-primary text-[10px] font-semibold shadow-xs cursor-pointer"
+                    className="aspect-square w-full max-w-[320px] sm:max-w-none mx-auto rounded-xl border-2 border-dashed border-border-default hover:border-border-strong bg-surface-subtle/50 hover:bg-surface-hover flex flex-col items-center justify-center gap-2.5 p-4 transition-all cursor-pointer group"
                   >
-                    Add More Photos
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* Empty Main Image Dropzone (nearbyshops-app style) */
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isSubmitting}
-                className="w-full h-44 rounded-xl border-2 border-dashed border-border-default hover:border-border-strong bg-surface-subtle/50 hover:bg-surface-hover flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group"
-              >
-                <div className="w-11 h-11 rounded-full bg-primary/5 group-hover:bg-primary/10 flex items-center justify-center text-primary transition-colors">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.8"
-                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.8"
-                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <span className="text-xs font-semibold text-text-primary block">
-                    Upload Main Product Image
-                  </span>
-                  <span className="text-[10px] text-text-secondary mt-0.5 block">
-                    Recommended: 1080x1080px (1:1) • Click or drag up to 5 photos
-                  </span>
-                </div>
-              </button>
-            )}
-
-            {/* 4-Slot Secondary Thumbnail Row (Images 2 through 5) */}
-            <div className="grid grid-cols-4 gap-2.5 pt-1">
-              {[1, 2, 3, 4].map((slotIndex) => {
-                const hasImage = images.length > slotIndex;
-                const imgItem = hasImage ? images[slotIndex] : null;
-                const isNextSlot = images.length === slotIndex && images.length < 5;
-
-                if (hasImage && imgItem) {
-                  return (
-                    <div
-                      key={imgItem.id}
-                      className="relative aspect-square rounded-lg border border-border-default overflow-hidden group bg-surface-subtle shadow-xs"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={imgItem.previewUrl}
-                        alt={`Photo ${slotIndex + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-
-                      {/* Slot Order Badge */}
-                      <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-black/60 text-white text-[9px] font-mono">
-                        #{slotIndex + 1}
-                      </span>
-
-                      {/* Delete Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(slotIndex)}
-                        disabled={isSubmitting}
-                        className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-90"
-                        title="Remove photo"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-3 h-3"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-
-                      {/* Set as Hero Button on Hover */}
-                      <button
-                        type="button"
-                        onClick={() => handleMakeHero(slotIndex)}
-                        disabled={isSubmitting}
-                        className="absolute inset-x-0 bottom-0 py-1 bg-black/70 hover:bg-black/90 text-white text-[9px] font-semibold text-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                        title="Make this photo the Main Image"
-                      >
-                        Make Hero
-                      </button>
-                    </div>
-                  );
-                }
-
-                if (isNextSlot) {
-                  return (
-                    <button
-                      key={slotIndex}
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isSubmitting}
-                      className="aspect-square rounded-lg border-2 border-dashed border-border-default hover:border-border-strong bg-surface-subtle/50 hover:bg-surface-hover flex flex-col items-center justify-center gap-1 transition-all cursor-pointer group"
-                    >
+                    <div className="w-12 h-12 rounded-full bg-primary/5 group-hover:bg-primary/10 flex items-center justify-center text-primary transition-colors">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5 text-text-subtle group-hover:text-text-primary transition-colors"
+                        className="w-6 h-6"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -438,27 +339,131 @@ export function NewProductDrawer({
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 4v16m8-8H4"
+                          strokeWidth="1.8"
+                          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.8"
+                          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                         />
                       </svg>
-                      <span className="text-[10px] font-semibold text-text-secondary group-hover:text-text-primary">
-                        Add Photo
+                    </div>
+                    <div className="text-center px-2">
+                      <span className="text-xs font-semibold text-text-primary block">
+                        Upload Main Product Image
                       </span>
-                    </button>
-                  );
-                }
+                      <span className="text-[10px] text-text-secondary mt-1 block leading-relaxed">
+                        Square 1:1 (1080x1080px)<br />Click or drag up to 5 photos
+                      </span>
+                    </div>
+                  </button>
+                )}
+              </div>
 
-                // Inactive empty slot
-                return (
-                  <div
-                    key={slotIndex}
-                    className="aspect-square rounded-lg border border-dashed border-border-subtle bg-surface-subtle/20 flex flex-col items-center justify-center gap-1 opacity-50"
-                  >
-                    <span className="text-[10px] font-mono text-text-subtle">#{slotIndex + 1}</span>
-                  </div>
-                );
-              })}
+              {/* Right Column: 4-Slot Secondary Thumbnail Grid (Images 2 through 5) */}
+              <div className="grid grid-cols-4 sm:grid-cols-2 gap-2 sm:gap-2.5 max-w-[320px] sm:max-w-none mx-auto w-full">
+                {[1, 2, 3, 4].map((slotIndex) => {
+                  const hasImage = images.length > slotIndex;
+                  const imgItem = hasImage ? images[slotIndex] : null;
+                  const isNextSlot = images.length === slotIndex && images.length < 5;
+
+                  if (hasImage && imgItem) {
+                    return (
+                      <div
+                        key={imgItem.id}
+                        className="relative aspect-square rounded-lg border border-border-default overflow-hidden group bg-surface-subtle shadow-xs"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imgItem.previewUrl}
+                          alt={`Photo ${slotIndex + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+
+                        {/* Slot Order Badge */}
+                        <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-black/60 text-white text-[9px] font-mono">
+                          #{slotIndex + 1}
+                        </span>
+
+                        {/* Delete Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(slotIndex)}
+                          disabled={isSubmitting}
+                          className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-90"
+                          title="Remove photo"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-3 h-3"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+
+                        {/* Set as Hero Button on Hover */}
+                        <button
+                          type="button"
+                          onClick={() => handleMakeHero(slotIndex)}
+                          disabled={isSubmitting}
+                          className="absolute inset-x-0 bottom-0 py-1 bg-black/70 hover:bg-black/90 text-white text-[9px] font-semibold text-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                          title="Make this photo the Main Image"
+                        >
+                          Make Hero
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  if (isNextSlot) {
+                    return (
+                      <button
+                        key={slotIndex}
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isSubmitting}
+                        className="aspect-square rounded-lg border-2 border-dashed border-border-default hover:border-border-strong bg-surface-subtle/50 hover:bg-surface-hover flex flex-col items-center justify-center gap-1 transition-all cursor-pointer group"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-5 h-5 text-text-subtle group-hover:text-text-primary transition-colors"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        <span className="text-[10px] font-semibold text-text-secondary group-hover:text-text-primary">
+                          Add Photo
+                        </span>
+                      </button>
+                    );
+                  }
+
+                  // Inactive empty slot
+                  return (
+                    <div
+                      key={slotIndex}
+                      className="aspect-square rounded-lg border border-dashed border-border-subtle bg-surface-subtle/20 flex flex-col items-center justify-center gap-1 opacity-50"
+                    >
+                      <span className="text-[10px] font-mono text-text-subtle">#{slotIndex + 1}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

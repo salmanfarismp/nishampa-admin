@@ -306,3 +306,245 @@ export async function createProductAction(
   revalidatePath("/products");
   return mapProductJoinedToItem(fullProduct as unknown as ProductJoined);
 }
+
+/**
+ * Server Action: Updates an existing product, synchronizes colors, and reconciles images.
+ */
+export async function updateProductAction(
+  formData: FormData
+): Promise<ProductItem> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const productId = (formData.get("productId") as string)?.trim();
+  if (!productId) {
+    throw new Error("Product ID is required for update.");
+  }
+
+  const name = (formData.get("name") as string)?.trim();
+  if (!name) {
+    throw new Error("Product title is required.");
+  }
+
+  const priceStr = formData.get("price") as string;
+  const price = parseFloat(priceStr);
+  if (isNaN(price)) {
+    throw new Error("Valid product price is required.");
+  }
+
+  const subtitle = (formData.get("subtitle") as string)?.trim() || null;
+  const description = (formData.get("description") as string)?.trim() || null;
+  const originalPriceStr = formData.get("originalPrice") as string;
+  const originalPrice = originalPriceStr ? parseFloat(originalPriceStr) : null;
+  const categoryIdStr = formData.get("categoryId") as string;
+  const categoryId = categoryIdStr ? parseInt(categoryIdStr, 10) : null;
+  const badge = (formData.get("badge") as ProductBadge) || null;
+  const hasHangingKit = formData.get("hasHangingKit") === "true";
+  const isActive = formData.get("isActive") !== "false";
+
+  // Parse color IDs
+  const colorIdsJson = formData.get("colorIds") as string;
+  let colorIds: number[] = [];
+  if (colorIdsJson) {
+    try {
+      colorIds = JSON.parse(colorIdsJson);
+    } catch {
+      colorIds = [];
+    }
+  }
+
+  // Parse image reconciliation arrays
+  const keptImagesJson = formData.get("keptImages") as string;
+  let keptImages: { id: number; displayOrder: number; isPrimary: boolean }[] = [];
+  if (keptImagesJson) {
+    try {
+      keptImages = JSON.parse(keptImagesJson);
+    } catch {
+      keptImages = [];
+    }
+  }
+
+  const deletedImageIdsJson = formData.get("deletedImageIds") as string;
+  let deletedImageIds: number[] = [];
+  if (deletedImageIdsJson) {
+    try {
+      deletedImageIds = JSON.parse(deletedImageIdsJson);
+    } catch {
+      deletedImageIds = [];
+    }
+  }
+
+  const newImagesOrderJson = formData.get("newImagesOrder") as string;
+  let newImagesOrder: { tempIndex: number; displayOrder: number; isPrimary: boolean }[] = [];
+  if (newImagesOrderJson) {
+    try {
+      newImagesOrder = JSON.parse(newImagesOrderJson);
+    } catch {
+      newImagesOrder = [];
+    }
+  }
+
+  // 1. Update Product table record
+  const updatePayload: Record<string, unknown> = {
+    name,
+    subtitle,
+    description,
+    price,
+    original_price: originalPrice,
+    category: categoryId,
+    badge,
+    has_hanging_kit: hasHangingKit,
+    is_active: isActive,
+  };
+
+  const { error: updateError } = await adminClient
+    .from("Product")
+    .update(updatePayload)
+    .eq("id", productId);
+
+  if (updateError) {
+    console.error(`Failed to update product (${productId}):`, updateError);
+    throw new Error(`Failed to update product: ${updateError.message}`);
+  }
+
+  const bucket =
+    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "production";
+
+  // 2. Synchronize associated Colors
+  try {
+    await adminClient.from("ProductColor").delete().eq("product_id", productId);
+
+    if (colorIds.length > 0) {
+      const colorRows = colorIds.map((cid) => ({
+        product_id: productId,
+        color_id: cid,
+      }));
+      const { error: colorInsertError } = await adminClient
+        .from("ProductColor")
+        .insert(colorRows);
+
+      if (colorInsertError) {
+        console.error("Failed to insert updated colors:", colorInsertError);
+      }
+    }
+  } catch (colorErr) {
+    console.error("Warning: color association error during product update:", colorErr);
+  }
+
+  // 3. Reconcile Images
+  try {
+    // 3a. Delete removed images from ProductImage table
+    if (deletedImageIds.length > 0) {
+      const { error: delImgError } = await adminClient
+        .from("ProductImage")
+        .delete()
+        .in("id", deletedImageIds);
+
+      if (delImgError) {
+        console.error("Failed to delete old images:", delImgError);
+      }
+    }
+
+    // 3b. Update display_order and is_primary for kept existing images
+    for (const kept of keptImages) {
+      const { error: keptUpdateError } = await adminClient
+        .from("ProductImage")
+        .update({
+          display_order: kept.displayOrder,
+          is_primary: kept.isPrimary,
+        })
+        .eq("id", kept.id);
+
+      if (keptUpdateError) {
+        console.error(`Failed to update existing image order (${kept.id}):`, keptUpdateError);
+      }
+    }
+
+    // 3c. Upload new images and insert ProductImage records
+    const rawNewImages = formData.getAll("newImages");
+    const newImageFiles: File[] = rawNewImages.filter(
+      (item): item is File =>
+        item instanceof File &&
+        typeof item.size === "number" &&
+        item.size > 0
+    );
+
+    if (newImageFiles.length > 0) {
+      const uploadPromises = newImageFiles.map(async (file, idx) => {
+        const orderMeta = newImagesOrder[idx] || {
+          displayOrder: keptImages.length + idx,
+          isPrimary: keptImages.length === 0 && idx === 0,
+        };
+
+        const prefix = orderMeta.isPrimary ? "hero" : `gallery_${orderMeta.displayOrder}`;
+        const fileExt = file.name.split(".").pop()?.toLowerCase() || "webp";
+        const safeName = file.name
+          .replace(/\.[^/.]+$/, "")
+          .replace(/[^a-zA-Z0-9_-]/g, "_")
+          .slice(0, 30);
+        const filePath = `products/${productId}/${prefix}_${Date.now()}_${safeName}.${fileExt}`;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        const { error: uploadError } = await adminClient.storage
+          .from(bucket)
+          .upload(filePath, buffer, {
+            contentType: file.type || "image/webp",
+            cacheControl: "31536000",
+            upsert: true,
+          });
+
+        if (uploadError) {
+          console.error(`Storage upload failed for ${filePath}:`, uploadError);
+          return null;
+        }
+
+        return {
+          product_id: productId,
+          img_url: filePath,
+          alt: orderMeta.isPrimary ? name : `${name} view ${orderMeta.displayOrder}`,
+          display_order: orderMeta.displayOrder,
+          is_primary: orderMeta.isPrimary,
+        };
+      });
+
+      const uploadResults = await Promise.all(uploadPromises);
+      const newRecords = uploadResults.filter(
+        (img): img is NonNullable<typeof img> => Boolean(img)
+      );
+
+      if (newRecords.length > 0) {
+        const { error: newImgInsertError } = await adminClient
+          .from("ProductImage")
+          .insert(newRecords);
+
+        if (newImgInsertError) {
+          console.error("Failed to insert new ProductImage records:", newImgInsertError);
+        }
+      }
+    }
+  } catch (imageErr) {
+    console.error("Warning: image reconciliation error during product update:", imageErr);
+  }
+
+  // 4. Fetch full updated product with joins
+  const { data: fullProduct, error: fetchError } = await adminClient
+    .from("Product")
+    .select(`
+      *,
+      ProductCategory(*),
+      ProductImage(*),
+      ProductColor(*, Color(*))
+    `)
+    .eq("id", productId)
+    .single();
+
+  if (fetchError || !fullProduct) {
+    console.error("Failed to reload updated product:", fetchError);
+    throw new Error("Product was updated but failed to reload details.");
+  }
+
+  revalidatePath("/products");
+  return mapProductJoinedToItem(fullProduct as unknown as ProductJoined);
+}
