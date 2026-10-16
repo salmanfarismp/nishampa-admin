@@ -60,6 +60,7 @@ export function mapProductJoinedToItem(row: ProductJoined): ProductItem {
     has_hanging_kit: row.has_hanging_kit,
     colors,
     images: mappedImages,
+    deleted_at: row.deleted_at ?? null,
   };
 }
 

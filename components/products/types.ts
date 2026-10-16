@@ -35,6 +35,7 @@ export interface ProductItem {
   has_hanging_kit?: boolean | null;
   colors?: ProductColorItem[];
   images?: ProductImageItem[];
+  deleted_at?: string | null;
 }
 
 export type SortOption = "newest" | "price_asc" | "price_desc" | "name_asc";

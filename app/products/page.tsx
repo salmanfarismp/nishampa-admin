@@ -23,7 +23,7 @@ import {
   UpdateProductInput,
 } from "@/lib/api/products";
 import { AdminCategoryOption } from "@/lib/api/mappers";
-import { ColorRow } from "@/types/database";
+import { ColorRow, ProductBadge } from "@/types/database";
 
 export default function ProductsScreen() {
   // Catalog State
@@ -230,8 +230,12 @@ export default function ProductsScreen() {
         price: prod.price,
         categoryId: prod.categoryId,
         isActive: false, // duplicate as draft
-        sku: `${prod.sku}-COPY`,
         description: prod.description,
+        subtitle: prod.subtitle,
+        originalPrice: prod.originalPrice,
+        badge: (prod.badge as ProductBadge) || undefined,
+        hasHangingKit: Boolean(prod.has_hanging_kit),
+        colorIds: prod.colors?.map((c) => c.id) || [],
       });
       setProducts((prev) => [cloned, ...prev]);
     } catch (err) {
@@ -240,7 +244,7 @@ export default function ProductsScreen() {
       const localClone: ProductItem = {
         ...prod,
         id: `local-copy-${Date.now()}`,
-        sku: `${prod.sku}-COPY`,
+        sku: prod.sku,
         title: `${prod.title} (Copy)`,
         is_active: false,
       };

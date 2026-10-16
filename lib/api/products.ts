@@ -79,7 +79,7 @@ export async function updateProductStatus(
 }
 
 /**
- * Permanently delete a product via secure Server Action with service role privileges.
+ * Soft delete a product by setting deleted_at timestamp via secure Server Action.
  */
 export async function deleteProduct(productId: string): Promise<boolean> {
   const result = await deleteProductAction(productId);

@@ -32,6 +32,7 @@ export async function getAdminProductsAction(): Promise<ProductItem[]> {
       ProductImage(*),
       ProductColor(*, Color(*))
     `)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -39,7 +40,9 @@ export async function getAdminProductsAction(): Promise<ProductItem[]> {
     throw new Error(`Failed to fetch catalog: ${error.message}`);
   }
 
-  const rows = (data as unknown as ProductJoined[]) || [];
+  const rows = ((data as unknown as ProductJoined[]) || []).filter(
+    (row) => !row.deleted_at
+  );
   return rows.map(mapProductJoinedToItem);
 }
 
@@ -109,7 +112,7 @@ export async function updateProductStatusAction(
 }
 
 /**
- * Server Action: Permanently deletes a product and its associations.
+ * Server Action: Soft-deletes a product by setting deleted_at to current timestamp.
  */
 export async function deleteProductAction(
   productId: string
@@ -119,11 +122,11 @@ export async function deleteProductAction(
 
   const { error } = await adminClient
     .from("Product")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", productId);
 
   if (error) {
-    console.error(`Failed to delete product (${productId}):`, error);
+    console.error(`Failed to soft-delete product (${productId}):`, error);
     throw new Error(`Failed to delete product: ${error.message}`);
   }
 

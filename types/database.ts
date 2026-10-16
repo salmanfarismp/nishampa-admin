@@ -26,6 +26,7 @@ export interface ProductRow {
   has_hanging_kit: boolean | null;
   ref_id: string | null;
   is_active: boolean;
+  deleted_at?: string | null;
 }
 
 export interface ProductImageRow {

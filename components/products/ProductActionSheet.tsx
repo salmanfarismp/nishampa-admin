@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { ProductItem } from "./types";
+import { DeleteProductModal } from "./DeleteProductModal";
 
 interface ProductActionSheetProps {
   product: ProductItem | null;
@@ -25,16 +26,24 @@ export function ProductActionSheet({
   onEditProduct,
   isUpdating = false,
 }: ProductActionSheetProps) {
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   if (!isOpen || !product) return null;
 
+  const handleClose = () => {
+    setIsDeleteModalOpen(false);
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center select-none">
-      {/* Dimmed backdrop */}
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+    <>
+      <div className="fixed inset-0 z-50 flex items-end justify-center select-none">
+        {/* Dimmed backdrop */}
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
+          onClick={handleClose}
+          aria-hidden="true"
+        />
 
       {/* Slide-Up Bottom Drawer Sheet */}
       <div className="relative w-full max-w-md bg-canvas rounded-t-2xl border-t border-border-default shadow-xl z-10 px-4 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
@@ -260,12 +269,7 @@ export function ProductActionSheet({
           {/* 3. Delete Product */}
           <button
             disabled={isUpdating}
-            onClick={() => {
-              if (window.confirm(`Are you sure you want to delete "${product.title}"?`)) {
-                onDeleteProduct(product.id);
-                onClose();
-              }
-            }}
+            onClick={() => setIsDeleteModalOpen(true)}
             type="button"
             className="w-full flex items-center gap-2.5 p-3 rounded-xl bg-canvas border border-[#fecaca] hover:bg-[#fef2f2] active:scale-[0.99] transition-all text-left cursor-pointer text-[#dc2626] disabled:opacity-50"
           >
@@ -286,12 +290,26 @@ export function ProductActionSheet({
                 Delete Product
               </p>
               <p className="text-[11px] text-[#dc2626]/70">
-                Permanently remove from catalog
+                Remove from catalog
               </p>
             </div>
           </button>
         </div>
       </div>
     </div>
+
+    {/* Dedicated Aligned Delete Confirmation Modal */}
+    <DeleteProductModal
+      isOpen={isDeleteModalOpen}
+      product={product}
+      isDeleting={isUpdating}
+      onClose={() => setIsDeleteModalOpen(false)}
+      onConfirm={() => {
+        onDeleteProduct(product.id);
+        setIsDeleteModalOpen(false);
+        onClose();
+      }}
+    />
+  </>
   );
 }
