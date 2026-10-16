@@ -7,12 +7,13 @@ interface GalleryUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpload: (newAsset: {
+    file?: File | null;
     url: string;
     alt: string;
     tag: string;
     dimensions: string;
     fileSize: string;
-  }) => void;
+  }) => Promise<void> | void;
 }
 
 export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
@@ -20,9 +21,10 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
   onClose,
   onUpload,
 }) => {
-  const [tag, setTag] = useState("Spring Showcase");
-  const [alt, setAlt] = useState("Custom showcase photography");
+  const [tag, setTag] = useState("Lifestyle Showcase");
+  const [alt, setAlt] = useState("Showcase photography");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileSizeText, setFileSizeText] = useState("2.4 MB");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,6 +34,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
       setAlt(file.name.replace(/\.[^/.]+$/, ""));
@@ -40,15 +43,15 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setIsUploading(true);
-    setTimeout(() => {
-      // Use chosen file or fallback to high-res aesthetic artisan photo
+    try {
       const finalUrl =
         previewUrl ||
         "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80";
 
-      onUpload({
+      await onUpload({
+        file: selectedFile,
         url: finalUrl,
         alt: alt.trim() || "Brand asset photo",
         tag: tag.trim() || "Showcase",
@@ -56,10 +59,14 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
         fileSize: fileSizeText,
       });
 
-      setIsUploading(false);
       setPreviewUrl(null);
+      setSelectedFile(null);
       onClose();
-    }, 400);
+    } catch (err) {
+      console.error("Upload error:", err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (

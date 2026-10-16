@@ -1,21 +1,22 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   ContentTab,
   FaqCategory,
   GalleryAsset,
   FaqItem,
-  ContentStats,
   FaqStatus,
 } from "@/components/content/types";
+import { INITIAL_FAQS } from "@/components/content/mockData";
 import {
-  INITIAL_GALLERY_ASSETS,
-  INITIAL_FAQS,
-} from "@/components/content/mockData";
+  getLifeStyleImages,
+  uploadLifeStyleImage,
+  deleteLifeStyleImage,
+  deleteLifeStyleImages,
+} from "@/lib/api/content";
 import { ContentHeader } from "@/components/content/ContentHeader";
 import { ContentToast } from "@/components/content/ContentToast";
-import { ContentAnalyticsModal } from "@/components/content/ContentAnalyticsModal";
 
 // Gallery Subcomponents
 import { GalleryActionBar } from "@/components/content/gallery/GalleryActionBar";
@@ -35,10 +36,11 @@ export default function ContentPage() {
   // Navigation View State
   const [activeTab, setActiveTab] = useState<ContentTab>("gallery");
 
-  // Gallery State
-  const [galleryAssets, setGalleryAssets] = useState<GalleryAsset[]>(
-    INITIAL_GALLERY_ASSETS,
-  );
+  // Gallery State (Supabase LifeStyleImage)
+  const [galleryAssets, setGalleryAssets] = useState<GalleryAsset[]>([]);
+  const [isLoadingGallery, setIsLoadingGallery] = useState(true);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(
     new Set(),
@@ -57,9 +59,6 @@ export default function ContentPage() {
   const [faqToEdit, setFaqToEdit] = useState<FaqItem | null>(null);
   const [activeFaqMenu, setActiveFaqMenu] = useState<FaqItem | null>(null);
 
-  // Analytics Modal State
-  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
-
   // Toast Notification State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isToastVisible, setIsToastVisible] = useState(false);
@@ -71,6 +70,54 @@ export default function ContentPage() {
       setIsToastVisible(false);
     }, 3000);
   };
+
+  // Fetch lifestyle gallery from Supabase
+  const reloadGallery = useCallback(async () => {
+    setIsLoadingGallery(true);
+    setGalleryError(null);
+    try {
+      const assets = await getLifeStyleImages();
+      setGalleryAssets(assets);
+    } catch (err: unknown) {
+      console.error("Failed to load lifestyle gallery images:", err);
+      setGalleryError(
+        err instanceof Error
+          ? err.message
+          : "Unable to load gallery images from Supabase.",
+      );
+    } finally {
+      setIsLoadingGallery(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadInitialGallery() {
+      try {
+        const assets = await getLifeStyleImages();
+        if (!cancelled) {
+          setGalleryAssets(assets);
+          setIsLoadingGallery(false);
+        }
+      } catch (err: unknown) {
+        if (!cancelled) {
+          console.error("Failed to load lifestyle gallery images:", err);
+          setGalleryError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load gallery images from Supabase.",
+          );
+          setIsLoadingGallery(false);
+        }
+      }
+    }
+
+    loadInitialGallery();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Computations
   const faqCounts = useMemo(() => {
@@ -108,48 +155,58 @@ export default function ContentPage() {
     });
   }, [faqs, faqFilter, faqSearchQuery]);
 
-  const stats: ContentStats = useMemo(() => {
-    return {
-      totalAssets: galleryAssets.length,
-      totalFaqs: faqs.length,
-      publishedFaqs: faqCounts.published,
-      draftFaqs: faqCounts.draft,
-      cdnStorageUsedMb: galleryAssets.length * 2.2,
-      cdnStorageLimitMb: 500,
-      monthlyViews: "34.2k",
-    };
-  }, [galleryAssets.length, faqs.length, faqCounts]);
-
   // Gallery Actions
-  const handleUploadAsset = (newAssetData: {
+  const handleUploadAsset = async (newAssetData: {
+    file?: File | null;
     url: string;
     alt: string;
     tag: string;
     dimensions: string;
     fileSize: string;
   }) => {
-    const newAsset: GalleryAsset = {
-      id: `gal-${Date.now()}`,
-      url: newAssetData.url,
-      alt: newAssetData.alt,
-      tag: newAssetData.tag,
-      uploadedAt: "Just now",
-      dimensions: newAssetData.dimensions,
-      fileSize: newAssetData.fileSize,
-    };
-
-    setGalleryAssets((prev) => [newAsset, ...prev]);
-    showToast("Photo uploaded and queued for CDN deploy");
+    if (newAssetData.file) {
+      try {
+        const created = await uploadLifeStyleImage(newAssetData.file);
+        setGalleryAssets((prev) => [created, ...prev]);
+        showToast("Photo uploaded to lifestyle gallery");
+      } catch (err) {
+        console.error("Failed to upload image:", err);
+        showToast("Failed to upload photo to Supabase storage");
+        throw err;
+      }
+    } else {
+      const newAsset: GalleryAsset = {
+        id: `gal-${Date.now()}`,
+        url: newAssetData.url,
+        alt: newAssetData.alt,
+        tag: newAssetData.tag,
+        uploadedAt: "Just now",
+        dimensions: newAssetData.dimensions,
+        fileSize: newAssetData.fileSize,
+      };
+      setGalleryAssets((prev) => [newAsset, ...prev]);
+      showToast("Photo added to brand gallery");
+    }
   };
 
-  const handleDeleteAsset = (id: string) => {
+  const handleDeleteAsset = async (id: string, rawPath?: string) => {
+    const backup = [...galleryAssets];
+    // Optimistic delete
     setGalleryAssets((prev) => prev.filter((a) => a.id !== id));
     setSelectedAssetIds((prev) => {
       const next = new Set(prev);
       next.delete(id);
       return next;
     });
-    showToast("Photo removed from brand gallery");
+
+    try {
+      await deleteLifeStyleImage(id, rawPath);
+      showToast("Photo removed from brand gallery");
+    } catch (err) {
+      console.error("Failed to delete lifestyle image:", err);
+      setGalleryAssets(backup);
+      showToast("Failed to remove photo from database");
+    }
   };
 
   const handleToggleSelectAsset = (id: string) => {
@@ -172,14 +229,27 @@ export default function ContentPage() {
     }
   };
 
-  const handleDeleteSelectedAssets = () => {
-    const count = selectedAssetIds.size;
+  const handleDeleteSelectedAssets = async () => {
+    const idsToDelete = Array.from(selectedAssetIds);
+    const count = idsToDelete.length;
+    if (count === 0) return;
+
+    const backup = [...galleryAssets];
+    // Optimistic bulk delete
     setGalleryAssets((prev) => prev.filter((a) => !selectedAssetIds.has(a.id)));
     setSelectedAssetIds(new Set());
     setIsSelecting(false);
-    showToast(
-      `${count} photo${count > 1 ? "s" : ""} removed from brand gallery`,
-    );
+
+    try {
+      await deleteLifeStyleImages(idsToDelete);
+      showToast(
+        `${count} photo${count > 1 ? "s" : ""} removed from brand gallery`,
+      );
+    } catch (err) {
+      console.error("Failed to bulk delete lifestyle images:", err);
+      setGalleryAssets(backup);
+      showToast("Failed to remove photos from database");
+    }
   };
 
   // FAQ Actions
@@ -310,6 +380,9 @@ export default function ContentPage() {
             assets={galleryAssets}
             isSelecting={isSelecting}
             selectedIds={selectedAssetIds}
+            isLoading={isLoadingGallery}
+            error={galleryError}
+            onRetry={reloadGallery}
             onToggleSelect={handleToggleSelectAsset}
             onOpenUpload={() => setIsUploadModalOpen(true)}
             onOpenDetail={(asset) => setActiveDetailAsset(asset)}

@@ -8,7 +8,7 @@ interface GalleryDetailModalProps {
   asset: GalleryAsset | null;
   isOpen: boolean;
   onClose: () => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, rawPath?: string) => void;
 }
 
 export const GalleryDetailModal: React.FC<GalleryDetailModalProps> = ({
@@ -28,7 +28,7 @@ export const GalleryDetailModal: React.FC<GalleryDetailModalProps> = ({
   };
 
   const handleDelete = () => {
-    onDelete(asset.id);
+    onDelete(asset.id, asset.rawPath);
     onClose();
   };
 

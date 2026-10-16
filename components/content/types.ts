@@ -13,13 +13,16 @@ export type FaqStatus = "published" | "draft";
 export interface GalleryAsset {
   id: string;
   url: string;
+  rawPath?: string;
   alt: string;
   tag: string;
   uploadedAt: string;
+  createdAt?: string;
   dimensions?: string;
   fileSize?: string;
   aspectRatio?: string;
 }
+
 
 export interface FaqItem {
   id: string;
