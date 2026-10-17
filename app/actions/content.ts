@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { assertAdmin } from "@/lib/auth/assertAdmin";
-import { LifeStyleImageRow } from "@/types/database";
+import { LifeStyleImageRow, FaqRow } from "@/types/database";
 
 /**
  * Server Action: Fetches all lifestyle images from public."LifeStyleImage"
@@ -139,6 +139,108 @@ export async function deleteLifeStyleImagesAction(
   if (error) {
     console.error("Failed to bulk delete LifeStyleImage records:", error);
     throw new Error(`Failed to delete lifestyle images: ${error.message}`);
+  }
+
+  revalidatePath("/content");
+}
+
+/**
+ * Server Action: Fetches all FAQ items from public."Faq"
+ */
+export async function getFaqsAction(): Promise<FaqRow[]> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const { data, error } = await adminClient
+    .from("Faq")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch Faq records:", error);
+    throw new Error(`Failed to fetch FAQs: ${error.message}`);
+  }
+
+  return (data as unknown as FaqRow[]) || [];
+}
+
+/**
+ * Server Action: Creates a new FAQ item in public."Faq"
+ */
+export async function createFaqAction(payload: {
+  question: string;
+  answer: string;
+  is_active: boolean;
+}): Promise<FaqRow> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const { data, error } = await adminClient
+    .from("Faq")
+    .insert({
+      question: payload.question.trim(),
+      answer: payload.answer.trim(),
+      is_active: payload.is_active,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Failed to insert Faq record:", error);
+    throw new Error(`Database insert failed: ${error.message}`);
+  }
+
+  revalidatePath("/content");
+  return data as unknown as FaqRow;
+}
+
+/**
+ * Server Action: Updates an existing FAQ item in public."Faq"
+ */
+export async function updateFaqAction(
+  id: number,
+  payload: {
+    question?: string;
+    answer?: string;
+    is_active?: boolean;
+  }
+): Promise<FaqRow> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const updates: Record<string, unknown> = {};
+  if (payload.question !== undefined) updates.question = payload.question.trim();
+  if (payload.answer !== undefined) updates.answer = payload.answer.trim();
+  if (payload.is_active !== undefined) updates.is_active = payload.is_active;
+
+  const { data, error } = await adminClient
+    .from("Faq")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Failed to update Faq record (${id}):`, error);
+    throw new Error(`Database update failed: ${error.message}`);
+  }
+
+  revalidatePath("/content");
+  return data as unknown as FaqRow;
+}
+
+/**
+ * Server Action: Deletes an FAQ item from public."Faq"
+ */
+export async function deleteFaqAction(id: number): Promise<void> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const { error } = await adminClient.from("Faq").delete().eq("id", id);
+
+  if (error) {
+    console.error(`Failed to delete Faq record (${id}):`, error);
+    throw new Error(`Database delete failed: ${error.message}`);
   }
 
   revalidatePath("/content");

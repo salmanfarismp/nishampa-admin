@@ -1,14 +1,7 @@
 export type ContentTab = "gallery" | "faqs";
 
-export type FaqCategory =
-  | "all"
-  | "shipping"
-  | "returns"
-  | "materials"
-  | "warranty"
-  | "general";
-
 export type FaqStatus = "published" | "draft";
+export type FaqFilter = "all" | "published" | "draft";
 
 export interface GalleryAsset {
   id: string;
@@ -23,14 +16,14 @@ export interface GalleryAsset {
   aspectRatio?: string;
 }
 
-
 export interface FaqItem {
   id: string;
+  rawId?: number;
   question: string;
   answer: string;
-  category: "shipping" | "returns" | "materials" | "warranty" | "general";
   status: FaqStatus;
   updatedAt: string;
+  createdAt?: string;
 }
 
 export interface ContentStats {

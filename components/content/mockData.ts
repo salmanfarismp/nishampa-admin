@@ -117,7 +117,6 @@ export const INITIAL_FAQS: FaqItem[] = [
     question: "How do I initiate a return or exchange?",
     answer:
       "We offer hassle-free 30-day returns. You can initiate a return directly in your account dashboard under 'Orders'. Pre-paid return labels are generated instantly for domestic orders.",
-    category: "returns",
     status: "published",
     updatedAt: "Updated 2h ago",
   },
@@ -126,7 +125,6 @@ export const INITIAL_FAQS: FaqItem[] = [
     question: "Are custom bespoke orders available for Westernswings?",
     answer:
       "Yes, we accommodate custom fabric, finish, and dimension requests on select artisanal furniture and gear. Reach out through our contact desk with your project specs for a 24-hour consultation.",
-    category: "general",
     status: "published",
     updatedAt: "Updated yesterday",
   },
@@ -135,7 +133,6 @@ export const INITIAL_FAQS: FaqItem[] = [
     question: "How can I track my shipment once dispatched?",
     answer:
       "Once your parcel leaves our fulfillment studio, an email and SMS containing your live carrier tracking link will be sent automatically. You can also view real-time delivery status in your order history.",
-    category: "shipping",
     status: "published",
     updatedAt: "Updated 3d ago",
   },
@@ -144,7 +141,6 @@ export const INITIAL_FAQS: FaqItem[] = [
     question: "What materials and craftsmanship standards are used?",
     answer:
       "Westernswings goods are crafted exclusively from sustainably harvested FSC hardwoods, vegetable-tanned full-grain leathers, and marine-grade stainless hardware designed for lifetime durability.",
-    category: "materials",
     status: "published",
     updatedAt: "Updated 5d ago",
   },
@@ -153,7 +149,6 @@ export const INITIAL_FAQS: FaqItem[] = [
     question: "What does the 5-Year Craftsmanship Guarantee cover?",
     answer:
       "Covers joint separation, material structural defects, and hardware faults under normal use. Does not cover intentional abuse or natural cosmetic wood weathering.",
-    category: "warranty",
     status: "draft",
     updatedAt: "Draft created 1w ago",
   },
@@ -162,7 +157,6 @@ export const INITIAL_FAQS: FaqItem[] = [
     question: "What is your international delivery policy?",
     answer:
       "We deliver to over 45 countries worldwide via DHL Express. All duties, import taxes, and brokerage fees are calculated transparently at checkout with no surprise courier fees upon delivery.",
-    category: "shipping",
     status: "published",
     updatedAt: "Updated 2w ago",
   },
@@ -171,7 +165,6 @@ export const INITIAL_FAQS: FaqItem[] = [
     question: "How should I clean and condition full-grain leather items?",
     answer:
       "Wipe clean with a damp microfiber cloth and let air dry away from direct heat. Apply natural beeswax or lanolin-based leather balm every 6 months to preserve suppleness and develop natural patina.",
-    category: "materials",
     status: "published",
     updatedAt: "Updated 3w ago",
   },
@@ -180,7 +173,6 @@ export const INITIAL_FAQS: FaqItem[] = [
     question: "Can I modify my order address after placement?",
     answer:
       "Addresses can be modified within 60 minutes of placing an order through your confirmation page. Once dispatch processing begins, rerouting must be requested directly through carrier tracking.",
-    category: "general",
     status: "published",
     updatedAt: "Updated 1mo ago",
   },

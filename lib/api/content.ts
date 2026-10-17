@@ -3,9 +3,13 @@ import {
   uploadLifeStyleImageAction,
   deleteLifeStyleImageAction,
   deleteLifeStyleImagesAction,
+  getFaqsAction,
+  createFaqAction,
+  updateFaqAction,
+  deleteFaqAction,
 } from "@/app/actions/content";
-import { LifeStyleImageRow } from "@/types/database";
-import { GalleryAsset } from "@/components/content/types";
+import { LifeStyleImageRow, FaqRow } from "@/types/database";
+import { GalleryAsset, FaqItem, FaqStatus } from "@/components/content/types";
 import { resolveMediaUrl } from "@/lib/utils/media";
 
 /**
@@ -102,4 +106,91 @@ export async function deleteLifeStyleImages(ids: string[]): Promise<void> {
   const numIds = ids.map((id) => Number(id)).filter((n) => !isNaN(n));
   if (numIds.length === 0) return;
   await deleteLifeStyleImagesAction(numIds);
+}
+
+/**
+ * Maps a database FaqRow to a UI FaqItem.
+ */
+export function mapFaqRowToFaqItem(row: FaqRow): FaqItem {
+  return {
+    id: String(row.id),
+    rawId: row.id,
+    question: row.question || "",
+    answer: row.answer || "",
+    status: row.is_active ? "published" : "draft",
+    updatedAt: formatUploadedDate(row.created_at),
+    createdAt: row.created_at,
+  };
+}
+
+/**
+ * Fetches all FAQ items from Supabase and converts to FaqItem.
+ */
+export async function getFaqs(): Promise<FaqItem[]> {
+  const rows = await getFaqsAction();
+  return rows.map(mapFaqRowToFaqItem);
+}
+
+/**
+ * Creates a new FAQ item in Supabase.
+ */
+export async function createFaq(data: {
+  question: string;
+  answer: string;
+  status: FaqStatus;
+}): Promise<FaqItem> {
+  const row = await createFaqAction({
+    question: data.question,
+    answer: data.answer,
+    is_active: data.status === "published",
+  });
+  return mapFaqRowToFaqItem(row);
+}
+
+/**
+ * Updates an FAQ item in Supabase.
+ */
+export async function updateFaq(
+  id: string,
+  data: {
+    question?: string;
+    answer?: string;
+    status?: FaqStatus;
+  }
+): Promise<FaqItem> {
+  const numId = Number(id);
+  if (isNaN(numId)) {
+    throw new Error(`Invalid FAQ ID: ${id}`);
+  }
+
+  const row = await updateFaqAction(numId, {
+    question: data.question,
+    answer: data.answer,
+    is_active:
+      data.status !== undefined ? data.status === "published" : undefined,
+  });
+  return mapFaqRowToFaqItem(row);
+}
+
+/**
+ * Toggles an FAQ item's status between published and draft.
+ */
+export async function toggleFaqStatus(
+  id: string,
+  currentStatus: FaqStatus
+): Promise<FaqItem> {
+  const nextStatus: FaqStatus =
+    currentStatus === "published" ? "draft" : "published";
+  return updateFaq(id, { status: nextStatus });
+}
+
+/**
+ * Deletes an FAQ item by string ID.
+ */
+export async function deleteFaq(id: string): Promise<void> {
+  const numId = Number(id);
+  if (isNaN(numId)) {
+    throw new Error(`Invalid FAQ ID: ${id}`);
+  }
+  await deleteFaqAction(numId);
 }

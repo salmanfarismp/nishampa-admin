@@ -66,3 +66,11 @@ export interface LifeStyleImageRow {
   img_url: string | null;
 }
 
+export interface FaqRow {
+  id: number;
+  created_at: string;
+  question: string | null;
+  answer: string | null;
+  is_active: boolean | null;
+}
+

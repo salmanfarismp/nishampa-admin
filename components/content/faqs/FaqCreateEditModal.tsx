@@ -11,7 +11,6 @@ interface FaqCreateEditModalProps {
     id?: string;
     question: string;
     answer: string;
-    category: "shipping" | "returns" | "materials" | "warranty" | "general";
     status: FaqStatus;
   }) => void;
 }
@@ -23,7 +22,6 @@ interface FaqFormContentProps {
     id?: string;
     question: string;
     answer: string;
-    category: "shipping" | "returns" | "materials" | "warranty" | "general";
     status: FaqStatus;
   }) => void;
 }
@@ -35,9 +33,6 @@ const FaqFormContent: React.FC<FaqFormContentProps> = ({
 }) => {
   const [question, setQuestion] = useState(faqToEdit?.question ?? "");
   const [answer, setAnswer] = useState(faqToEdit?.answer ?? "");
-  const [category, setCategory] = useState<
-    "shipping" | "returns" | "materials" | "warranty" | "general"
-  >(faqToEdit?.category ?? "general");
   const [status, setStatus] = useState<FaqStatus>(
     faqToEdit?.status ?? "published"
   );
@@ -58,7 +53,6 @@ const FaqFormContent: React.FC<FaqFormContentProps> = ({
       id: faqToEdit?.id,
       question: question.trim(),
       answer: answer.trim(),
-      category,
       status,
     });
     onClose();
@@ -153,48 +147,20 @@ const FaqFormContent: React.FC<FaqFormContentProps> = ({
           />
         </label>
 
-        {/* Category & Visibility Selectors */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <label className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">
-              Category Tag
-            </span>
-            <select
-              value={category}
-              onChange={(e) =>
-                setCategory(
-                  e.target.value as
-                    | "shipping"
-                    | "returns"
-                    | "materials"
-                    | "warranty"
-                    | "general"
-                )
-              }
-              className="w-full h-10 px-2.5 bg-surface-container-low rounded-xl text-[13px] text-on-surface border border-border-default/50 focus:border-border-strong focus:outline-none"
-            >
-              <option value="shipping">Shipping</option>
-              <option value="returns">Returns</option>
-              <option value="materials">Materials</option>
-              <option value="warranty">Warranty</option>
-              <option value="general">General</option>
-            </select>
-          </label>
-
-          <label className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">
-              Visibility
-            </span>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as FaqStatus)}
-              className="w-full h-10 px-2.5 bg-surface-container-low rounded-xl text-[13px] text-on-surface border border-border-default/50 focus:border-border-strong focus:outline-none"
-            >
-              <option value="published">Published</option>
-              <option value="draft">Draft</option>
-            </select>
-          </label>
-        </div>
+        {/* Visibility Status Selector */}
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">
+            Status
+          </span>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as FaqStatus)}
+            className="w-full h-10 px-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface border border-border-default/50 focus:border-border-strong focus:outline-none cursor-pointer"
+          >
+            <option value="published">Published (Visible on Storefront)</option>
+            <option value="draft">Draft (Hidden)</option>
+          </select>
+        </label>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 pt-2">

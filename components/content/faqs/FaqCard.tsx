@@ -37,11 +37,12 @@ export const FaqCard: React.FC<FaqCardProps> = ({
           {isPublished ? "Published" : "Draft"}
         </span>
 
-        <div className="flex items-center gap-1">
-          {/* Quick Category indicator */}
-          <span className="font-mono text-[10px] text-on-surface-variant/80 uppercase tracking-wider mr-1">
-            {faq.category}
-          </span>
+        <div className="flex items-center gap-2">
+          {faq.updatedAt && (
+            <span className="font-mono text-[11px] text-on-surface-variant/70">
+              {faq.updatedAt}
+            </span>
+          )}
 
           <button
             type="button"

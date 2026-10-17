@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { FaqCategory } from "../types";
+import { FaqFilter } from "../types";
 
 interface FaqFilterChipsProps {
-  activeFilter: FaqCategory | "published" | "draft";
-  onSelectFilter: (filter: FaqCategory | "published" | "draft") => void;
+  activeFilter: FaqFilter;
+  onSelectFilter: (filter: FaqFilter) => void;
   counts: {
     all: number;
     published: number;
@@ -19,16 +19,13 @@ export const FaqFilterChips: React.FC<FaqFilterChipsProps> = ({
   counts,
 }) => {
   const chips: Array<{
-    key: FaqCategory | "published" | "draft";
+    key: FaqFilter;
     label: string;
     count?: number;
   }> = [
     { key: "all", label: "All", count: counts.all },
     { key: "published", label: "Published", count: counts.published },
     { key: "draft", label: "Drafts", count: counts.draft },
-    { key: "shipping", label: "Shipping" },
-    { key: "returns", label: "Returns" },
-    { key: "materials", label: "Materials" },
   ];
 
   return (

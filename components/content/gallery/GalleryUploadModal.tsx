@@ -22,7 +22,6 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
   onUpload,
 }) => {
   const [tag, setTag] = useState("Lifestyle Showcase");
-  const [alt, setAlt] = useState("Showcase photography");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileSizeText, setFileSizeText] = useState("2.4 MB");
@@ -37,7 +36,6 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
-      setAlt(file.name.replace(/\.[^/.]+$/, ""));
       const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
       setFileSizeText(`${sizeMb} MB`);
     }
@@ -50,10 +48,15 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
         previewUrl ||
         "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80";
 
+      const derivedAlt =
+        selectedFile?.name?.replace(/\.[^/.]+$/, "") ||
+        tag.trim() ||
+        "Lifestyle showcase photo";
+
       await onUpload({
         file: selectedFile,
         url: finalUrl,
-        alt: alt.trim() || "Brand asset photo",
+        alt: derivedAlt,
         tag: tag.trim() || "Showcase",
         dimensions: "2400 × 2400",
         fileSize: fileSizeText,
@@ -82,7 +85,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
         aria-hidden="true"
       />
 
-      <div className="relative w-full max-w-md bg-surface-container-lowest rounded-t-3xl p-5 flex flex-col gap-4 shadow-2xl animate-in slide-in-from-bottom duration-250 z-10 border-t border-border-default/60 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+      <div className="relative w-full max-w-md bg-surface-container-lowest rounded-t-3xl p-5 flex flex-col gap-4 shadow-2xl animate-in slide-in-from-bottom duration-250 z-10 border-t border-border-default/60 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] max-h-[90vh] overflow-y-auto">
         {/* Grab Handle */}
         <div className="w-10 h-1 bg-surface-container-highest rounded-full mx-auto -mt-1 mb-1" />
 
@@ -146,7 +149,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
           onChange={handleFileChange}
         />
 
-        {/* Dropzone area */}
+        {/* Square Dropzone area */}
         <div
           onClick={() => fileInputRef.current?.click()}
           role="button"
@@ -157,7 +160,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
               fileInputRef.current?.click();
             }
           }}
-          className="flex flex-col items-center justify-center h-36 rounded-2xl bg-surface-container-low hover:bg-surface-container border border-dashed border-outline-variant/50 transition-colors cursor-pointer text-center p-4 group select-none relative overflow-hidden"
+          className="flex flex-col items-center justify-center w-full aspect-square rounded-2xl bg-surface-container-low hover:bg-surface-container border border-dashed border-outline-variant/50 transition-colors cursor-pointer text-center p-4 group select-none relative overflow-hidden"
         >
           {previewUrl ? (
             <div className="relative w-full h-full rounded-xl overflow-hidden">
@@ -175,10 +178,10 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
             </div>
           ) : (
             <>
-              <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface mb-1.5 group-hover:-translate-y-0.5 transition-transform">
+              <div className="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface mb-2 group-hover:-translate-y-0.5 transition-transform">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
+                  className="w-6 h-6"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -191,10 +194,10 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
                   <path d="m16 16-4-4-4 4" />
                 </svg>
               </div>
-              <span className="text-[13px] font-semibold text-on-surface">
+              <span className="text-[14px] font-semibold text-on-surface">
                 Tap to choose image file
               </span>
-              <span className="text-[11px] font-mono text-on-surface-variant mt-0.5">
+              <span className="text-[11px] font-mono text-on-surface-variant mt-1">
                 JPG, WEBP, PNG (max 15MB)
               </span>
             </>
@@ -212,19 +215,6 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
               value={tag}
               onChange={(e) => setTag(e.target.value)}
               placeholder="e.g. Lookbook FW25"
-              className="w-full h-10 px-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest transition-colors"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">
-              Alt Description
-            </span>
-            <input
-              type="text"
-              value={alt}
-              onChange={(e) => setAlt(e.target.value)}
-              placeholder="e.g. Handcrafted leather messenger bag"
               className="w-full h-10 px-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest transition-colors"
             />
           </label>
