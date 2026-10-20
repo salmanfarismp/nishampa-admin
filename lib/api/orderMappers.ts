@@ -134,8 +134,7 @@ export function mapOrderJoinedToOrder(row: OrderJoined): Order {
     rawStatus === "accepted" ||
     rawStatus === "shipped" ||
     rawStatus === "delivered" ||
-    rawStatus === "returned" ||
-    rawStatus === "cancelled"
+    rawStatus === "returned"
   ) {
     primaryStatus = rawStatus;
   }
@@ -236,7 +235,7 @@ export function mapOrderJoinedToOrder(row: OrderJoined): Order {
     totalAmount,
     primaryImageUrl,
     items,
-    isStrikethrough: primaryStatus === "cancelled" || primaryStatus === "returned",
+    isStrikethrough: secondaryStatus === "cancelled" || primaryStatus === "returned",
     actionState: "default",
   };
 }

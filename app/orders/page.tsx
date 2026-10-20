@@ -9,7 +9,7 @@ import { OrderCard } from "@/components/orders/OrderCard";
 import { OrderDetailsDrawer } from "@/components/orders/OrderDetailsDrawer";
 import { ShipmentTrackingDrawer } from "@/components/orders/ShipmentTrackingDrawer";
 import { OrderToast } from "@/components/orders/OrderToast";
-import { getAdminOrders, updateOrderStatus } from "@/lib/api/orders";
+import { getAdminOrders, updateOrderStatus, cancelOrder } from "@/lib/api/orders";
 
 export default function OrdersScreen() {
   // Orders State
@@ -97,6 +97,9 @@ export default function OrdersScreen() {
     };
 
     orders.forEach((o) => {
+      if (o.secondaryStatus === "cancelled") {
+        counts.cancelled++;
+      }
       if (counts[o.primaryStatus] !== undefined) {
         counts[o.primaryStatus]++;
       }
@@ -126,8 +129,12 @@ export default function OrdersScreen() {
 
       // 2. Status Pill Filter
       if (activeFilter !== "all") {
-        if (order.primaryStatus !== activeFilter) {
-          return false;
+        if (activeFilter === "cancelled") {
+          if (order.secondaryStatus !== "cancelled") return false;
+        } else {
+          if (order.primaryStatus !== activeFilter) {
+            return false;
+          }
         }
       }
 
@@ -230,8 +237,6 @@ export default function OrdersScreen() {
       newFulfillment ||
       (newStatus === "delivered" || newStatus === "returned"
         ? "completed"
-        : newStatus === "cancelled"
-        ? "cancelled"
         : order.secondaryStatus);
 
     setOrders((prev) =>
@@ -241,7 +246,7 @@ export default function OrdersScreen() {
               ...o,
               primaryStatus: newStatus,
               secondaryStatus: updatedSecondary,
-              isStrikethrough: newStatus === "cancelled" || newStatus === "returned",
+              isStrikethrough: updatedSecondary === "cancelled" || newStatus === "returned",
             }
           : o
       )
@@ -254,13 +259,53 @@ export default function OrdersScreen() {
               ...prev,
               primaryStatus: newStatus,
               secondaryStatus: updatedSecondary,
-              isStrikethrough: newStatus === "cancelled" || newStatus === "returned",
+              isStrikethrough: updatedSecondary === "cancelled" || newStatus === "returned",
             }
           : null
       );
     }
 
     triggerToast(`Order ${order.id} status changed to ${newStatus}.`);
+  };
+
+  // Action: Cancel Order
+  const handleCancelOrder = async (order: Order) => {
+    if (!order.rawOrderId) {
+      triggerToast("Missing order ID.");
+      return;
+    }
+
+    const result = await cancelOrder(order.rawOrderId);
+    if (!result.success) {
+      triggerToast(result.error || "Failed to cancel order.");
+      return;
+    }
+
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === order.id
+          ? {
+              ...o,
+              secondaryStatus: "cancelled",
+              isStrikethrough: true,
+            }
+          : o
+      )
+    );
+
+    if (selectedOrder && selectedOrder.id === order.id) {
+      setSelectedOrder((prev) =>
+        prev
+          ? {
+              ...prev,
+              secondaryStatus: "cancelled",
+              isStrikethrough: true,
+            }
+          : null
+      );
+    }
+
+    triggerToast(`Order ${order.id} has been cancelled.`);
   };
 
   const handleTrackShipment = (orderToTrack: Order) => {
@@ -386,6 +431,7 @@ export default function OrdersScreen() {
         onDispatchCourier={handleDispatchCourier}
         onTrackShipment={handleTrackShipment}
         onUpdateStatus={handleUpdateStatus}
+        onCancelOrder={handleCancelOrder}
         onToast={triggerToast}
       />
 

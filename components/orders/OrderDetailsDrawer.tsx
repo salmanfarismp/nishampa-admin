@@ -16,6 +16,7 @@ interface OrderDetailsDrawerProps {
     newStatus: PrimaryStatus,
     newFulfillment?: SecondaryStatus
   ) => Promise<void> | void;
+  onCancelOrder?: (order: Order) => Promise<void> | void;
   onToast?: (message: string) => void;
 }
 
@@ -27,6 +28,7 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
   onDispatchCourier,
   onTrackShipment,
   onUpdateStatus,
+  onCancelOrder,
   onToast,
 }) => {
   const [copied, setCopied] = useState(false);
@@ -196,25 +198,54 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
             </div>
 
             {/* Admin Status Quick Override Pills */}
-            <div className="border-t border-border-default/40 pt-2 flex items-center justify-between gap-1 flex-wrap">
-              <span className="text-[11px] text-text-secondary">Set Status:</span>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {(["new", "accepted", "shipped", "delivered", "cancelled"] as PrimaryStatus[]).map(
-                  (st) => (
-                    <button
-                      key={st}
-                      type="button"
-                      disabled={isUpdatingStatus || order.primaryStatus === st}
-                      onClick={() => handleStatusChange(st)}
-                      className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-all capitalize cursor-pointer ${
-                        order.primaryStatus === st
-                          ? "bg-primary text-on-primary shadow-xs font-semibold"
-                          : "bg-surface-container text-on-surface hover:bg-surface-container-high active:scale-95"
-                      }`}
-                    >
-                      {st}
-                    </button>
-                  )
+            <div className="border-t border-border-default/40 pt-2 flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-1 flex-wrap">
+                <span className="text-[11px] text-text-secondary">Order Status:</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {(["new", "accepted", "shipped", "delivered", "returned"] as PrimaryStatus[]).map(
+                    (st) => (
+                      <button
+                        key={st}
+                        type="button"
+                        disabled={isUpdatingStatus || order.primaryStatus === st}
+                        onClick={() => handleStatusChange(st)}
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-all capitalize cursor-pointer ${
+                          order.primaryStatus === st
+                            ? "bg-primary text-on-primary shadow-xs font-semibold"
+                            : "bg-surface-container text-on-surface hover:bg-surface-container-high active:scale-95"
+                        }`}
+                      >
+                        {st}
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* Fulfillment Cancel Action */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[11px] text-text-secondary">Fulfillment:</span>
+                {order.secondaryStatus === "cancelled" ? (
+                  <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-error-container text-on-error-container">
+                    Order Cancelled
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isUpdatingStatus}
+                    onClick={async () => {
+                      if (!onCancelOrder) return;
+                      setIsUpdatingStatus(true);
+                      try {
+                        await onCancelOrder(order);
+                      } finally {
+                        setIsUpdatingStatus(false);
+                      }
+                    }}
+                    className="px-2.5 py-0.5 rounded text-[11px] font-medium bg-error-container/30 text-error hover:bg-error-container active:scale-95 transition-all cursor-pointer"
+                  >
+                    Cancel Order
+                  </button>
                 )}
               </div>
             </div>

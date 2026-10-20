@@ -79,17 +79,20 @@ export type OrderStatus =
   | "accepted"
   | "shipped"
   | "delivered"
-  | "returned"
-  | "cancelled";
+  | "returned";
 
-export type FulfillmentStatus = "active" | "completed" | "cancelled";
+export type FulfillmentStatus = "active" | "cancelled" | "completed";
+
+export type PaymentMethod = "cod" | "online";
+
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
 export interface OrderRow {
   id: number;
   created_at: string;
   payment: string | null;
-  status: OrderStatus | string | null;
-  fulfillment: FulfillmentStatus | string | null;
+  status: OrderStatus | null;
+  fulfillment: FulfillmentStatus | null;
   shipping: number | null;
   total_amount: string | null;
   profile_id: string | null;

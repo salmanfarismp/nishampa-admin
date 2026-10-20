@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { assertAdmin } from "@/lib/auth/assertAdmin";
-import { OrderJoined } from "@/types/database";
+import { OrderJoined, OrderStatus, FulfillmentStatus } from "@/types/database";
 import { Order } from "@/components/orders/types";
 import { mapOrderJoinedToOrder } from "@/lib/api/orderMappers";
 
@@ -47,8 +47,8 @@ export async function getAdminOrdersAction(): Promise<Order[]> {
  */
 export async function updateOrderStatusAction(
   orderId: number,
-  status: string,
-  fulfillment?: string
+  status: OrderStatus,
+  fulfillment?: FulfillmentStatus
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
@@ -59,8 +59,6 @@ export async function updateOrderStatusAction(
       updatePayload.fulfillment = fulfillment;
     } else if (status === "delivered" || status === "returned") {
       updatePayload.fulfillment = "completed";
-    } else if (status === "cancelled") {
-      updatePayload.fulfillment = "cancelled";
     }
 
     const { error } = await adminClient
@@ -78,6 +76,34 @@ export async function updateOrderStatusAction(
   } catch (err: any) {
     console.error(`Error in updateOrderStatusAction for order #${orderId}:`, err);
     return { success: false, error: err.message || "Failed to update order status." };
+  }
+}
+
+/**
+ * Server Action: Cancels an order by setting its fulfillment status to 'cancelled'.
+ */
+export async function cancelOrderAction(
+  orderId: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await assertAdmin();
+    const adminClient = createAdminClient();
+
+    const { error } = await adminClient
+      .from("Order")
+      .update({ fulfillment: "cancelled" })
+      .eq("id", orderId);
+
+    if (error) {
+      console.error(`Failed to cancel order #${orderId}:`, error);
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath("/orders");
+    return { success: true };
+  } catch (err: any) {
+    console.error(`Error in cancelOrderAction for order #${orderId}:`, err);
+    return { success: false, error: err.message || "Failed to cancel order." };
   }
 }
 

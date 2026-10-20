@@ -2,8 +2,9 @@ import {
   getAdminOrdersAction,
   updateOrderStatusAction,
   updateOrderFulfillmentAction,
+  cancelOrderAction,
 } from "@/app/actions/orders";
-import { Order } from "@/components/orders/types";
+import { Order, PrimaryStatus, SecondaryStatus } from "@/components/orders/types";
 
 /**
  * Fetch all orders for admin review and fulfillment.
@@ -13,14 +14,23 @@ export async function getAdminOrders(): Promise<Order[]> {
 }
 
 /**
- * Update order primary status (e.g. "accepted", "shipped", "delivered", "cancelled").
+ * Update order primary status (e.g. "new", "accepted", "shipped", "delivered", "returned").
  */
 export async function updateOrderStatus(
   orderId: number,
-  status: string,
-  fulfillment?: string
+  status: PrimaryStatus,
+  fulfillment?: SecondaryStatus
 ): Promise<{ success: boolean; error?: string }> {
   return await updateOrderStatusAction(orderId, status, fulfillment);
+}
+
+/**
+ * Cancel an order (sets fulfillment status to 'cancelled').
+ */
+export async function cancelOrder(
+  orderId: number
+): Promise<{ success: boolean; error?: string }> {
+  return await cancelOrderAction(orderId);
 }
 
 /**
@@ -28,7 +38,7 @@ export async function updateOrderStatus(
  */
 export async function updateOrderFulfillment(
   orderId: number,
-  fulfillment: string
+  fulfillment: SecondaryStatus
 ): Promise<{ success: boolean; error?: string }> {
   return await updateOrderFulfillmentAction(orderId, fulfillment);
 }

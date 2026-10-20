@@ -11,13 +11,12 @@ export type PrimaryStatus =
   | "new"
   | "accepted"
   | "shipped"
-  | "returned"
   | "delivered"
-  | "cancelled";
+  | "returned";
 
-export type SecondaryStatus = "active" | "completed" | "cancelled";
-export type PaymentStatus = "paid" | "pending" | "refunded" | "captured" | "failed";
-export type PaymentMethod = "Online" | "COD" | "Razorpay" | string;
+export type SecondaryStatus = "active" | "cancelled" | "completed";
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export type PaymentMethod = "cod" | "online" | string;
 
 export interface OrderItemDetail {
   id: string;

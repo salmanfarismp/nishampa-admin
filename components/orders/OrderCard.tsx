@@ -35,7 +35,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       case "delivered":
         return "bg-secondary-fixed text-on-secondary-fixed font-semibold";
       case "returned":
-      case "cancelled":
         return "bg-error-container text-on-error-container";
       default:
         return "bg-surface-container text-on-surface-variant";
@@ -118,7 +117,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({
 
   const isReturnedOrCancelled =
     order.primaryStatus === "returned" ||
-    order.primaryStatus === "cancelled" ||
     order.secondaryStatus === "cancelled";
   const isShipped = order.primaryStatus === "shipped";
 
@@ -409,10 +407,10 @@ export const OrderCard: React.FC<OrderCardProps> = ({
         )}
 
         {/* State 5: Order Returned / Cancelled */}
-        {(order.primaryStatus === "returned" || order.primaryStatus === "cancelled") && (
+        {(order.primaryStatus === "returned" || order.secondaryStatus === "cancelled") && (
           <div className="flex items-center justify-between py-0.5">
             <span className="font-mono text-[11px] text-on-surface-variant truncate mr-2">
-              {order.refundDetails || (order.primaryStatus === "cancelled" ? "Order Cancelled" : "Order Returned")}
+              {order.refundDetails || (order.secondaryStatus === "cancelled" ? "Order Cancelled" : "Order Returned")}
             </span>
             <button
               type="button"
