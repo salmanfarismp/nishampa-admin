@@ -10,6 +10,7 @@ interface OrderCardProps {
   onDispatch: (order: Order) => void;
   onTrack: (order: Order) => void;
   onViewDetails: (order: Order) => void;
+  onCopyAddress?: (order: Order) => void;
 }
 
 export const OrderCard: React.FC<OrderCardProps> = ({
@@ -18,8 +19,10 @@ export const OrderCard: React.FC<OrderCardProps> = ({
   onDispatch,
   onTrack,
   onViewDetails,
+  onCopyAddress,
 }) => {
   const [imgError, setImgError] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Status Badge Class Helpers matching design tokens
   const getPrimaryStatusBadge = () => {
@@ -29,7 +32,10 @@ export const OrderCard: React.FC<OrderCardProps> = ({
         return "bg-secondary-fixed text-on-secondary-fixed";
       case "shipped":
         return "bg-surface-container text-on-surface-variant";
+      case "delivered":
+        return "bg-secondary-fixed text-on-secondary-fixed font-semibold";
       case "returned":
+      case "cancelled":
         return "bg-error-container text-on-error-container";
       default:
         return "bg-surface-container text-on-surface-variant";
@@ -43,7 +49,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       case "completed":
         return "bg-secondary-fixed text-on-secondary-fixed";
       case "cancelled":
-        return "bg-surface-container text-on-surface-variant";
+        return "bg-error-container/40 text-on-error-container";
       default:
         return "bg-surface-container text-on-surface-variant";
     }
@@ -67,6 +73,14 @@ export const OrderCard: React.FC<OrderCardProps> = ({
         </span>
       );
     }
+    if (order.paymentStatus === "failed") {
+      return (
+        <span className="font-mono text-[11px] text-on-surface-variant">
+          {order.paymentMethod} •{" "}
+          <span className="font-medium text-error">Failed</span>
+        </span>
+      );
+    }
     return (
       <span className="font-mono text-[11px] text-on-surface-variant">
         {order.paymentMethod} •{" "}
@@ -75,9 +89,45 @@ export const OrderCard: React.FC<OrderCardProps> = ({
     );
   };
 
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const textToCopy =
+      order.shippingAddress?.formattedAddress ||
+      `${order.customerName}\n${order.location}${
+        order.customerPhone ? `\nPhone: ${order.customerPhone}` : ""
+      }`;
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(textToCopy);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = textToCopy;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      onCopyAddress?.(order);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy address from card:", err);
+    }
+  };
+
   const isReturnedOrCancelled =
-    order.primaryStatus === "returned" || order.secondaryStatus === "cancelled";
+    order.primaryStatus === "returned" ||
+    order.primaryStatus === "cancelled" ||
+    order.secondaryStatus === "cancelled";
   const isShipped = order.primaryStatus === "shipped";
+
+  const formatCurrency = (val: number) => {
+    return `₹${val.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
 
   return (
     <div
@@ -112,9 +162,48 @@ export const OrderCard: React.FC<OrderCardProps> = ({
           <span className="text-[15px] font-semibold text-on-surface mt-0.5 tracking-tight truncate">
             {order.customerName}
           </span>
-          <span className="text-[12px] text-on-surface-variant">
-            {order.location}
-          </span>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-[12px] text-on-surface-variant truncate">
+              {order.location}
+            </span>
+
+            {/* Quick Copy Address Button on Card */}
+            <button
+              type="button"
+              onClick={handleCopy}
+              title="Copy shipping address"
+              className={`p-1 rounded-md transition-all active:scale-90 cursor-pointer ${
+                copied
+                  ? "bg-secondary-fixed text-on-secondary-fixed"
+                  : "text-text-secondary hover:text-on-surface hover:bg-surface-container"
+              }`}
+            >
+              {copied ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-3.5 h-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-3.5 h-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Right Column: Status Badges & Payment Info */}
@@ -176,7 +265,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
               : "text-on-surface font-semibold"
           }`}
         >
-          ${order.totalAmount.toFixed(2)}
+          {formatCurrency(order.totalAmount)}
         </span>
       </div>
 
@@ -222,7 +311,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                <span>Printing Label...</span>
+                <span>Accepting Order...</span>
               </>
             ) : order.actionState === "done" ? (
               <>
@@ -260,7 +349,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
               <>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4 text-telemetry-success"
+                  className="w-4 h-4 text-primary"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -281,7 +370,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
         {order.primaryStatus === "shipped" && (
           <div className="flex items-center justify-between py-0.5">
             <span className="font-mono text-[11px] text-on-surface-variant">
-              {order.carrier} • {order.trackingNumber}
+              {order.carrier || "Standard Carrier"} {order.trackingNumber ? `• ${order.trackingNumber}` : ""}
             </span>
             <button
               type="button"
@@ -293,11 +382,37 @@ export const OrderCard: React.FC<OrderCardProps> = ({
           </div>
         )}
 
-        {/* State 4: Order Returned/Cancelled -> Refund summary + Details button */}
-        {order.primaryStatus === "returned" && (
+        {/* State 4: Order Delivered */}
+        {order.primaryStatus === "delivered" && (
+          <div className="flex items-center justify-between py-0.5">
+            <span className="text-[12px] text-on-surface font-medium flex items-center gap-1.5">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-3.5 h-3.5 text-primary"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Delivered Successfully
+            </span>
+            <button
+              type="button"
+              onClick={() => onViewDetails(order)}
+              className="text-[12px] text-on-surface-variant hover:text-on-surface font-medium flex-shrink-0 cursor-pointer"
+            >
+              Details
+            </button>
+          </div>
+        )}
+
+        {/* State 5: Order Returned / Cancelled */}
+        {(order.primaryStatus === "returned" || order.primaryStatus === "cancelled") && (
           <div className="flex items-center justify-between py-0.5">
             <span className="font-mono text-[11px] text-on-surface-variant truncate mr-2">
-              {order.refundDetails}
+              {order.refundDetails || (order.primaryStatus === "cancelled" ? "Order Cancelled" : "Order Returned")}
             </span>
             <button
               type="button"

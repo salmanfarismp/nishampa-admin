@@ -4,27 +4,62 @@ export type OrderFilterStatus =
   | "accepted"
   | "shipped"
   | "delivered"
-  | "returned";
+  | "returned"
+  | "cancelled";
 
-export type PrimaryStatus = "new" | "accepted" | "shipped" | "returned" | "delivered";
+export type PrimaryStatus =
+  | "new"
+  | "accepted"
+  | "shipped"
+  | "returned"
+  | "delivered"
+  | "cancelled";
+
 export type SecondaryStatus = "active" | "completed" | "cancelled";
-export type PaymentStatus = "paid" | "pending" | "refunded";
-export type PaymentMethod = "Online" | "COD";
+export type PaymentStatus = "paid" | "pending" | "refunded" | "captured" | "failed";
+export type PaymentMethod = "Online" | "COD" | "Razorpay" | string;
 
 export interface OrderItemDetail {
   id: string;
+  productId?: string;
   name: string;
   quantity: number;
   price: number;
+  totalPrice?: number;
   imageUrl?: string;
   alt?: string;
 }
 
+export interface ShippingAddressDetail {
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  contactPhone?: string | null;
+  formattedAddress: string;
+}
+
+export interface PaymentDetail {
+  gateway?: string | null;
+  gatewayPaymentId?: string | null;
+  gatewayOrderId?: string | null;
+  amount?: string | null;
+  status?: string | null;
+}
+
 export interface Order {
   id: string; // e.g. "#ORD-9024"
+  rawOrderId?: number; // numeric id for db mutations
+  createdAt?: string;
   timeAgo: string; // e.g. "12m ago"
   customerName: string;
+  customerEmail?: string;
+  customerPhone?: string;
   location: string;
+  shippingAddress?: ShippingAddressDetail;
+  paymentDetail?: PaymentDetail;
   primaryStatus: PrimaryStatus;
   secondaryStatus: SecondaryStatus;
   paymentMethod: PaymentMethod;
@@ -45,3 +80,4 @@ export interface OrderTelemetryData {
   pendingCount: number;
   todayCount: number;
 }
+
