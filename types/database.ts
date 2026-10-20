@@ -81,7 +81,11 @@ export type OrderStatus =
   | "delivered"
   | "returned";
 
-export type FulfillmentStatus = "active" | "cancelled" | "completed";
+export type FulfillmentStatus =
+  | "active"
+  | "cancelled"
+  | "completed"
+  | "return_active";
 
 export type PaymentMethod = "cod" | "online";
 

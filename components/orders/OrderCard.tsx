@@ -8,6 +8,12 @@ interface OrderCardProps {
   order: Order;
   onAccept: (order: Order) => void;
   onDispatch: (order: Order) => void;
+  onDeliver?: (order: Order) => void;
+  onMarkPaid?: (order: Order) => void;
+  onInitiateReturn?: (order: Order) => void;
+  onCompleteReturn?: (order: Order) => void;
+  onRecordRefund?: (order: Order) => void;
+  onCancel?: (order: Order) => void;
   onTrack: (order: Order) => void;
   onViewDetails: (order: Order) => void;
   onCopyAddress?: (order: Order) => void;
@@ -17,6 +23,12 @@ export const OrderCard: React.FC<OrderCardProps> = ({
   order,
   onAccept,
   onDispatch,
+  onDeliver,
+  onMarkPaid,
+  onInitiateReturn,
+  onCompleteReturn,
+  onRecordRefund,
+  onCancel,
   onTrack,
   onViewDetails,
   onCopyAddress,
@@ -49,6 +61,8 @@ export const OrderCard: React.FC<OrderCardProps> = ({
         return "bg-secondary-fixed text-on-secondary-fixed";
       case "cancelled":
         return "bg-error-container/40 text-on-error-container";
+      case "return_active":
+        return "bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800 font-medium";
       default:
         return "bg-surface-container text-on-surface-variant";
     }
@@ -215,7 +229,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
             <span
               className={`px-2 py-0.5 rounded-full text-[11px] font-medium capitalize ${getSecondaryStatusBadge()}`}
             >
-              {order.secondaryStatus}
+              {order.secondaryStatus === "return_active" ? "Return Active" : order.secondaryStatus}
             </span>
           </div>
           {renderPaymentStatus()}
@@ -276,112 +290,196 @@ export const OrderCard: React.FC<OrderCardProps> = ({
         }}
       >
         {/* State 1: Order New -> Accept Order */}
-        {order.primaryStatus === "new" && (
-          <button
-            type="button"
-            disabled={order.actionState === "loading" || order.actionState === "done"}
-            onClick={() => onAccept(order)}
-            className={`w-full h-10 flex items-center justify-center gap-1.5 rounded-lg text-[13px] font-medium transition-all shadow-xs cursor-pointer ${
-              order.actionState === "done"
-                ? "bg-surface-container-highest text-on-surface"
-                : "bg-primary text-on-primary active:scale-[0.98]"
-            }`}
-          >
-            {order.actionState === "loading" ? (
-              <>
-                <svg
-                  className="animate-spin w-4 h-4 text-on-primary"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                <span>Accepting Order...</span>
-              </>
-            ) : order.actionState === "done" ? (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4 text-primary"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                <span>Ready for Courier</span>
-              </>
-            ) : (
-              <span>Accept Order</span>
-            )}
-          </button>
-        )}
-
-        {/* State 2: Order Accepted -> Dispatch Courier */}
-        {order.primaryStatus === "accepted" && (
-          <button
-            type="button"
-            disabled={order.actionState === "done"}
-            onClick={() => onDispatch(order)}
-            className={`w-full h-10 flex items-center justify-center gap-1.5 rounded-lg text-[13px] font-medium transition-all shadow-xs cursor-pointer ${
-              order.actionState === "done"
-                ? "bg-surface-container-highest text-on-surface"
-                : "bg-primary text-on-primary active:scale-[0.98]"
-            }`}
-          >
-            {order.actionState === "done" ? (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4 text-primary"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="16 10 11 15 8 12" />
-                </svg>
-                <span>Dispatched</span>
-              </>
-            ) : (
-              <span>Dispatch Courier</span>
-            )}
-          </button>
-        )}
-
-        {/* State 3: Order Shipped -> Carrier code + Track Shipment */}
-        {order.primaryStatus === "shipped" && (
-          <div className="flex items-center justify-between py-0.5">
-            <span className="font-mono text-[11px] text-on-surface-variant">
-              {order.carrier || "Standard Carrier"} {order.trackingNumber ? `• ${order.trackingNumber}` : ""}
-            </span>
+        {order.primaryStatus === "new" && order.secondaryStatus === "active" && (
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => onTrack(order)}
-              className="text-[12px] text-on-surface hover:underline font-medium cursor-pointer"
+              disabled={order.actionState === "loading" || order.actionState === "done"}
+              onClick={() => onAccept(order)}
+              className={`flex-1 h-10 flex items-center justify-center gap-1.5 rounded-lg text-[13px] font-medium transition-all shadow-xs cursor-pointer ${
+                order.actionState === "done"
+                  ? "bg-surface-container-highest text-on-surface"
+                  : "bg-primary text-on-primary active:scale-[0.98]"
+              }`}
             >
-              Track Shipment
+              {order.actionState === "loading" ? (
+                <>
+                  <svg
+                    className="animate-spin w-4 h-4 text-on-primary"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span>Accepting Order...</span>
+                </>
+              ) : order.actionState === "done" ? (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4 text-primary"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Ready for Courier</span>
+                </>
+              ) : (
+                <span>Accept Order</span>
+              )}
             </button>
+            {onCancel && (
+              <button
+                type="button"
+                onClick={() => onCancel(order)}
+                className="px-3 h-10 rounded-lg text-[12px] font-medium text-text-secondary hover:text-error hover:bg-error-container/20 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            )}
           </div>
         )}
 
-        {/* State 4: Order Delivered */}
-        {order.primaryStatus === "delivered" && (
+        {/* State 2: Order Accepted -> Dispatch Courier */}
+        {order.primaryStatus === "accepted" && order.secondaryStatus === "active" && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={order.actionState === "done"}
+              onClick={() => onDispatch(order)}
+              className={`flex-1 h-10 flex items-center justify-center gap-1.5 rounded-lg text-[13px] font-medium transition-all shadow-xs cursor-pointer ${
+                order.actionState === "done"
+                  ? "bg-surface-container-highest text-on-surface"
+                  : "bg-primary text-on-primary active:scale-[0.98]"
+              }`}
+            >
+              {order.actionState === "done" ? (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4 text-primary"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="16 10 11 15 8 12" />
+                  </svg>
+                  <span>Dispatched</span>
+                </>
+              ) : (
+                <span>Dispatch Courier</span>
+              )}
+            </button>
+            {onCancel && (
+              <button
+                type="button"
+                onClick={() => onCancel(order)}
+                className="px-3 h-10 rounded-lg text-[12px] font-medium text-text-secondary hover:text-error hover:bg-error-container/20 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* State 3: Order Shipped -> Carrier info + Mark Delivered + Track */}
+        {order.primaryStatus === "shipped" && order.secondaryStatus === "active" && (
+          <div className="flex items-center justify-between gap-2 py-0.5">
+            <span className="font-mono text-[11px] text-on-surface-variant truncate">
+              {order.carrier || "Standard Carrier"} {order.trackingNumber ? `• ${order.trackingNumber}` : ""}
+            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => onTrack(order)}
+                className="text-[12px] text-on-surface-variant hover:text-on-surface font-medium cursor-pointer"
+              >
+                Track
+              </button>
+              {onDeliver && (
+                <button
+                  type="button"
+                  onClick={() => onDeliver(order)}
+                  className="px-2.5 py-1 rounded-md bg-primary text-on-primary text-[12px] font-medium active:scale-95 transition-all cursor-pointer shadow-xs"
+                >
+                  Mark Delivered
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* State 4A: Order Delivered with Pending Payment (COD) -> Mark Cash Collected */}
+        {order.primaryStatus === "delivered" && order.secondaryStatus === "active" && (
+          <div className="flex items-center justify-between gap-2 bg-amber-50 dark:bg-amber-950/30 p-2 rounded-lg border border-amber-200 dark:border-amber-900/50">
+            <div className="flex flex-col">
+              <span className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
+                Payment Pending (COD)
+              </span>
+              <span className="font-mono text-[11px] text-amber-700 dark:text-amber-300/80">
+                Collect: {formatCurrency(order.totalAmount)}
+              </span>
+            </div>
+            {onMarkPaid && (
+              <button
+                type="button"
+                onClick={() => onMarkPaid(order)}
+                className="px-3 py-1.5 rounded-md bg-amber-600 hover:bg-amber-700 text-white text-[12px] font-medium shadow-xs active:scale-95 transition-all cursor-pointer"
+              >
+                Mark Cash Paid
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* State 4B: Order Delivered with Active Return -> Complete Return & Refund */}
+        {order.primaryStatus === "delivered" && order.secondaryStatus === "return_active" && (
+          <div className="flex items-center justify-between gap-2 bg-amber-50 dark:bg-amber-950/30 p-2 rounded-lg border border-amber-200 dark:border-amber-900/50">
+            <span className="text-[12px] font-medium text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              Return In Progress
+            </span>
+            <div className="flex items-center gap-1.5">
+              {onCompleteReturn && (
+                <button
+                  type="button"
+                  onClick={() => onCompleteReturn(order)}
+                  className="px-2.5 py-1 rounded-md bg-primary text-on-primary text-[12px] font-medium active:scale-95 transition-all cursor-pointer shadow-xs"
+                >
+                  Complete & Refund
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => onViewDetails(order)}
+                className="text-[12px] text-on-surface-variant hover:text-on-surface font-medium cursor-pointer"
+              >
+                Details
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* State 4C: Order Delivered & Completed */}
+        {order.primaryStatus === "delivered" && order.secondaryStatus === "completed" && (
           <div className="flex items-center justify-between py-0.5">
             <span className="text-[12px] text-on-surface font-medium flex items-center gap-1.5">
               <svg
@@ -396,21 +494,63 @@ export const OrderCard: React.FC<OrderCardProps> = ({
               </svg>
               Delivered Successfully
             </span>
-            <button
-              type="button"
-              onClick={() => onViewDetails(order)}
-              className="text-[12px] text-on-surface-variant hover:text-on-surface font-medium flex-shrink-0 cursor-pointer"
-            >
-              Details
-            </button>
+            <div className="flex items-center gap-2">
+              {onInitiateReturn && (
+                <button
+                  type="button"
+                  onClick={() => onInitiateReturn(order)}
+                  className="text-[12px] text-text-secondary hover:text-amber-600 font-medium cursor-pointer"
+                >
+                  Return
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => onViewDetails(order)}
+                className="text-[12px] text-on-surface-variant hover:text-on-surface font-medium cursor-pointer"
+              >
+                Details
+              </button>
+            </div>
           </div>
         )}
 
-        {/* State 5: Order Returned / Cancelled */}
-        {(order.primaryStatus === "returned" || order.secondaryStatus === "cancelled") && (
+        {/* State 5: Order Cancelled (Paid -> needs refund, or already refunded) */}
+        {order.secondaryStatus === "cancelled" && (
           <div className="flex items-center justify-between py-0.5">
             <span className="font-mono text-[11px] text-on-surface-variant truncate mr-2">
-              {order.refundDetails || (order.secondaryStatus === "cancelled" ? "Order Cancelled" : "Order Returned")}
+              {order.paymentStatus === "paid"
+                ? "Cancelled • Refund Due"
+                : order.paymentStatus === "refunded"
+                ? "Cancelled • Refunded"
+                : "Order Cancelled"}
+            </span>
+            <div className="flex items-center gap-1.5">
+              {order.paymentStatus === "paid" && onRecordRefund && (
+                <button
+                  type="button"
+                  onClick={() => onRecordRefund(order)}
+                  className="px-2.5 py-1 rounded-md bg-error-container text-on-error-container text-[12px] font-medium active:scale-95 transition-all cursor-pointer shadow-xs"
+                >
+                  Record Refund
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => onViewDetails(order)}
+                className="text-[12px] text-on-surface-variant hover:text-on-surface font-medium cursor-pointer"
+              >
+                Details
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* State 6: Order Returned (primaryStatus === "returned") */}
+        {order.primaryStatus === "returned" && (
+          <div className="flex items-center justify-between py-0.5">
+            <span className="font-mono text-[11px] text-on-surface-variant truncate mr-2">
+              {order.refundDetails || "Returned & Refunded"}
             </span>
             <button
               type="button"

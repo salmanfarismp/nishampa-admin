@@ -15,7 +15,7 @@ const ORDER_STATUS_TABS: { id: OrderFilterStatus; label: string }[] = [
   { id: "accepted", label: "Accepted" },
   { id: "shipped", label: "Shipped" },
   { id: "delivered", label: "Delivered" },
-  { id: "returned", label: "Returned" },
+  { id: "returns", label: "Returns" },
   { id: "cancelled", label: "Cancelled" },
 ];
 

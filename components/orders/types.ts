@@ -4,6 +4,7 @@ export type OrderFilterStatus =
   | "accepted"
   | "shipped"
   | "delivered"
+  | "returns"
   | "returned"
   | "cancelled";
 
@@ -14,7 +15,11 @@ export type PrimaryStatus =
   | "delivered"
   | "returned";
 
-export type SecondaryStatus = "active" | "cancelled" | "completed";
+export type SecondaryStatus =
+  | "active"
+  | "cancelled"
+  | "completed"
+  | "return_active";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 export type PaymentMethod = "cod" | "online" | string;
 

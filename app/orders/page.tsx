@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { Order, OrderFilterStatus, PrimaryStatus, SecondaryStatus, OrderTelemetryData } from "@/components/orders/types";
+import { Order, OrderFilterStatus, PrimaryStatus, SecondaryStatus, PaymentStatus, OrderTelemetryData } from "@/components/orders/types";
 import { OrderTelemetryBar } from "@/components/orders/OrderTelemetryBar";
 import { OrderSearchBar } from "@/components/orders/OrderSearchBar";
 import { OrderStatusPills } from "@/components/orders/OrderStatusPills";
@@ -9,7 +9,18 @@ import { OrderCard } from "@/components/orders/OrderCard";
 import { OrderDetailsDrawer } from "@/components/orders/OrderDetailsDrawer";
 import { ShipmentTrackingDrawer } from "@/components/orders/ShipmentTrackingDrawer";
 import { OrderToast } from "@/components/orders/OrderToast";
-import { getAdminOrders, updateOrderStatus, cancelOrder } from "@/lib/api/orders";
+import {
+  getAdminOrders,
+  updateOrderStatus,
+  cancelOrder,
+  transitionOrderState,
+  markPaymentCollected,
+  initiateReturn,
+  completeReturn,
+  rejectReturn,
+  recordRefund,
+} from "@/lib/api/orders";
+import { OrderActionType } from "@/lib/orders/orderStateMachine";
 
 export default function OrdersScreen() {
   // Orders State
@@ -58,7 +69,7 @@ export default function OrdersScreen() {
     loadOrders();
   }, [loadOrders]);
 
-  // Dynamic Telemetry Metrics (computed on client after mount/update)
+  // Dynamic Telemetry Metrics
   const [telemetry, setTelemetry] = useState<OrderTelemetryData>({
     pendingCount: 0,
     todayCount: 0,
@@ -66,7 +77,9 @@ export default function OrdersScreen() {
 
   useEffect(() => {
     const pendingCount = orders.filter(
-      (o) => o.primaryStatus === "new" || o.primaryStatus === "accepted"
+      (o) =>
+        (o.primaryStatus === "new" || o.primaryStatus === "accepted") &&
+        o.secondaryStatus !== "cancelled"
     ).length;
 
     const startOfToday = new Date();
@@ -85,6 +98,7 @@ export default function OrdersScreen() {
   }, [orders]);
 
   // Dynamic counts for status tabs based on loaded orders
+  // Option A confirmed: "returns" tab aggregates return_active and returned
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {
       all: orders.length,
@@ -92,13 +106,18 @@ export default function OrdersScreen() {
       accepted: 0,
       shipped: 0,
       delivered: 0,
-      returned: 0,
+      returns: 0,
       cancelled: 0,
     };
 
     orders.forEach((o) => {
       if (o.secondaryStatus === "cancelled") {
         counts.cancelled++;
+        return;
+      }
+      if (o.secondaryStatus === "return_active" || o.primaryStatus === "returned") {
+        counts.returns++;
+        return;
       }
       if (counts[o.primaryStatus] !== undefined) {
         counts[o.primaryStatus]++;
@@ -115,14 +134,23 @@ export default function OrdersScreen() {
     return orders.filter((order) => {
       // 1. Search Query filter (matches ID, customer name, phone, email, location, or items)
       if (q) {
-        const matchId = order.id.toLowerCase().includes(q) || (order.rawOrderId ? String(order.rawOrderId).includes(q) : false);
+        const matchId =
+          order.id.toLowerCase().includes(q) ||
+          (order.rawOrderId ? String(order.rawOrderId).includes(q) : false);
         const matchCustomer = order.customerName.toLowerCase().includes(q);
         const matchLocation = order.location.toLowerCase().includes(q);
         const matchItems = order.itemsSummary.toLowerCase().includes(q);
         const matchPhone = order.customerPhone?.toLowerCase().includes(q) ?? false;
         const matchEmail = order.customerEmail?.toLowerCase().includes(q) ?? false;
 
-        if (!matchId && !matchCustomer && !matchLocation && !matchItems && !matchPhone && !matchEmail) {
+        if (
+          !matchId &&
+          !matchCustomer &&
+          !matchLocation &&
+          !matchItems &&
+          !matchPhone &&
+          !matchEmail
+        ) {
           return false;
         }
       }
@@ -131,8 +159,27 @@ export default function OrdersScreen() {
       if (activeFilter !== "all") {
         if (activeFilter === "cancelled") {
           if (order.secondaryStatus !== "cancelled") return false;
+        } else if (activeFilter === "returns" || activeFilter === "returned") {
+          if (
+            order.secondaryStatus !== "return_active" &&
+            order.primaryStatus !== "returned"
+          ) {
+            return false;
+          }
+        } else if (activeFilter === "delivered") {
+          if (
+            order.primaryStatus !== "delivered" ||
+            order.secondaryStatus === "return_active" ||
+            order.secondaryStatus === "cancelled"
+          ) {
+            return false;
+          }
         } else {
-          if (order.primaryStatus !== activeFilter) {
+          // new, accepted, shipped
+          if (
+            order.primaryStatus !== activeFilter ||
+            order.secondaryStatus === "cancelled"
+          ) {
             return false;
           }
         }
@@ -142,133 +189,211 @@ export default function OrdersScreen() {
     });
   }, [orders, searchQuery, activeFilter]);
 
-  // Action: Accept Order
+  // Helper to optimistically and synchronously update local state
+  const updateOrderInLocalState = useCallback(
+    (
+      orderId: number,
+      updates: {
+        primaryStatus?: PrimaryStatus;
+        secondaryStatus?: SecondaryStatus;
+        paymentStatus?: PaymentStatus;
+        actionState?: "default" | "loading" | "done";
+      }
+    ) => {
+      setOrders((prev) =>
+        prev.map((o) => {
+          if (o.rawOrderId !== orderId) return o;
+          const nextPrimary = updates.primaryStatus ?? o.primaryStatus;
+          const nextSecondary = updates.secondaryStatus ?? o.secondaryStatus;
+          const nextPayment = updates.paymentStatus ?? o.paymentStatus;
+          return {
+            ...o,
+            primaryStatus: nextPrimary,
+            secondaryStatus: nextSecondary,
+            paymentStatus: nextPayment,
+            actionState: updates.actionState ?? o.actionState,
+            isStrikethrough:
+              nextSecondary === "cancelled" || nextPrimary === "returned",
+          };
+        })
+      );
+
+      setSelectedOrder((prev) => {
+        if (!prev || prev.rawOrderId !== orderId) return prev;
+        const nextPrimary = updates.primaryStatus ?? prev.primaryStatus;
+        const nextSecondary = updates.secondaryStatus ?? prev.secondaryStatus;
+        const nextPayment = updates.paymentStatus ?? prev.paymentStatus;
+        return {
+          ...prev,
+          primaryStatus: nextPrimary,
+          secondaryStatus: nextSecondary,
+          paymentStatus: nextPayment,
+          isStrikethrough:
+            nextSecondary === "cancelled" || nextPrimary === "returned",
+        };
+      });
+    },
+    []
+  );
+
+  // 1. Action: Accept Order
   const handleAcceptOrder = async (orderToAccept: Order) => {
     if (!orderToAccept.rawOrderId) {
       triggerToast("Missing order ID.");
       return;
     }
 
-    // Set loading state on button
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderToAccept.id ? { ...o, actionState: "loading" } : o
-      )
-    );
-
-    const result = await updateOrderStatus(orderToAccept.rawOrderId, "accepted");
+    updateOrderInLocalState(orderToAccept.rawOrderId, { actionState: "loading" });
+    const result = await updateOrderStatus(orderToAccept.rawOrderId, "accepted", "active");
     if (!result.success) {
-      // Rollback loading state
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === orderToAccept.id ? { ...o, actionState: "default" } : o
-        )
-      );
+      updateOrderInLocalState(orderToAccept.rawOrderId, { actionState: "default" });
       triggerToast(result.error || "Failed to accept order.");
       return;
     }
 
-    // Optimistically update order status
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderToAccept.id
-          ? {
-              ...o,
-              primaryStatus: "accepted",
-              actionState: "done",
-            }
-          : o
-      )
-    );
-
+    updateOrderInLocalState(orderToAccept.rawOrderId, {
+      primaryStatus: "accepted",
+      secondaryStatus: "active",
+      actionState: "done",
+    });
     triggerToast(`Order ${orderToAccept.id} accepted.`);
   };
 
-  // Action: Dispatch Courier
+  // 2. Action: Dispatch Courier
   const handleDispatchCourier = async (orderToDispatch: Order) => {
     if (!orderToDispatch.rawOrderId) {
       triggerToast("Missing order ID.");
       return;
     }
 
-    const result = await updateOrderStatus(orderToDispatch.rawOrderId, "shipped");
+    updateOrderInLocalState(orderToDispatch.rawOrderId, { actionState: "loading" });
+    const result = await updateOrderStatus(orderToDispatch.rawOrderId, "shipped", "active");
     if (!result.success) {
+      updateOrderInLocalState(orderToDispatch.rawOrderId, { actionState: "default" });
       triggerToast(result.error || "Failed to dispatch order.");
       return;
     }
 
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderToDispatch.id
-          ? {
-              ...o,
-              primaryStatus: "shipped",
-              actionState: "done",
-            }
-          : o
-      )
-    );
-    triggerToast(`Order ${orderToDispatch.id} handed over to carrier.`);
+    updateOrderInLocalState(orderToDispatch.rawOrderId, {
+      primaryStatus: "shipped",
+      secondaryStatus: "active",
+      actionState: "done",
+    });
+    triggerToast(`Order ${orderToDispatch.id} dispatched to courier.`);
   };
 
-  // Action: Update Order Status from Drawer
-  const handleUpdateStatus = async (
-    order: Order,
-    newStatus: PrimaryStatus,
-    newFulfillment?: SecondaryStatus
-  ) => {
-    if (!order.rawOrderId) {
-      triggerToast("Missing order ID.");
-      return;
-    }
+  // 3. Action: Mark Delivered
+  const handleDeliverOrder = async (order: Order) => {
+    if (!order.rawOrderId) return;
+    const isPaid = order.paymentStatus === "paid";
+    const targetFulfillment: SecondaryStatus = isPaid ? "completed" : "active";
 
-    const result = await updateOrderStatus(
-      order.rawOrderId,
-      newStatus,
-      newFulfillment
-    );
+    const result = await transitionOrderState(order.rawOrderId, {
+      primaryStatus: "delivered",
+      secondaryStatus: targetFulfillment,
+      paymentStatus: order.paymentStatus,
+    });
 
     if (!result.success) {
-      triggerToast(result.error || "Failed to update order status.");
+      triggerToast(result.error || "Failed to deliver order.");
       return;
     }
 
-    const updatedSecondary: SecondaryStatus =
-      newFulfillment ||
-      (newStatus === "delivered" || newStatus === "returned"
-        ? "completed"
-        : order.secondaryStatus);
-
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === order.id
-          ? {
-              ...o,
-              primaryStatus: newStatus,
-              secondaryStatus: updatedSecondary,
-              isStrikethrough: updatedSecondary === "cancelled" || newStatus === "returned",
-            }
-          : o
-      )
+    updateOrderInLocalState(order.rawOrderId, {
+      primaryStatus: "delivered",
+      secondaryStatus: targetFulfillment,
+    });
+    triggerToast(
+      isPaid
+        ? `Order ${order.id} marked as delivered & completed!`
+        : `Order ${order.id} marked as delivered (COD payment pending).`
     );
-
-    if (selectedOrder && selectedOrder.id === order.id) {
-      setSelectedOrder((prev) =>
-        prev
-          ? {
-              ...prev,
-              primaryStatus: newStatus,
-              secondaryStatus: updatedSecondary,
-              isStrikethrough: updatedSecondary === "cancelled" || newStatus === "returned",
-            }
-          : null
-      );
-    }
-
-    triggerToast(`Order ${order.id} status changed to ${newStatus}.`);
   };
 
-  // Action: Cancel Order
+  // 4. Action: Mark COD Payment Collected
+  const handleMarkPaymentCollected = async (order: Order) => {
+    if (!order.rawOrderId) return;
+    const result = await markPaymentCollected(order.rawOrderId);
+    if (!result.success) {
+      triggerToast(result.error || "Failed to record payment collection.");
+      return;
+    }
+
+    updateOrderInLocalState(order.rawOrderId, {
+      primaryStatus: "delivered",
+      secondaryStatus: "completed",
+      paymentStatus: "paid",
+    });
+    triggerToast(`Payment collected for order ${order.id}. Order completed!`);
+  };
+
+  // 5. Action: Initiate Return
+  const handleInitiateReturn = async (order: Order) => {
+    if (!order.rawOrderId) return;
+    const result = await initiateReturn(order.rawOrderId);
+    if (!result.success) {
+      triggerToast(result.error || "Failed to initiate return.");
+      return;
+    }
+
+    updateOrderInLocalState(order.rawOrderId, {
+      primaryStatus: "delivered",
+      secondaryStatus: "return_active",
+      paymentStatus: "paid",
+    });
+    triggerToast(`Return initiated for order ${order.id}.`);
+  };
+
+  // 6. Action: Complete Return & Refund
+  const handleCompleteReturn = async (order: Order) => {
+    if (!order.rawOrderId) return;
+    const result = await completeReturn(order.rawOrderId);
+    if (!result.success) {
+      triggerToast(result.error || "Failed to finalize return.");
+      return;
+    }
+
+    updateOrderInLocalState(order.rawOrderId, {
+      primaryStatus: "returned",
+      secondaryStatus: "completed",
+      paymentStatus: "refunded",
+    });
+    triggerToast(`Return finalized and refund recorded for order ${order.id}.`);
+  };
+
+  // 7. Action: Reject / Cancel Return
+  const handleRejectReturn = async (order: Order) => {
+    if (!order.rawOrderId) return;
+    const result = await rejectReturn(order.rawOrderId);
+    if (!result.success) {
+      triggerToast(result.error || "Failed to cancel return.");
+      return;
+    }
+
+    updateOrderInLocalState(order.rawOrderId, {
+      primaryStatus: "delivered",
+      secondaryStatus: "completed",
+      paymentStatus: "paid",
+    });
+    triggerToast(`Return cancelled for order ${order.id}. Restored to delivered.`);
+  };
+
+  // 8. Action: Record Refund (Cancelled orders)
+  const handleRecordRefund = async (order: Order) => {
+    if (!order.rawOrderId) return;
+    const result = await recordRefund(order.rawOrderId);
+    if (!result.success) {
+      triggerToast(result.error || "Failed to record refund.");
+      return;
+    }
+
+    updateOrderInLocalState(order.rawOrderId, {
+      paymentStatus: "refunded",
+    });
+    triggerToast(`Refund recorded for order ${order.id}.`);
+  };
+
+  // 9. Action: Cancel Order
   const handleCancelOrder = async (order: Order) => {
     if (!order.rawOrderId) {
       triggerToast("Missing order ID.");
@@ -281,31 +406,43 @@ export default function OrdersScreen() {
       return;
     }
 
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === order.id
-          ? {
-              ...o,
-              secondaryStatus: "cancelled",
-              isStrikethrough: true,
-            }
-          : o
-      )
-    );
-
-    if (selectedOrder && selectedOrder.id === order.id) {
-      setSelectedOrder((prev) =>
-        prev
-          ? {
-              ...prev,
-              secondaryStatus: "cancelled",
-              isStrikethrough: true,
-            }
-          : null
-      );
-    }
-
+    updateOrderInLocalState(order.rawOrderId, {
+      secondaryStatus: "cancelled",
+    });
     triggerToast(`Order ${order.id} has been cancelled.`);
+  };
+
+  // Dispatcher for OrderDetailsDrawer
+  const handleDrawerAction = async (actionType: OrderActionType, order: Order) => {
+    switch (actionType) {
+      case "accept":
+        await handleAcceptOrder(order);
+        break;
+      case "dispatch":
+        await handleDispatchCourier(order);
+        break;
+      case "deliver":
+        await handleDeliverOrder(order);
+        break;
+      case "mark_paid":
+        await handleMarkPaymentCollected(order);
+        break;
+      case "initiate_return":
+        await handleInitiateReturn(order);
+        break;
+      case "complete_return":
+        await handleCompleteReturn(order);
+        break;
+      case "reject_return":
+        await handleRejectReturn(order);
+        break;
+      case "refund":
+        await handleRecordRefund(order);
+        break;
+      case "cancel":
+        await handleCancelOrder(order);
+        break;
+    }
   };
 
   const handleTrackShipment = (orderToTrack: Order) => {
@@ -377,6 +514,12 @@ export default function OrdersScreen() {
               order={order}
               onAccept={handleAcceptOrder}
               onDispatch={handleDispatchCourier}
+              onDeliver={handleDeliverOrder}
+              onMarkPaid={handleMarkPaymentCollected}
+              onInitiateReturn={handleInitiateReturn}
+              onCompleteReturn={handleCompleteReturn}
+              onRecordRefund={handleRecordRefund}
+              onCancel={handleCancelOrder}
               onTrack={handleTrackShipment}
               onViewDetails={handleViewDetails}
               onCopyAddress={handleCopyAddress}
@@ -427,11 +570,17 @@ export default function OrdersScreen() {
         order={selectedOrder}
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
+        onAction={handleDrawerAction}
         onAcceptOrder={handleAcceptOrder}
         onDispatchCourier={handleDispatchCourier}
-        onTrackShipment={handleTrackShipment}
-        onUpdateStatus={handleUpdateStatus}
+        onDeliverOrder={handleDeliverOrder}
+        onMarkPaymentCollected={handleMarkPaymentCollected}
+        onInitiateReturn={handleInitiateReturn}
+        onCompleteReturn={handleCompleteReturn}
+        onRejectReturn={handleRejectReturn}
+        onRecordRefund={handleRecordRefund}
         onCancelOrder={handleCancelOrder}
+        onTrackShipment={handleTrackShipment}
         onToast={triggerToast}
       />
 

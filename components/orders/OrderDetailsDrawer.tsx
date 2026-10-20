@@ -3,20 +3,23 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Order, PrimaryStatus, SecondaryStatus } from "./types";
+import { getAvailableOrderActions, OrderActionType, OrderActionDefinition } from "@/lib/orders/orderStateMachine";
 
 interface OrderDetailsDrawerProps {
   order: Order | null;
   isOpen: boolean;
   onClose: () => void;
+  onAction?: (actionType: OrderActionType, order: Order) => Promise<void> | void;
   onAcceptOrder?: (order: Order) => void;
   onDispatchCourier?: (order: Order) => void;
-  onTrackShipment?: (order: Order) => void;
-  onUpdateStatus?: (
-    order: Order,
-    newStatus: PrimaryStatus,
-    newFulfillment?: SecondaryStatus
-  ) => Promise<void> | void;
+  onDeliverOrder?: (order: Order) => void;
+  onMarkPaymentCollected?: (order: Order) => void;
+  onInitiateReturn?: (order: Order) => void;
+  onCompleteReturn?: (order: Order) => void;
+  onRejectReturn?: (order: Order) => void;
+  onRecordRefund?: (order: Order) => void;
   onCancelOrder?: (order: Order) => Promise<void> | void;
+  onTrackShipment?: (order: Order) => void;
   onToast?: (message: string) => void;
 }
 
@@ -24,11 +27,17 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
   order,
   isOpen,
   onClose,
+  onAction,
   onAcceptOrder,
   onDispatchCourier,
-  onTrackShipment,
-  onUpdateStatus,
+  onDeliverOrder,
+  onMarkPaymentCollected,
+  onInitiateReturn,
+  onCompleteReturn,
+  onRejectReturn,
+  onRecordRefund,
   onCancelOrder,
+  onTrackShipment,
   onToast,
 }) => {
   const [copied, setCopied] = useState(false);
@@ -49,6 +58,61 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
 
   if (!isOpen || !order) return null;
 
+  const availableActions = getAvailableOrderActions(
+    order.primaryStatus,
+    order.secondaryStatus,
+    order.paymentStatus
+  );
+
+  const handleExecuteAction = async (act: OrderActionDefinition) => {
+    if (isUpdatingStatus) return;
+
+    if (act.confirmPrompt) {
+      const confirmed = window.confirm(act.confirmPrompt);
+      if (!confirmed) return;
+    }
+
+    try {
+      setIsUpdatingStatus(true);
+      if (onAction) {
+        await onAction(act.type, order);
+        return;
+      }
+
+      switch (act.type) {
+        case "accept":
+          onAcceptOrder?.(order);
+          break;
+        case "dispatch":
+          onDispatchCourier?.(order);
+          break;
+        case "deliver":
+          onDeliverOrder?.(order);
+          break;
+        case "mark_paid":
+          onMarkPaymentCollected?.(order);
+          break;
+        case "initiate_return":
+          onInitiateReturn?.(order);
+          break;
+        case "complete_return":
+          onCompleteReturn?.(order);
+          break;
+        case "reject_return":
+          onRejectReturn?.(order);
+          break;
+        case "refund":
+          onRecordRefund?.(order);
+          break;
+        case "cancel":
+          if (onCancelOrder) await onCancelOrder(order);
+          break;
+      }
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   const handleCopyShippingAddress = async () => {
     const textToCopy =
       order.shippingAddress?.formattedAddress ||
@@ -60,7 +124,6 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
       if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(textToCopy);
       } else {
-        // Fallback for non-secure or restricted iframe contexts
         const textarea = document.createElement("textarea");
         textarea.value = textToCopy;
         document.body.appendChild(textarea);
@@ -74,16 +137,6 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
     } catch (err) {
       console.error("Failed to copy address:", err);
       onToast?.("Could not copy address.");
-    }
-  };
-
-  const handleStatusChange = async (newStatus: PrimaryStatus) => {
-    if (!onUpdateStatus || isUpdatingStatus) return;
-    try {
-      setIsUpdatingStatus(true);
-      await onUpdateStatus(order, newStatus);
-    } finally {
-      setIsUpdatingStatus(false);
     }
   };
 
@@ -157,26 +210,36 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-          {/* Status & Operational Controls */}
+          {/* Status & Lifecycle State Machine Display */}
           <div className="p-3 bg-surface-container-low rounded-xl space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">
-                  Order Status
+                  Order & Fulfillment Status
                 </span>
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-medium capitalize">
                     {order.primaryStatus}
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-[11px] font-medium capitalize">
-                    {order.secondaryStatus}
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize ${
+                      order.secondaryStatus === "return_active"
+                        ? "bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-200"
+                        : order.secondaryStatus === "cancelled"
+                        ? "bg-error-container text-on-error-container"
+                        : order.secondaryStatus === "completed"
+                        ? "bg-secondary-fixed text-on-secondary-fixed"
+                        : "bg-surface-container text-on-surface-variant"
+                    }`}
+                  >
+                    {order.secondaryStatus === "return_active" ? "Return Active" : order.secondaryStatus}
                   </span>
                 </div>
               </div>
 
               <div className="flex flex-col items-end gap-1">
                 <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">
-                  Payment
+                  Payment Status
                 </span>
                 <span className="font-mono text-[12px] text-on-surface-variant">
                   {order.paymentMethod} •{" "}
@@ -185,10 +248,10 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
                       order.paymentStatus === "paid"
                         ? "text-primary"
                         : order.paymentStatus === "refunded"
-                        ? "text-error"
+                        ? "text-on-error-container font-bold"
                         : order.paymentStatus === "failed"
                         ? "text-error"
-                        : "text-on-surface"
+                        : "text-amber-700 dark:text-amber-400"
                     }`}
                   >
                     {order.paymentStatus}
@@ -197,88 +260,49 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
               </div>
             </div>
 
-            {/* Admin Status Quick Override Pills */}
-            <div className="border-t border-border-default/40 pt-2 flex flex-col gap-2">
-              <div className="flex items-center justify-between gap-1 flex-wrap">
-                <span className="text-[11px] text-text-secondary">Order Status:</span>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {(["new", "accepted", "shipped", "delivered", "returned"] as PrimaryStatus[]).map(
-                    (st) => (
+            {/* Available Valid Lifecycle Actions */}
+            {availableActions.length > 0 && (
+              <div className="border-t border-border-default/40 pt-2 flex flex-col gap-1.5">
+                <span className="text-[11px] font-medium text-text-secondary uppercase tracking-wider">
+                  Available Actions:
+                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {availableActions.map((act) => {
+                    const isCancel = act.type === "cancel" || act.type === "reject_return";
+                    const isRefund = act.type === "refund" || act.type === "complete_return";
+                    return (
                       <button
-                        key={st}
+                        key={act.type}
                         type="button"
-                        disabled={isUpdatingStatus || order.primaryStatus === st}
-                        onClick={() => handleStatusChange(st)}
-                        className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-all capitalize cursor-pointer ${
-                          order.primaryStatus === st
-                            ? "bg-primary text-on-primary shadow-xs font-semibold"
-                            : "bg-surface-container text-on-surface hover:bg-surface-container-high active:scale-95"
+                        disabled={isUpdatingStatus}
+                        onClick={() => handleExecuteAction(act)}
+                        className={`px-3 py-1.5 rounded-lg text-[12px] font-medium active:scale-95 transition-all shadow-xs cursor-pointer ${
+                          isCancel
+                            ? "bg-error-container/30 text-error hover:bg-error-container"
+                            : isRefund
+                            ? "bg-amber-600 hover:bg-amber-700 text-white"
+                            : "bg-primary text-on-primary hover:opacity-90"
                         }`}
                       >
-                        {st}
+                        {act.label}
                       </button>
-                    )
-                  )}
+                    );
+                  })}
                 </div>
               </div>
-
-              {/* Fulfillment Cancel Action */}
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-[11px] text-text-secondary">Fulfillment:</span>
-                {order.secondaryStatus === "cancelled" ? (
-                  <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-error-container text-on-error-container">
-                    Order Cancelled
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={isUpdatingStatus}
-                    onClick={async () => {
-                      if (!onCancelOrder) return;
-                      setIsUpdatingStatus(true);
-                      try {
-                        await onCancelOrder(order);
-                      } finally {
-                        setIsUpdatingStatus(false);
-                      }
-                    }}
-                    className="px-2.5 py-0.5 rounded text-[11px] font-medium bg-error-container/30 text-error hover:bg-error-container active:scale-95 transition-all cursor-pointer"
-                  >
-                    Cancel Order
-                  </button>
-                )}
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Customer & Shipping Details with Copy Address Button */}
           <div className="p-3 bg-surface-container-low rounded-xl space-y-2 border border-border-default/30">
             <div className="flex items-center justify-between">
-              <h3 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-1.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-3.5 h-3.5 text-primary"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
+              <h3 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
                 Shipping Address
               </h3>
-
-              {/* COPY SHIPPING ADDRESS BUTTON */}
               <button
                 type="button"
                 onClick={handleCopyShippingAddress}
-                aria-label="Copy shipping address"
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
-                  copied
-                    ? "bg-secondary-fixed text-on-secondary-fixed font-semibold shadow-xs"
-                    : "bg-surface-container text-on-surface hover:bg-surface-container-high active:scale-95"
-                }`}
+                className="flex items-center gap-1 text-[11px] font-medium text-primary hover:underline cursor-pointer"
               >
                 {copied ? (
                   <>
@@ -298,7 +322,7 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
                   <>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="w-3.5 h-3.5 text-text-secondary"
+                      className="w-3.5 h-3.5"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -307,46 +331,45 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
                       <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
                       <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
                     </svg>
-                    <span>Copy Address</span>
+                    <span>Copy for Courier</span>
                   </>
                 )}
               </button>
             </div>
 
-            {/* Address Details */}
-            <div className="text-[12px] text-on-surface font-sans space-y-0.5 leading-relaxed bg-surface-container-lowest p-2.5 rounded-lg border border-border-default/40">
-              <div className="font-semibold text-on-surface">
-                {order.customerName}
-              </div>
+            <div className="text-[13px] text-on-surface space-y-0.5 leading-relaxed bg-surface-container-lowest p-2.5 rounded-lg border border-border-default/40">
+              <div className="font-semibold">{order.customerName}</div>
               {order.customerPhone && (
-                <div className="text-text-secondary font-mono text-[11px]">
-                  📞 {order.customerPhone}
+                <div className="text-text-secondary font-mono text-[12px]">
+                  Phone: {order.customerPhone}
                 </div>
               )}
               {order.customerEmail && (
-                <div className="text-text-secondary font-mono text-[11px]">
-                  ✉️ {order.customerEmail}
+                <div className="text-text-secondary text-[12px]">
+                  Email: {order.customerEmail}
                 </div>
               )}
               {order.shippingAddress?.addressLine1 && (
-                <div className="pt-1 text-on-surface">
-                  {order.shippingAddress.addressLine1}
-                  {order.shippingAddress.addressLine2
-                    ? `, ${order.shippingAddress.addressLine2}`
-                    : ""}
+                <div>{order.shippingAddress.addressLine1}</div>
+              )}
+              {order.shippingAddress?.addressLine2 && (
+                <div>{order.shippingAddress.addressLine2}</div>
+              )}
+              {(order.shippingAddress?.city ||
+                order.shippingAddress?.state ||
+                order.shippingAddress?.postalCode) && (
+                <div>
+                  {[
+                    order.shippingAddress.city,
+                    order.shippingAddress.state,
+                    order.shippingAddress.postalCode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
                 </div>
               )}
-              <div className="text-on-surface">
-                {[
-                  order.shippingAddress?.city,
-                  order.shippingAddress?.state,
-                  order.shippingAddress?.postalCode,
-                ]
-                  .filter(Boolean)
-                  .join(", ") || order.location}
-              </div>
               {order.shippingAddress?.country && (
-                <div className="text-text-secondary text-[11px]">
+                <div className="text-text-secondary text-[12px]">
                   {order.shippingAddress.country}
                 </div>
               )}
@@ -391,13 +414,6 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
                   </span>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Refund Notice if applicable */}
-          {order.refundDetails && (
-            <div className="p-3 bg-error-container/20 border border-error-container/40 rounded-xl text-[12px] text-on-surface font-mono">
-              {order.refundDetails}
             </div>
           )}
 
@@ -476,34 +492,6 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
 
         {/* Drawer Footer Actions */}
         <div className="p-4 border-t border-border-subtle bg-surface-container-lowest pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2">
-          {order.primaryStatus === "new" && onAcceptOrder && (
-            <button
-              type="button"
-              disabled={isUpdatingStatus}
-              onClick={() => {
-                onAcceptOrder(order);
-                onClose();
-              }}
-              className="w-full h-10 flex items-center justify-center bg-primary text-on-primary rounded-lg text-[13px] font-medium active:scale-[0.98] transition-transform shadow-xs cursor-pointer"
-            >
-              Accept Order
-            </button>
-          )}
-
-          {order.primaryStatus === "accepted" && onDispatchCourier && (
-            <button
-              type="button"
-              disabled={isUpdatingStatus}
-              onClick={() => {
-                onDispatchCourier(order);
-                onClose();
-              }}
-              className="w-full h-10 flex items-center justify-center bg-primary text-on-primary rounded-lg text-[13px] font-medium active:scale-[0.98] transition-transform shadow-xs cursor-pointer"
-            >
-              Dispatch Courier
-            </button>
-          )}
-
           {order.primaryStatus === "shipped" && onTrackShipment && (
             <button
               type="button"
@@ -511,7 +499,7 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
                 onTrackShipment(order);
                 onClose();
               }}
-              className="w-full h-10 flex items-center justify-center bg-primary text-on-primary rounded-lg text-[13px] font-medium active:scale-[0.98] transition-transform shadow-xs cursor-pointer"
+              className="w-full h-10 flex items-center justify-center bg-surface-container text-on-surface rounded-lg text-[13px] font-medium active:scale-[0.98] transition-transform shadow-xs cursor-pointer hover:bg-surface-container-high"
             >
               Track Shipment ({order.carrier || "Carrier"})
             </button>
@@ -520,7 +508,7 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full h-10 flex items-center justify-center bg-surface-container text-on-surface rounded-lg text-[13px] font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full h-10 flex items-center justify-center bg-surface-container-low text-on-surface rounded-lg text-[13px] font-medium hover:bg-surface-container active:scale-[0.98] transition-all cursor-pointer"
           >
             Dismiss
           </button>

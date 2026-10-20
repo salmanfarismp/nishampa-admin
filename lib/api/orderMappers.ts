@@ -142,8 +142,12 @@ export function mapOrderJoinedToOrder(row: OrderJoined): Order {
   // Map Secondary Status (fulfillment)
   const rawFulfillment = (row.fulfillment || "active").toLowerCase();
   let secondaryStatus: SecondaryStatus = "active";
-  if (rawFulfillment === "completed" || rawFulfillment === "cancelled") {
-    secondaryStatus = rawFulfillment;
+  if (
+    rawFulfillment === "completed" ||
+    rawFulfillment === "cancelled" ||
+    rawFulfillment === "return_active"
+  ) {
+    secondaryStatus = rawFulfillment as SecondaryStatus;
   }
 
   // Map Payment Method & Payment Status
