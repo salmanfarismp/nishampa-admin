@@ -171,11 +171,11 @@ export function mapOrderJoinedToOrder(row: OrderJoined): Order {
 
   // Map Order Items
   const items: OrderItemDetail[] = (row.OrderItem || []).map((item) => {
-    // Resolve primary image from joined Product
+    // Resolve primary image from joined Book or fallback to legacy Product
     const images = item.Product?.ProductImage || [];
-    const primaryImg =
-      images.find((img) => img.is_primary) || images[0];
-    const imageUrl = primaryImg?.img_url ? resolveMediaUrl(primaryImg.img_url) : undefined;
+    const legacyImg = images.find((img) => img.is_primary) || images[0];
+    const rawImageUrl = item.Book?.cover_url || legacyImg?.img_url;
+    const imageUrl = rawImageUrl ? resolveMediaUrl(rawImageUrl) : undefined;
 
     const qty = Number(item.quantity) || 1;
     const unitPrice =
@@ -186,16 +186,34 @@ export function mapOrderJoinedToOrder(row: OrderJoined): Order {
         : 0;
 
     const totalPrice = item.total_price != null ? Number(item.total_price) : unitPrice * qty;
+    const resolvedName =
+      item.product_title_snapshot ||
+      item.Book?.name ||
+      item.Book?.name_ml ||
+      item.Product?.name ||
+      "Book";
+
+    const bookId =
+      item.book != null
+        ? Number(item.book)
+        : item.Book?.id != null
+        ? Number(item.Book.id)
+        : null;
 
     return {
       id: String(item.id),
-      productId: item.product || item.Product?.id || undefined,
-      name: item.product_title_snapshot || item.Product?.name || "Custom Item",
+      bookId,
+      productId: item.book != null ? String(item.book) : item.product || item.Product?.id || undefined,
+      name: resolvedName,
+      nameMl: item.Book?.name_ml || null,
+      language: item.Book?.language || null,
+      pagesApprox: item.Book?.pages_approx != null ? Number(item.Book.pages_approx) : null,
+      description: item.Book?.sm_description || null,
       quantity: qty,
       price: unitPrice,
       totalPrice,
       imageUrl,
-      alt: item.product_title_snapshot || item.Product?.name || "Item image",
+      alt: resolvedName,
     };
   });
 

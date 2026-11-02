@@ -25,11 +25,7 @@ export async function getAdminOrdersAction(): Promise<Order[]> {
       Profile(*),
       OrderItem(
         *,
-        Product(
-          id,
-          name,
-          ProductImage(id, img_url, is_primary)
-        )
+        Book(*)
       )
     `)
     .order("created_at", { ascending: false });

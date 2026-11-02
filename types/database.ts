@@ -116,10 +116,22 @@ export interface OrderRow {
   profile_id: string | null;
 }
 
+export interface BookRow {
+  id: number;
+  created_at: string;
+  name: string | null;
+  name_ml: string | null;
+  sm_description: string | null;
+  pages_approx: number | null;
+  language: string | null;
+  cover_url: string | null;
+}
+
 export interface OrderItemRow {
   id: number;
   created_at: string;
-  product: string | null;
+  book?: number | null;
+  product?: string | null;
   quantity: number | null;
   order_id: number | null;
   product_title_snapshot: string | null;
@@ -168,7 +180,8 @@ export interface ShippingRow {
   contact_phone: string | null;
 }
 
-export interface OrderItemWithProduct extends OrderItemRow {
+export interface OrderItemWithBook extends OrderItemRow {
+  Book?: BookRow | null;
   Product?: {
     id: string;
     name: string;
@@ -180,10 +193,12 @@ export interface OrderItemWithProduct extends OrderItemRow {
   } | null;
 }
 
+export type OrderItemWithProduct = OrderItemWithBook;
+
 export interface OrderJoined extends OrderRow {
   Payment?: PaymentRow | null;
   Shipping?: ShippingRow | null;
   Profile?: ProfileRow | null;
-  OrderItem?: OrderItemWithProduct[];
+  OrderItem?: OrderItemWithBook[];
 }
 

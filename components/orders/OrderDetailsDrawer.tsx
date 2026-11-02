@@ -447,8 +447,12 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
                           fill="none"
                           stroke="currentColor"
                           strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         >
-                          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+                          <path d="M6 6h10" />
+                          <path d="M6 10h10" />
                         </svg>
                       )}
                     </div>
@@ -456,9 +460,26 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
                       <span className="text-[13px] font-medium text-on-surface truncate">
                         {item.name}
                       </span>
-                      <span className="font-mono text-[11px] text-text-secondary">
-                        Qty: {item.quantity} × {formatCurrency(item.price)}
-                      </span>
+                      {item.nameMl && (
+                        <span className="text-[11px] text-text-secondary truncate font-normal">
+                          {item.nameMl}
+                        </span>
+                      )}
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="font-mono text-[11px] text-text-secondary">
+                          Qty: {item.quantity} × {formatCurrency(item.price)}
+                        </span>
+                        {item.language && (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-container text-text-secondary uppercase">
+                            {item.language}
+                          </span>
+                        )}
+                        {item.pagesApprox != null && (
+                          <span className="text-[10px] text-text-subtle font-mono">
+                            {item.pagesApprox}p
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <span className="font-mono text-[13px] font-semibold text-on-surface flex-shrink-0 tabular-nums">

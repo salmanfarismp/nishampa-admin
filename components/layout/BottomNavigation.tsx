@@ -12,6 +12,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  /*
   {
     name: "Products",
     href: "/products",
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
+  */
   {
     name: "Orders",
     href: "/orders",

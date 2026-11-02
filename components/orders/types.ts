@@ -25,13 +25,18 @@ export type PaymentMethod = "cod" | "online" | string;
 
 export interface OrderItemDetail {
   id: string;
+  bookId?: number | null;
   productId?: string;
   name: string;
+  nameMl?: string | null;
   quantity: number;
   price: number;
   totalPrice?: number;
   imageUrl?: string;
   alt?: string;
+  language?: string | null;
+  pagesApprox?: number | null;
+  description?: string | null;
 }
 
 export interface ShippingAddressDetail {

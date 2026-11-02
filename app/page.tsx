@@ -1,7 +1,9 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import ProductsScreen from "./products/page";
+// import ProductsScreen from "./products/page";
 
 export default function AdminPage() {
-  return <ProductsScreen />;
+  // return <ProductsScreen />;
+  redirect("/orders");
 }
+
