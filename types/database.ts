@@ -79,6 +79,15 @@ export interface FaqRow {
   is_active: boolean | null;
 }
 
+export interface ServiceReviewRow {
+  id: number;
+  created_at: string;
+  comment: string | null;
+  name: string | null;
+  occupation: string | null;
+  place: string | null;
+}
+
 export type OrderStatus =
   | "new"
   | "accepted"

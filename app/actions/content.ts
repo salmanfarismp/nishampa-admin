@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { assertAdmin } from "@/lib/auth/assertAdmin";
-import { GalleryRow, LifeStyleImageRow, FaqRow } from "@/types/database";
+import { GalleryRow, FaqRow, ServiceReviewRow } from "@/types/database";
 
 /**
  * Server Action: Fetches all gallery records from public."Gallery"
@@ -296,6 +296,115 @@ export async function deleteFaqAction(id: number): Promise<void> {
 
   if (error) {
     console.error(`Failed to delete Faq record (${id}):`, error);
+    throw new Error(`Database delete failed: ${error.message}`);
+  }
+
+  revalidatePath("/content");
+}
+
+/**
+ * Server Action: Fetches all Service Reviews from public."ServiceReview"
+ */
+export async function getServiceReviewsAction(): Promise<ServiceReviewRow[]> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const { data, error } = await adminClient
+    .from("ServiceReview")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch ServiceReview records:", error);
+    throw new Error(`Failed to fetch service reviews: ${error.message}`);
+  }
+
+  return (data as unknown as ServiceReviewRow[]) || [];
+}
+
+/**
+ * Server Action: Creates a new Service Review in public."ServiceReview"
+ */
+export async function createServiceReviewAction(payload: {
+  comment?: string | null;
+  name?: string | null;
+  occupation?: string | null;
+  place?: string | null;
+}): Promise<ServiceReviewRow> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const { data, error } = await adminClient
+    .from("ServiceReview")
+    .insert({
+      comment: payload.comment?.trim() || null,
+      name: payload.name?.trim() || null,
+      occupation: payload.occupation?.trim() || null,
+      place: payload.place?.trim() || null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Failed to insert ServiceReview record:", error);
+    throw new Error(`Database insert failed: ${error.message}`);
+  }
+
+  revalidatePath("/content");
+  return data as unknown as ServiceReviewRow;
+}
+
+/**
+ * Server Action: Updates an existing Service Review in public."ServiceReview"
+ */
+export async function updateServiceReviewAction(
+  id: number,
+  payload: {
+    comment?: string | null;
+    name?: string | null;
+    occupation?: string | null;
+    place?: string | null;
+  }
+): Promise<ServiceReviewRow> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const updates: Record<string, unknown> = {};
+  if (payload.comment !== undefined) updates.comment = payload.comment?.trim() || null;
+  if (payload.name !== undefined) updates.name = payload.name?.trim() || null;
+  if (payload.occupation !== undefined) updates.occupation = payload.occupation?.trim() || null;
+  if (payload.place !== undefined) updates.place = payload.place?.trim() || null;
+
+  const { data, error } = await adminClient
+    .from("ServiceReview")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Failed to update ServiceReview record (${id}):`, error);
+    throw new Error(`Database update failed: ${error.message}`);
+  }
+
+  revalidatePath("/content");
+  return data as unknown as ServiceReviewRow;
+}
+
+/**
+ * Server Action: Deletes a Service Review from public."ServiceReview"
+ */
+export async function deleteServiceReviewAction(id: number): Promise<void> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const { error } = await adminClient
+    .from("ServiceReview")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error(`Failed to delete ServiceReview record (${id}):`, error);
     throw new Error(`Database delete failed: ${error.message}`);
   }
 

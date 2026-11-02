@@ -1,4 +1,4 @@
-export type ContentTab = "gallery" | "faqs";
+export type ContentTab = "gallery" | "service-reviews";
 
 export type FaqStatus = "published" | "draft";
 export type FaqFilter = "all" | "published" | "draft";
@@ -28,11 +28,23 @@ export interface FaqItem {
   createdAt?: string;
 }
 
+export interface ServiceReviewItem {
+  id: string;
+  rawId: number;
+  comment: string;
+  name: string;
+  occupation: string;
+  place: string;
+  createdAt: string;
+  displaySubtitle: string;
+}
+
 export interface ContentStats {
   totalAssets: number;
-  totalFaqs: number;
-  publishedFaqs: number;
-  draftFaqs: number;
+  totalServiceReviews: number;
+  totalFaqs?: number;
+  publishedFaqs?: number;
+  draftFaqs?: number;
   cdnStorageUsedMb: number;
   cdnStorageLimitMb: number;
   monthlyViews: string;

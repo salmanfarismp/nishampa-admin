@@ -7,14 +7,14 @@ interface ContentHeaderProps {
   activeTab: ContentTab;
   onTabChange: (tab: ContentTab) => void;
   galleryCount: number;
-  faqCount: number;
+  serviceReviewCount: number;
 }
 
 export const ContentHeader: React.FC<ContentHeaderProps> = ({
   activeTab,
   onTabChange,
   galleryCount,
-  faqCount,
+  serviceReviewCount,
 }) => {
   return (
     <div className="flex flex-col gap-2.5 pt-0.5 pb-2">
@@ -27,7 +27,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
        
       </div>
 
-      {/* Segmented Control Switcher matching screen.png */}
+      {/* Segmented Control Switcher */}
       <div
         role="tablist"
         aria-label="Content views"
@@ -72,15 +72,15 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
           </span>
         </button>
 
-        {/* FAQs Tab Switcher */}
+        {/* Service Reviews Tab Switcher */}
         <button
           type="button"
           role="tab"
-          aria-selected={activeTab === "faqs"}
-          aria-controls="faqs-panel"
-          onClick={() => onTabChange("faqs")}
+          aria-selected={activeTab === "service-reviews"}
+          aria-controls="service-reviews-panel"
+          onClick={() => onTabChange("service-reviews")}
           className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-[13px] font-medium transition-all duration-150 cursor-pointer ${
-            activeTab === "faqs"
+            activeTab === "service-reviews"
               ? "bg-surface-container-lowest text-on-surface shadow-xs font-semibold"
               : "text-on-surface-variant hover:text-on-surface"
           }`}
@@ -95,19 +95,17 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <path d="M12 17h.01" />
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
-          <span>FAQs</span>
+          <span>Service Reviews</span>
           <span
             className={`px-1.5 py-0.2 rounded-full font-mono text-[11px] leading-tight transition-colors ${
-              activeTab === "faqs"
+              activeTab === "service-reviews"
                 ? "bg-surface-container text-on-surface font-semibold"
                 : "bg-surface-container/60 text-on-surface-variant"
             }`}
           >
-            {faqCount}
+            {serviceReviewCount}
           </span>
         </button>
       </div>

@@ -1,20 +1,20 @@
 import {
   getGalleryItemsAction,
-  getLifeStyleImagesAction,
   uploadGalleryItemAction,
-  uploadLifeStyleImageAction,
   updateGalleryItemAction,
   deleteGalleryItemAction,
-  deleteLifeStyleImageAction,
   deleteGalleryItemsAction,
-  deleteLifeStyleImagesAction,
   getFaqsAction,
   createFaqAction,
   updateFaqAction,
   deleteFaqAction,
+  getServiceReviewsAction,
+  createServiceReviewAction,
+  updateServiceReviewAction,
+  deleteServiceReviewAction,
 } from "@/app/actions/content";
-import { GalleryRow, LifeStyleImageRow, FaqRow } from "@/types/database";
-import { GalleryAsset, FaqItem, FaqStatus } from "@/components/content/types";
+import { GalleryRow, FaqRow, ServiceReviewRow } from "@/types/database";
+import { GalleryAsset, FaqItem, FaqStatus, ServiceReviewItem } from "@/components/content/types";
 import { resolveMediaUrl } from "@/lib/utils/media";
 
 /**
@@ -249,4 +249,100 @@ export async function deleteFaq(id: string): Promise<void> {
     throw new Error(`Invalid FAQ ID: ${id}`);
   }
   await deleteFaqAction(numId);
+}
+
+/**
+ * Formats occupation and place comma-separated.
+ */
+export function formatReviewSubtitle(
+  occupation?: string | null,
+  place?: string | null
+): string {
+  const occ = occupation?.trim() || "";
+  const plc = place?.trim() || "";
+  if (occ && plc) return `${occ}, ${plc}`;
+  if (occ) return occ;
+  if (plc) return plc;
+  return "";
+}
+
+/**
+ * Maps a database ServiceReviewRow to a UI ServiceReviewItem.
+ */
+export function mapServiceReviewRowToItem(
+  row: ServiceReviewRow
+): ServiceReviewItem {
+  return {
+    id: String(row.id),
+    rawId: row.id,
+    comment: row.comment || "",
+    name: row.name || "",
+    occupation: row.occupation || "",
+    place: row.place || "",
+    createdAt: formatUploadedDate(row.created_at),
+    displaySubtitle: formatReviewSubtitle(row.occupation, row.place),
+  };
+}
+
+/**
+ * Fetches all service reviews from Supabase and converts to ServiceReviewItem.
+ */
+export async function getServiceReviews(): Promise<ServiceReviewItem[]> {
+  const rows = await getServiceReviewsAction();
+  return rows.map(mapServiceReviewRowToItem);
+}
+
+/**
+ * Creates a new service review in Supabase.
+ */
+export async function createServiceReview(data: {
+  comment?: string | null;
+  name?: string | null;
+  occupation?: string | null;
+  place?: string | null;
+}): Promise<ServiceReviewItem> {
+  const row = await createServiceReviewAction({
+    comment: data.comment,
+    name: data.name,
+    occupation: data.occupation,
+    place: data.place,
+  });
+  return mapServiceReviewRowToItem(row);
+}
+
+/**
+ * Updates a service review in Supabase.
+ */
+export async function updateServiceReview(
+  id: string,
+  data: {
+    comment?: string | null;
+    name?: string | null;
+    occupation?: string | null;
+    place?: string | null;
+  }
+): Promise<ServiceReviewItem> {
+  const numId = Number(id);
+  if (isNaN(numId)) {
+    throw new Error(`Invalid ServiceReview ID: ${id}`);
+  }
+
+  const row = await updateServiceReviewAction(numId, {
+    comment: data.comment,
+    name: data.name,
+    occupation: data.occupation,
+    place: data.place,
+  });
+  return mapServiceReviewRowToItem(row);
+}
+
+/**
+ * Deletes a service review by string ID.
+ */
+export async function deleteServiceReview(id: string): Promise<void> {
+  const numId = Number(id);
+  if (isNaN(numId)) {
+    throw new Error(`Invalid ServiceReview ID: ${id}`);
+  }
+  await deleteServiceReviewAction(numId);
 }

@@ -124,16 +124,13 @@ export const ContentAnalyticsModal: React.FC<ContentAnalyticsModalProps> = ({
 
           <div className="p-3 bg-surface-container-low rounded-2xl border border-surface-container">
             <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider block mb-1">
-              Active FAQs
+              Service Reviews
             </span>
             <span className="text-[20px] font-bold text-on-surface block font-mono">
-              {stats.publishedFaqs}{" "}
-              <span className="text-[12px] font-normal text-on-surface-variant">
-                / {stats.totalFaqs}
-              </span>
+              {stats.totalServiceReviews}
             </span>
             <span className="text-[11px] text-on-surface-variant">
-              {stats.draftFaqs} in review
+              Live on website
             </span>
           </div>
 

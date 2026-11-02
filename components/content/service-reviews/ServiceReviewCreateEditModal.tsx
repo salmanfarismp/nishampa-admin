@@ -1,0 +1,243 @@
+"use client";
+
+import React, { useState } from "react";
+import { ServiceReviewItem } from "../types";
+import { formatReviewSubtitle } from "@/lib/api/content";
+
+interface ServiceReviewCreateEditModalProps {
+  isOpen: boolean;
+  reviewToEdit: ServiceReviewItem | null;
+  onClose: () => void;
+  onSave: (reviewData: {
+    id?: string;
+    name: string;
+    occupation: string;
+    place: string;
+    comment: string;
+  }) => void;
+}
+
+interface FormContentProps {
+  reviewToEdit: ServiceReviewItem | null;
+  onClose: () => void;
+  onSave: (reviewData: {
+    id?: string;
+    name: string;
+    occupation: string;
+    place: string;
+    comment: string;
+  }) => void;
+}
+
+const ServiceReviewFormContent: React.FC<FormContentProps> = ({
+  reviewToEdit,
+  onClose,
+  onSave,
+}) => {
+  const [name, setName] = useState(reviewToEdit?.name ?? "");
+  const [occupation, setOccupation] = useState(reviewToEdit?.occupation ?? "");
+  const [place, setPlace] = useState(reviewToEdit?.place ?? "");
+  const [comment, setComment] = useState(reviewToEdit?.comment ?? "");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError("Client name is required");
+      return;
+    }
+    if (!comment.trim()) {
+      setError("Review / comment text is required");
+      return;
+    }
+
+    onSave({
+      id: reviewToEdit?.id,
+      name: name.trim(),
+      occupation: occupation.trim(),
+      place: place.trim(),
+      comment: comment.trim(),
+    });
+    onClose();
+  };
+
+  const previewSubtitle = formatReviewSubtitle(occupation, place);
+
+  return (
+    <div className="relative w-full max-w-lg bg-surface-container-lowest rounded-t-3xl p-5 flex flex-col gap-4 shadow-2xl animate-in slide-in-from-bottom duration-250 z-10 border-t border-border-default/60 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] max-h-[90vh] overflow-y-auto">
+      {/* Grab Handle */}
+      <div className="w-10 h-1 bg-surface-container-highest rounded-full mx-auto -mt-1 mb-1 flex-shrink-0" />
+
+      {/* Modal Header */}
+      <div className="flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h3
+              id="service-review-modal-title"
+              className="text-[17px] font-semibold text-on-surface"
+            >
+              {reviewToEdit ? "Edit Service Review" : "New Service Review"}
+            </h3>
+            <p className="text-[12px] text-on-surface-variant">
+              Added exclusively by admin for website presentation
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close dialog"
+          className="w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      {error && (
+        <div className="p-2.5 rounded-xl bg-red-50 text-red-700 text-[12px] border border-red-200">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+        {/* Name Input */}
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+            Client / Reviewer Name <span className="text-red-500">*</span>
+          </span>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Rejani Ks or Ali Noufal"
+            className="w-full h-10 px-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest transition-colors"
+          />
+        </label>
+
+        {/* 2-Column: Occupation & Place */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1">
+            <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+              Occupation
+            </span>
+            <input
+              type="text"
+              value={occupation}
+              onChange={(e) => setOccupation(e.target.value)}
+              placeholder="e.g. Managing Director"
+              className="w-full h-10 px-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest transition-colors"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+              Place / Location
+            </span>
+            <input
+              type="text"
+              value={place}
+              onChange={(e) => setPlace(e.target.value)}
+              placeholder="e.g. Calicut or Dubai"
+              className="w-full h-10 px-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest transition-colors"
+            />
+          </label>
+        </div>
+
+        {/* Live Subtitle Format Indicator */}
+        <div className="flex items-center gap-1.5 px-3 py-2 bg-surface-container-low/70 rounded-xl text-[12px] text-on-surface-variant border border-border-default/40">
+          <span className="text-on-surface-variant/70 font-medium">Website display:</span>
+          <span className="font-semibold text-on-surface">
+            {previewSubtitle ? previewSubtitle : "—"}
+          </span>
+          {previewSubtitle && (
+            <span className="text-[11px] text-on-surface-variant/60 ml-auto font-mono">
+              (comma-separated)
+            </span>
+          )}
+        </div>
+
+        {/* Review / Comment Textarea */}
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+            Client Review / Testimonial <span className="text-red-500">*</span>
+          </span>
+          <textarea
+            rows={4}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Enter the client's words, experience, or testimonial..."
+            className="w-full p-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest resize-none transition-colors"
+          />
+        </label>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 h-11 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-[13px] font-medium transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary-container active:scale-[0.98] text-on-primary text-[13px] font-medium transition-all cursor-pointer shadow-xs"
+          >
+            {reviewToEdit ? "Update Review" : "Save Review"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export const ServiceReviewCreateEditModal: React.FC<
+  ServiceReviewCreateEditModalProps
+> = ({ isOpen, reviewToEdit, onClose, onSave }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="service-review-modal-title"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs p-0 transition-opacity animate-in fade-in duration-200"
+    >
+      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
+      <ServiceReviewFormContent
+        key={reviewToEdit?.id ?? "new-review"}
+        reviewToEdit={reviewToEdit}
+        onClose={onClose}
+        onSave={onSave}
+      />
+    </div>
+  );
+};
+

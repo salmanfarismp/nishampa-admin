@@ -1,4 +1,4 @@
-import { GalleryAsset, FaqItem } from "./types";
+import { GalleryAsset, FaqItem, ServiceReviewItem } from "./types";
 
 export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
   {
@@ -175,5 +175,30 @@ export const INITIAL_FAQS: FaqItem[] = [
       "Addresses can be modified within 60 minutes of placing an order through your confirmation page. Once dispatch processing begins, rerouting must be requested directly through carrier tracking.",
     status: "published",
     updatedAt: "Updated 1mo ago",
+  },
+];
+
+export const INITIAL_SERVICE_REVIEWS: ServiceReviewItem[] = [
+  {
+    id: "sr-1",
+    rawId: 1,
+    name: "Rejani Ks",
+    occupation: "Sensebridge Student & Counselor",
+    place: "",
+    comment:
+      "Nisham sir explains deep psychology in simple, clear Malayalam and English. His sessions helped our family talk through difficult business decisions without damaging our relationships.",
+    createdAt: "Just now",
+    displaySubtitle: "Sensebridge Student & Counselor",
+  },
+  {
+    id: "sr-2",
+    rawId: 2,
+    name: "Ali Noufal",
+    occupation: "Managing Director",
+    place: "Dubai",
+    comment:
+      "During a stressful business restructuring, his counseling gave our team clear perspective and prevented burnout. His insights on pressure and decision-making are genuinely practical.",
+    createdAt: "2d ago",
+    displaySubtitle: "Managing Director, Dubai",
   },
 ];

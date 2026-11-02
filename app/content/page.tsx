@@ -3,10 +3,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   ContentTab,
-  FaqFilter,
   GalleryAsset,
-  FaqItem,
-  FaqStatus,
+  ServiceReviewItem,
 } from "@/components/content/types";
 import {
   getLifeStyleImages,
@@ -14,11 +12,11 @@ import {
   updateGalleryItem,
   deleteLifeStyleImage,
   deleteLifeStyleImages,
-  getFaqs,
-  createFaq,
-  updateFaq,
-  toggleFaqStatus,
-  deleteFaq,
+  getServiceReviews,
+  createServiceReview,
+  updateServiceReview,
+  deleteServiceReview,
+  formatReviewSubtitle,
 } from "@/lib/api/content";
 import { ContentHeader } from "@/components/content/ContentHeader";
 import { ContentToast } from "@/components/content/ContentToast";
@@ -29,13 +27,12 @@ import { GalleryGrid } from "@/components/content/gallery/GalleryGrid";
 import { GalleryUploadModal } from "@/components/content/gallery/GalleryUploadModal";
 import { GalleryDetailModal } from "@/components/content/gallery/GalleryDetailModal";
 
-// FAQ Subcomponents
-import { FaqFilterChips } from "@/components/content/faqs/FaqFilterChips";
-import { FaqSearchBar } from "@/components/content/faqs/FaqSearchBar";
-import { FaqCard } from "@/components/content/faqs/FaqCard";
-import { FaqFloatingActionButton } from "@/components/content/faqs/FaqFloatingActionButton";
-import { FaqCreateEditModal } from "@/components/content/faqs/FaqCreateEditModal";
-import { FaqActionSheet } from "@/components/content/faqs/FaqActionSheet";
+// Service Review Subcomponents
+import { ServiceReviewSearchBar } from "@/components/content/service-reviews/ServiceReviewSearchBar";
+import { ServiceReviewCard } from "@/components/content/service-reviews/ServiceReviewCard";
+import { ServiceReviewFloatingActionButton } from "@/components/content/service-reviews/ServiceReviewFloatingActionButton";
+import { ServiceReviewCreateEditModal } from "@/components/content/service-reviews/ServiceReviewCreateEditModal";
+import { ServiceReviewActionSheet } from "@/components/content/service-reviews/ServiceReviewActionSheet";
 
 export default function ContentPage() {
   // Navigation View State
@@ -54,15 +51,14 @@ export default function ContentPage() {
   const [activeDetailAsset, setActiveDetailAsset] =
     useState<GalleryAsset | null>(null);
 
-  // FAQ State (Supabase Faq)
-  const [faqs, setFaqs] = useState<FaqItem[]>([]);
-  const [isLoadingFaqs, setIsLoadingFaqs] = useState(true);
-  const [faqError, setFaqError] = useState<string | null>(null);
-  const [faqFilter, setFaqFilter] = useState<FaqFilter>("all");
-  const [faqSearchQuery, setFaqSearchQuery] = useState("");
-  const [isFaqModalOpen, setIsFaqModalOpen] = useState(false);
-  const [faqToEdit, setFaqToEdit] = useState<FaqItem | null>(null);
-  const [activeFaqMenu, setActiveFaqMenu] = useState<FaqItem | null>(null);
+  // Service Reviews State (Supabase ServiceReview)
+  const [serviceReviews, setServiceReviews] = useState<ServiceReviewItem[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
+  const [reviewSearchQuery, setReviewSearchQuery] = useState("");
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewToEdit, setReviewToEdit] = useState<ServiceReviewItem | null>(null);
+  const [activeReviewMenu, setActiveReviewMenu] = useState<ServiceReviewItem | null>(null);
 
   // Toast Notification State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -95,22 +91,22 @@ export default function ContentPage() {
     }
   }, []);
 
-  // Fetch FAQs from Supabase
-  const reloadFaqs = useCallback(async () => {
-    setIsLoadingFaqs(true);
-    setFaqError(null);
+  // Fetch Service Reviews from Supabase
+  const reloadReviews = useCallback(async () => {
+    setIsLoadingReviews(true);
+    setReviewsError(null);
     try {
-      const items = await getFaqs();
-      setFaqs(items);
+      const items = await getServiceReviews();
+      setServiceReviews(items);
     } catch (err: unknown) {
-      console.error("Failed to load FAQs:", err);
-      setFaqError(
+      console.error("Failed to load Service Reviews:", err);
+      setReviewsError(
         err instanceof Error
           ? err.message
-          : "Unable to load FAQs from Supabase.",
+          : "Unable to load service reviews from Supabase.",
       );
     } finally {
-      setIsLoadingFaqs(false);
+      setIsLoadingReviews(false);
     }
   }, []);
 
@@ -118,7 +114,7 @@ export default function ContentPage() {
     let cancelled = false;
     async function loadInitialData() {
       try {
-        const [assets, faqItems] = await Promise.all([
+        const [assets, reviewItems] = await Promise.all([
           getLifeStyleImages().catch((err) => {
             console.error("Failed to load lifestyle gallery images:", err);
             if (!cancelled) {
@@ -130,13 +126,13 @@ export default function ContentPage() {
             }
             return [];
           }),
-          getFaqs().catch((err) => {
-            console.error("Failed to load FAQs:", err);
+          getServiceReviews().catch((err) => {
+            console.error("Failed to load service reviews:", err);
             if (!cancelled) {
-              setFaqError(
+              setReviewsError(
                 err instanceof Error
                   ? err.message
-                  : "Unable to load FAQs from Supabase.",
+                  : "Unable to load service reviews from Supabase.",
               );
             }
             return [];
@@ -146,13 +142,13 @@ export default function ContentPage() {
         if (!cancelled) {
           setGalleryAssets(assets);
           setIsLoadingGallery(false);
-          setFaqs(faqItems);
-          setIsLoadingFaqs(false);
+          setServiceReviews(reviewItems);
+          setIsLoadingReviews(false);
         }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
           setIsLoadingGallery(false);
-          setIsLoadingFaqs(false);
+          setIsLoadingReviews(false);
         }
       }
     }
@@ -164,32 +160,27 @@ export default function ContentPage() {
     };
   }, []);
 
-  // Computations
-  const faqCounts = useMemo(() => {
-    const all = faqs.length;
-    const published = faqs.filter((f) => f.status === "published").length;
-    const draft = faqs.filter((f) => f.status === "draft").length;
-    return { all, published, draft };
-  }, [faqs]);
+  // Search Filter Computation
+  const filteredReviews = useMemo(() => {
+    const q = reviewSearchQuery.toLowerCase().trim();
+    if (!q) return serviceReviews;
 
-  const filteredFaqs = useMemo(() => {
-    const q = faqSearchQuery.toLowerCase().trim();
+    return serviceReviews.filter((review) => {
+      const matchName = review.name.toLowerCase().includes(q);
+      const matchComment = review.comment.toLowerCase().includes(q);
+      const matchOccupation = review.occupation.toLowerCase().includes(q);
+      const matchPlace = review.place.toLowerCase().includes(q);
+      const matchSubtitle = review.displaySubtitle.toLowerCase().includes(q);
 
-    return faqs.filter((faq) => {
-      // Status Filter
-      if (faqFilter === "published" && faq.status !== "published") return false;
-      if (faqFilter === "draft" && faq.status !== "draft") return false;
-
-      // Search Query
-      if (q) {
-        const matchQ = faq.question.toLowerCase().includes(q);
-        const matchA = faq.answer.toLowerCase().includes(q);
-        if (!matchQ && !matchA) return false;
-      }
-
-      return true;
+      return (
+        matchName ||
+        matchComment ||
+        matchOccupation ||
+        matchPlace ||
+        matchSubtitle
+      );
     });
-  }, [faqs, faqFilter, faqSearchQuery]);
+  }, [serviceReviews, reviewSearchQuery]);
 
   // Gallery Actions
   const handleUploadAsset = async (newAssetData: {
@@ -323,142 +314,96 @@ export default function ContentPage() {
     }
   };
 
-  // FAQ Actions
-  const handleSaveFaq = async (data: {
+  // Service Review Actions
+  const handleSaveReview = async (data: {
     id?: string;
-    question: string;
-    answer: string;
-    status: FaqStatus;
+    name: string;
+    occupation: string;
+    place: string;
+    comment: string;
   }) => {
-    const backup = [...faqs];
+    const backup = [...serviceReviews];
+    const subtitle = formatReviewSubtitle(data.occupation, data.place);
+
     if (data.id) {
       // Optimistic update
-      setFaqs((prev) =>
-        prev.map((f) =>
-          f.id === data.id
+      setServiceReviews((prev) =>
+        prev.map((r) =>
+          r.id === data.id
             ? {
-                ...f,
-                question: data.question,
-                answer: data.answer,
-                status: data.status,
-                updatedAt: "Updated just now",
+                ...r,
+                name: data.name,
+                occupation: data.occupation,
+                place: data.place,
+                comment: data.comment,
+                displaySubtitle: subtitle,
               }
-            : f,
-        ),
+            : r
+        )
       );
-      showToast("FAQ updated successfully");
+      showToast("Service review updated");
+
       try {
-        const updated = await updateFaq(data.id, {
-          question: data.question,
-          answer: data.answer,
-          status: data.status,
+        const updated = await updateServiceReview(data.id, {
+          name: data.name,
+          occupation: data.occupation,
+          place: data.place,
+          comment: data.comment,
         });
-        setFaqs((prev) => prev.map((f) => (f.id === data.id ? updated : f)));
+        setServiceReviews((prev) =>
+          prev.map((r) => (r.id === data.id ? updated : r))
+        );
       } catch (err) {
-        console.error("Failed to update FAQ:", err);
-        setFaqs(backup);
-        showToast("Failed to save FAQ to database");
+        console.error("Failed to update service review:", err);
+        setServiceReviews(backup);
+        showToast("Failed to save review to database");
       }
     } else {
       // Optimistic create
       const tempId = `temp-${Date.now()}`;
-      const optimisticFaq: FaqItem = {
+      const optimisticReview: ServiceReviewItem = {
         id: tempId,
-        question: data.question,
-        answer: data.answer,
-        status: data.status,
-        updatedAt: "Created just now",
+        rawId: 0,
+        name: data.name,
+        occupation: data.occupation,
+        place: data.place,
+        comment: data.comment,
+        createdAt: "Just now",
+        displaySubtitle: subtitle,
       };
-      setFaqs((prev) => [optimisticFaq, ...prev]);
-      showToast(
-        data.status === "published"
-          ? "New FAQ published to storefront"
-          : "FAQ saved to drafts",
-      );
+      setServiceReviews((prev) => [optimisticReview, ...prev]);
+      showToast("Service review added");
+
       try {
-        const created = await createFaq({
-          question: data.question,
-          answer: data.answer,
-          status: data.status,
+        const created = await createServiceReview({
+          name: data.name,
+          occupation: data.occupation,
+          place: data.place,
+          comment: data.comment,
         });
-        setFaqs((prev) => prev.map((f) => (f.id === tempId ? created : f)));
+        setServiceReviews((prev) =>
+          prev.map((r) => (r.id === tempId ? created : r))
+        );
       } catch (err) {
-        console.error("Failed to create FAQ:", err);
-        setFaqs(backup);
-        showToast("Failed to save FAQ to database");
+        console.error("Failed to create service review:", err);
+        setServiceReviews(backup);
+        showToast("Failed to save review to database");
       }
     }
-    setFaqToEdit(null);
+    setReviewToEdit(null);
   };
 
-  const handleToggleFaqStatus = async (faq: FaqItem) => {
-    const nextStatus: FaqStatus =
-      faq.status === "published" ? "draft" : "published";
-    const backup = [...faqs];
-    setFaqs((prev) =>
-      prev.map((f) =>
-        f.id === faq.id
-          ? {
-              ...f,
-              status: nextStatus,
-              updatedAt: "Status updated just now",
-            }
-          : f,
-      ),
-    );
-    showToast(
-      nextStatus === "published"
-        ? "FAQ published to storefront"
-        : "FAQ moved to drafts",
-    );
-    try {
-      const updated = await toggleFaqStatus(faq.id, faq.status);
-      setFaqs((prev) => prev.map((f) => (f.id === faq.id ? updated : f)));
-    } catch (err) {
-      console.error("Failed to toggle FAQ status:", err);
-      setFaqs(backup);
-      showToast("Failed to update FAQ status in database");
-    }
-  };
-
-  const handleDuplicateFaq = async (faq: FaqItem) => {
-    const tempId = `temp-${Date.now()}`;
-    const backup = [...faqs];
-    const clone: FaqItem = {
-      ...faq,
-      id: tempId,
-      question: `${faq.question} (Copy)`,
-      status: "draft",
-      updatedAt: "Duplicated just now",
-    };
-    setFaqs((prev) => [clone, ...prev]);
-    showToast("FAQ duplicated as draft");
+  const handleDeleteReview = async (review: ServiceReviewItem) => {
+    const backup = [...serviceReviews];
+    setServiceReviews((prev) => prev.filter((r) => r.id !== review.id));
+    showToast("Service review removed");
 
     try {
-      const created = await createFaq({
-        question: clone.question,
-        answer: clone.answer,
-        status: "draft",
-      });
-      setFaqs((prev) => prev.map((f) => (f.id === tempId ? created : f)));
+      await deleteServiceReview(review.id);
     } catch (err) {
-      console.error("Failed to duplicate FAQ in database:", err);
-      setFaqs(backup);
-      showToast("Failed to duplicate FAQ in database");
-    }
-  };
-
-  const handleDeleteFaq = async (faq: FaqItem) => {
-    const backup = [...faqs];
-    setFaqs((prev) => prev.filter((f) => f.id !== faq.id));
-    showToast("FAQ removed from storefront");
-
-    try {
-      await deleteFaq(faq.id);
-    } catch (err) {
-      console.error("Failed to delete FAQ from database:", err);
-      setFaqs(backup);
-      showToast("Failed to delete FAQ from database");
+      console.error("Failed to delete service review from database:", err);
+      setServiceReviews(backup);
+      showToast("Failed to delete review from database");
     }
   };
 
@@ -479,7 +424,7 @@ export default function ContentPage() {
           setIsSelecting(false);
         }}
         galleryCount={galleryAssets.length}
-        faqCount={faqs.length}
+        serviceReviewCount={serviceReviews.length}
       />
 
       {/* VIEW 1: GALLERY MANAGEMENT */}
@@ -517,39 +462,32 @@ export default function ContentPage() {
         </section>
       )}
 
-      {/* VIEW 2: FAQS MANAGEMENT */}
-      {activeTab === "faqs" && (
+      {/* VIEW 2: SERVICE REVIEWS MANAGEMENT */}
+      {activeTab === "service-reviews" && (
         <section
-          id="faqs-panel"
-          aria-labelledby="tab-faqs"
+          id="service-reviews-panel"
+          aria-labelledby="tab-service-reviews"
           className="flex flex-col gap-2.5 animate-in fade-in duration-200 pb-20"
         >
           {/* Search Bar */}
-          <FaqSearchBar
-            query={faqSearchQuery}
-            onChange={setFaqSearchQuery}
-            onClear={() => setFaqSearchQuery("")}
+          <ServiceReviewSearchBar
+            query={reviewSearchQuery}
+            onChange={setReviewSearchQuery}
+            onClear={() => setReviewSearchQuery("")}
           />
 
-          {/* Quick Filter Chips */}
-          <FaqFilterChips
-            activeFilter={faqFilter}
-            onSelectFilter={setFaqFilter}
-            counts={faqCounts}
-          />
-
-          {/* FAQ Card Stream */}
-          <div className="flex flex-col gap-2.5 pt-0.5" id="faqListContainer">
-            {isLoadingFaqs ? (
+          {/* Service Reviews Stream */}
+          <div className="flex flex-col gap-2.5 pt-0.5" id="reviewListContainer">
+            {isLoadingReviews ? (
               <div className="flex flex-col gap-2.5 animate-pulse">
-                {[1, 2, 3, 4].map((n) => (
+                {[1, 2, 3].map((n) => (
                   <div
                     key={n}
-                    className="h-24 bg-surface-container-low rounded-2xl border border-outline-variant/30"
+                    className="h-28 bg-surface-container-low rounded-2xl border border-outline-variant/30"
                   />
                 ))}
               </div>
-            ) : faqError ? (
+            ) : reviewsError ? (
               <div className="flex flex-col items-center justify-center p-8 text-center bg-surface-container-lowest rounded-2xl border border-red-200 mt-2">
                 <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-2">
                   <svg
@@ -568,25 +506,25 @@ export default function ContentPage() {
                   </svg>
                 </div>
                 <h3 className="text-[15px] font-semibold text-on-surface">
-                  Failed to Load FAQs
+                  Failed to Load Service Reviews
                 </h3>
                 <p className="text-[12px] text-on-surface-variant max-w-xs mt-1">
-                  {faqError}
+                  {reviewsError}
                 </p>
                 <button
                   type="button"
-                  onClick={reloadFaqs}
+                  onClick={reloadReviews}
                   className="mt-3 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-[12px] font-medium text-on-surface transition-colors cursor-pointer"
                 >
                   Retry
                 </button>
               </div>
-            ) : filteredFaqs.length > 0 ? (
-              filteredFaqs.map((faq) => (
-                <FaqCard
-                  key={faq.id}
-                  faq={faq}
-                  onOpenMenu={(item) => setActiveFaqMenu(item)}
+            ) : filteredReviews.length > 0 ? (
+              filteredReviews.map((review) => (
+                <ServiceReviewCard
+                  key={review.id}
+                  review={review}
+                  onOpenMenu={(item) => setActiveReviewMenu(item)}
                 />
               ))
             ) : (
@@ -607,17 +545,17 @@ export default function ContentPage() {
                   </svg>
                 </div>
                 <h3 className="text-[15px] font-semibold text-on-surface">
-                  No Questions Found
+                  No Service Reviews Found
                 </h3>
                 <p className="text-[12px] text-on-surface-variant max-w-xs mt-1">
-                  {faqSearchQuery
-                    ? `No FAQs matched "${faqSearchQuery}". Try clearing search or selecting a different filter.`
-                    : "No questions match the selected filter."}
+                  {reviewSearchQuery
+                    ? `No reviews matched "${reviewSearchQuery}". Try clearing search.`
+                    : "No client service reviews added yet. Tap '+' to create the first review."}
                 </p>
-                {faqSearchQuery && (
+                {reviewSearchQuery && (
                   <button
                     type="button"
-                    onClick={() => setFaqSearchQuery("")}
+                    onClick={() => setReviewSearchQuery("")}
                     className="mt-3 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-[12px] font-medium text-on-surface transition-colors cursor-pointer"
                   >
                     Clear Search
@@ -627,11 +565,11 @@ export default function ContentPage() {
             )}
           </div>
 
-          {/* Floating Action Button (FAB) matching screen.png */}
-          <FaqFloatingActionButton
+          {/* Floating Action Button (FAB) */}
+          <ServiceReviewFloatingActionButton
             onClick={() => {
-              setFaqToEdit(null);
-              setIsFaqModalOpen(true);
+              setReviewToEdit(null);
+              setIsReviewModalOpen(true);
             }}
           />
         </section>
@@ -655,29 +593,27 @@ export default function ContentPage() {
         onUpdate={handleUpdateAsset}
       />
 
-      {/* 3. FAQ Create / Edit Modal */}
-      <FaqCreateEditModal
-        isOpen={isFaqModalOpen}
-        faqToEdit={faqToEdit}
+      {/* 3. Service Review Create / Edit Modal */}
+      <ServiceReviewCreateEditModal
+        isOpen={isReviewModalOpen}
+        reviewToEdit={reviewToEdit}
         onClose={() => {
-          setIsFaqModalOpen(false);
-          setFaqToEdit(null);
+          setIsReviewModalOpen(false);
+          setReviewToEdit(null);
         }}
-        onSave={handleSaveFaq}
+        onSave={handleSaveReview}
       />
 
-      {/* 4. FAQ Actions Bottom Sheet */}
-      <FaqActionSheet
-        faq={activeFaqMenu}
-        isOpen={Boolean(activeFaqMenu)}
-        onClose={() => setActiveFaqMenu(null)}
+      {/* 4. Service Review Actions Bottom Sheet */}
+      <ServiceReviewActionSheet
+        review={activeReviewMenu}
+        isOpen={Boolean(activeReviewMenu)}
+        onClose={() => setActiveReviewMenu(null)}
         onEdit={(item) => {
-          setFaqToEdit(item);
-          setIsFaqModalOpen(true);
+          setReviewToEdit(item);
+          setIsReviewModalOpen(true);
         }}
-        onToggleStatus={handleToggleFaqStatus}
-        onDuplicate={handleDuplicateFaq}
-        onDelete={handleDeleteFaq}
+        onDelete={handleDeleteReview}
       />
     </div>
   );
