@@ -127,6 +127,17 @@ export interface BookRow {
   cover_url: string | null;
 }
 
+export interface BookReviewRow {
+  id: number;
+  created_at: string;
+  stars: number | null;
+  comment: string | null;
+  name: string | null;
+  occupation: string | null;
+  place: string | null;
+  book_id: number | null;
+}
+
 export interface OrderItemRow {
   id: number;
   created_at: string;

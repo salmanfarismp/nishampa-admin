@@ -52,8 +52,9 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    name: "Reviews",
-    href: "/reviews",
+    name: "Books",
+    href: "/books",
+    matchHrefs: ["/books", "/reviews"],
     icon: (active) => (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -63,9 +64,9 @@ const navItems: NavItem[] = [
         strokeWidth={active ? "2.2" : "1.8"}
         className="w-5 h-5"
       >
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        <path d="M8 9h8" />
-        <path d="M8 13h6" />
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+        <path d="M6 6h10" />
+        <path d="M6 10h10" />
       </svg>
     ),
   },
