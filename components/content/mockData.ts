@@ -122,7 +122,7 @@ export const INITIAL_FAQS: FaqItem[] = [
   },
   {
     id: "faq-2",
-    question: "Are custom bespoke orders available for Westernswings?",
+    question: "Are custom bespoke orders available for Nisham?",
     answer:
       "Yes, we accommodate custom fabric, finish, and dimension requests on select artisanal furniture and gear. Reach out through our contact desk with your project specs for a 24-hour consultation.",
     status: "published",
@@ -140,7 +140,7 @@ export const INITIAL_FAQS: FaqItem[] = [
     id: "faq-4",
     question: "What materials and craftsmanship standards are used?",
     answer:
-      "Westernswings goods are crafted exclusively from sustainably harvested FSC hardwoods, vegetable-tanned full-grain leathers, and marine-grade stainless hardware designed for lifetime durability.",
+      "Nisham goods are crafted exclusively from sustainably harvested FSC hardwoods, vegetable-tanned full-grain leathers, and marine-grade stainless hardware designed for lifetime durability.",
     status: "published",
     updatedAt: "Updated 5d ago",
   },

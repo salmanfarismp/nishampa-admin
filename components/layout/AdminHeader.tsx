@@ -36,10 +36,10 @@ export default function AdminHeader() {
       {/* Brand & Monogram */}
       <Link href="/" className="flex items-center gap-2 min-w-0 hover:opacity-85 transition-opacity">
         <div className="w-7 h-7 rounded-lg bg-primary text-on-primary flex items-center justify-center font-bold text-xs">
-          W
+          N
         </div>
         <h1 className="text-[17px] font-semibold tracking-tight text-on-surface truncate">
-          Westernswings
+          Nisham Admin
         </h1>
       </Link>
 

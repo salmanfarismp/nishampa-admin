@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Western Admin",
-    short_name: "WesternAdmin",
+    name: "Nisham Admin",
+    short_name: "NishamAdmin",
     description: "Production-grade modular mobile PWA admin portal",
     start_url: "/",
     display: "standalone",

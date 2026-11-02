@@ -15,7 +15,7 @@ export default function SystemPage() {
       <Card className="p-3.5 flex flex-col gap-2.5">
         <div className="flex items-center justify-between">
           <span className="type-label-sm text-text-primary">Cache Partition</span>
-          <Badge variant="neutral">western-admin-v1</Badge>
+          <Badge variant="neutral">nisham-admin-v1</Badge>
         </div>
         <div className="w-full bg-surface-subtle border border-border-default h-2 rounded-full overflow-hidden">
           <div className="bg-text-primary h-full w-[24%]" />

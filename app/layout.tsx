@@ -19,15 +19,15 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Western Admin",
-    template: "%s | Western Admin",
+    default: "Nisham Admin",
+    template: "%s | Nisham Admin",
   },
   description: "Modular production-grade mobile PWA admin portal",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Western Admin",
+    title: "Nisham Admin",
   },
   formatDetection: {
     telephone: false,

@@ -47,7 +47,7 @@ export default function InstallBanner() {
             </svg>
           </div>
           <div className="truncate">
-            <p className="font-semibold text-text-primary tracking-tight">Install Western Admin</p>
+            <p className="font-semibold text-text-primary tracking-tight">Install Nisham Admin</p>
             <p className="text-[11px] text-text-secondary truncate">Fast offline administration workspace</p>
           </div>
         </div>

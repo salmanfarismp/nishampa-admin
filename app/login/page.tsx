@@ -43,10 +43,10 @@ function LoginContent() {
         {/* Brand Monogram & Title */}
         <div className="flex flex-col items-center text-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-primary text-on-primary flex items-center justify-center font-bold text-2xl shadow-md mb-4 border border-border-default">
-            W
+            N
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-on-surface">
-            Westernswings
+            Nisham Admin
           </h1>
         </div>
 
@@ -152,7 +152,7 @@ function LoginContent() {
 
         {/* Footer info */}
         <p className="mt-8 text-xs text-text-subtle text-center">
-          &copy; {new Date().getFullYear()} Westernswings. Internal Use Only.
+          &copy; {new Date().getFullYear()} Nisham. Internal Use Only.
         </p>
       </div>
     </div>

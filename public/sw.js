@@ -1,5 +1,5 @@
-// Western Admin Service Worker (Production-grade PWA)
-const CACHE_NAME = 'western-admin-v1';
+// Nisham Admin Service Worker (Production-grade PWA)
+const CACHE_NAME = 'nisham-admin-v1';
 const OFFLINE_URL = '/offline';
 
 const PRECACHE_ASSETS = [

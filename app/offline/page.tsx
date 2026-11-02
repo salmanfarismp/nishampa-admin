@@ -41,7 +41,7 @@ export default function OfflinePage() {
       </h1>
 
       <p className="type-body-sm text-text-secondary max-w-xs mb-8 leading-relaxed">
-        Western Admin is serving from the offline application cache. Check your network connection to sync real-time administrative telemetry.
+        Nisham Admin is serving from the offline application cache. Check your network connection to sync real-time administrative telemetry.
       </p>
 
       <div className="flex flex-col w-full max-w-xs gap-2.5">

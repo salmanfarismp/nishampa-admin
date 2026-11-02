@@ -30,7 +30,7 @@ export default function UnauthorizedPage() {
           Access Restricted
         </h1>
         <p className="text-xs text-text-secondary text-center mb-6 max-w-xs">
-          Your Google account is authenticated, but does not have administrator authorization for Westernswings.
+          Your Google account is authenticated, but does not have administrator authorization for Nisham Admin.
         </p>
 
         {/* Account Details Card */}

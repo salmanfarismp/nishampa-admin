@@ -4,7 +4,7 @@
       <stop offset="0%" stop-color="#1e2638" />
       <stop offset="100%" stop-color="#0a0c10" />
     </radialGradient>
-    <linearGradient id="wGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="nGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#f59e0b" />
       <stop offset="50%" stop-color="#3b82f6" />
       <stop offset="100%" stop-color="#06b6d4" />
@@ -20,18 +20,18 @@
   <rect width="504" height="504" x="4" y="4" rx="124" stroke="#252f44" stroke-width="4" fill="none" opacity="0.6" />
 
   <!-- Ambient light -->
-  <circle cx="256" cy="220" r="140" fill="#3b82f6" opacity="0.12" filter="blur(30px)" />
+  <circle cx="256" cy="256" r="140" fill="#3b82f6" opacity="0.12" filter="blur(30px)" />
 
-  <!-- Monogram W -->
+  <!-- Monogram N -->
   <path 
-    d="M 128 150 L 195 362 L 256 220 L 317 362 L 384 150" 
-    stroke="url(#wGrad)" 
-    stroke-width="36" 
+    d="M 160 362 L 160 150 L 352 362 L 352 150" 
+    stroke="url(#nGrad)" 
+    stroke-width="38" 
     stroke-linecap="round" 
     stroke-linejoin="round"
     filter="url(#glow)"
   />
   
   <!-- Subtle accent dot -->
-  <circle cx="256" cy="165" r="9" fill="#f59e0b" />
+  <circle cx="352" cy="115" r="9" fill="#f59e0b" />
 </svg>
