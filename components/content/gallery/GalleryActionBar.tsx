@@ -24,7 +24,7 @@ export const GalleryActionBar: React.FC<GalleryActionBarProps> = ({
       {/* Title & Count Badge */}
       <div className="flex items-center gap-2 min-w-0">
         <span className="text-[14px] font-semibold text-on-surface">
-          Brand Assets
+          Workshops & Speaking
         </span>
         <span className="px-1.5 py-0.5 rounded-full bg-surface-container font-mono text-[11px] text-on-surface-variant font-medium">
           {totalCount}

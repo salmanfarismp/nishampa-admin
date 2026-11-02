@@ -14,7 +14,7 @@ export const GalleryUploadTile: React.FC<GalleryUploadTileProps> = ({
       type="button"
       onClick={onOpenUpload}
       aria-label="Upload photo asset"
-      className="flex flex-col items-center justify-center aspect-square rounded-2xl bg-surface-container-low hover:bg-surface-container border border-dashed border-outline-variant/50 transition-all cursor-pointer text-center p-3 group active:scale-[0.98] shadow-2xs"
+      className="flex flex-col items-center justify-center min-h-[220px] h-full w-full rounded-2xl bg-surface-container-low hover:bg-surface-container border border-dashed border-outline-variant/50 transition-all cursor-pointer text-center p-4 group active:scale-[0.98] shadow-2xs"
     >
       <div className="w-11 h-11 rounded-full bg-surface-container-highest flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform text-on-surface">
         {/* add_photo_alternate icon */}

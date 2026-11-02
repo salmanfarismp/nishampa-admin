@@ -11,6 +11,8 @@ interface GalleryUploadModalProps {
     url: string;
     alt: string;
     tag: string;
+    title: string;
+    description: string;
     dimensions: string;
     fileSize: string;
   }) => Promise<void> | void;
@@ -21,10 +23,12 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
   onClose,
   onUpload,
 }) => {
-  const [tag, setTag] = useState("Lifestyle Showcase");
+  const [tag, setTag] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileSizeText, setFileSizeText] = useState("2.4 MB");
+  const [fileSizeText, setFileSizeText] = useState("Optimized");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,7 +45,21 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
     }
   };
 
+  const handleClose = () => {
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    setTag("");
+    setTitle("");
+    setDescription("");
+    onClose();
+  };
+
   const handleConfirm = async () => {
+    if (!selectedFile && !previewUrl) {
+      alert("Please choose an image file to upload.");
+      return;
+    }
+
     setIsUploading(true);
     try {
       const finalUrl =
@@ -49,22 +67,23 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
         "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80";
 
       const derivedAlt =
+        title.trim() ||
         selectedFile?.name?.replace(/\.[^/.]+$/, "") ||
         tag.trim() ||
-        "Lifestyle showcase photo";
+        "Gallery photo";
 
       await onUpload({
         file: selectedFile,
         url: finalUrl,
         alt: derivedAlt,
-        tag: tag.trim() || "Showcase",
+        tag: tag.trim().toUpperCase() || "WORKSHOP",
+        title: title.trim() || "Untitled Workshop",
+        description: description.trim(),
         dimensions: "2400 × 2400",
         fileSize: fileSizeText,
       });
 
-      setPreviewUrl(null);
-      setSelectedFile(null);
-      onClose();
+      handleClose();
     } catch (err) {
       console.error("Upload error:", err);
     } finally {
@@ -81,7 +100,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
     >
       <div
         className="fixed inset-0"
-        onClick={onClose}
+        onClick={handleClose}
         aria-hidden="true"
       />
 
@@ -114,13 +133,13 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
               id="upload-sheet-title"
               className="text-[17px] font-semibold text-on-surface"
             >
-              Add Photo Asset
+              Add Workshop & Speaking Item
             </h3>
           </div>
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close upload dialog"
             className="w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
           >
@@ -149,7 +168,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
           onChange={handleFileChange}
         />
 
-        {/* Square Dropzone area */}
+        {/* Dropzone area */}
         <div
           onClick={() => fileInputRef.current?.click()}
           role="button"
@@ -160,7 +179,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
               fileInputRef.current?.click();
             }
           }}
-          className="flex flex-col items-center justify-center w-full aspect-square rounded-2xl bg-surface-container-low hover:bg-surface-container border border-dashed border-outline-variant/50 transition-colors cursor-pointer text-center p-4 group select-none relative overflow-hidden"
+          className="flex flex-col items-center justify-center w-full aspect-[16/10] rounded-2xl bg-surface-container-low hover:bg-surface-container border border-dashed border-outline-variant/50 transition-colors cursor-pointer text-center p-4 group select-none relative overflow-hidden"
         >
           {previewUrl ? (
             <div className="relative w-full h-full rounded-xl overflow-hidden">
@@ -168,6 +187,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
                 src={previewUrl}
                 alt="Upload preview"
                 fill
+                unoptimized
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -178,10 +198,10 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
             </div>
           ) : (
             <>
-              <div className="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface mb-2 group-hover:-translate-y-0.5 transition-transform">
+              <div className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-on-surface mb-1.5 group-hover:-translate-y-0.5 transition-transform">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6"
+                  className="w-5 h-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -194,28 +214,57 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
                   <path d="m16 16-4-4-4 4" />
                 </svg>
               </div>
-              <span className="text-[14px] font-semibold text-on-surface">
-                Tap to choose image file
+              <span className="text-[13px] font-semibold text-on-surface">
+                Choose Image File
               </span>
-              <span className="text-[11px] font-mono text-on-surface-variant mt-1">
-                JPG, WEBP, PNG (max 15MB)
+              <span className="text-[11px] font-mono text-on-surface-variant mt-0.5">
+                JPG, PNG, WEBP (max 15MB)
               </span>
             </>
           )}
         </div>
 
         {/* Inputs */}
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-3">
+          {/* Title Input */}
           <label className="flex flex-col gap-1">
             <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">
-              Photo Tag / Label
+              Title
+            </span>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Keynote Address"
+              className="w-full h-10 px-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest transition-colors"
+            />
+          </label>
+
+          {/* Tag / Category Input */}
+          <label className="flex flex-col gap-1">
+            <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">
+              Tag / Category
             </span>
             <input
               type="text"
               value={tag}
               onChange={(e) => setTag(e.target.value)}
-              placeholder="e.g. Lookbook FW25"
+              placeholder="e.g. CONVOCATION, TEAM WORKSHOP"
               className="w-full h-10 px-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest transition-colors"
+            />
+          </label>
+
+          {/* Description Textarea */}
+          <label className="flex flex-col gap-1">
+            <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">
+              Description
+            </span>
+            <textarea
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Brief description of the workshop, keynote, or session..."
+              className="w-full p-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest transition-colors resize-none leading-relaxed"
             />
           </label>
         </div>
@@ -224,18 +273,18 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
         <div className="flex items-center gap-2 pt-1">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="flex-1 h-11 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-[13px] font-medium transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="button"
-            disabled={isUploading}
+            disabled={isUploading || (!selectedFile && !previewUrl)}
             onClick={handleConfirm}
             className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary-container active:scale-[0.98] text-on-primary text-[13px] font-medium transition-all cursor-pointer shadow-xs disabled:opacity-50"
           >
-            {isUploading ? "Uploading..." : "Upload to CDN"}
+            {isUploading ? "Uploading..." : "Save to Gallery"}
           </button>
         </div>
       </div>

@@ -9,6 +9,8 @@ export interface GalleryAsset {
   rawPath?: string;
   alt: string;
   tag: string;
+  title?: string;
+  description?: string;
   uploadedAt: string;
   createdAt?: string;
   dimensions?: string;

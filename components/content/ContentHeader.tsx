@@ -21,7 +21,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
       {/* Title & Analytics Trigger */}
       <div className="flex items-center justify-between">
         <h1 className="text-[24px] font-semibold tracking-tight text-on-surface">
-          Store Content
+          Content
         </h1>
 
        

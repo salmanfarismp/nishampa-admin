@@ -112,7 +112,7 @@ export const ContentAnalyticsModal: React.FC<ContentAnalyticsModalProps> = ({
         <div className="grid grid-cols-2 gap-2.5">
           <div className="p-3 bg-surface-container-low rounded-2xl border border-surface-container">
             <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider block mb-1">
-              Brand Assets
+              Workshops & Speaking
             </span>
             <span className="text-[20px] font-bold text-on-surface block font-mono">
               {stats.totalAssets}

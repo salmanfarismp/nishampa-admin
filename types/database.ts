@@ -60,11 +60,16 @@ export interface ProductJoined extends ProductRow {
   ProductColor?: ProductColorRow[];
 }
 
-export interface LifeStyleImageRow {
+export interface GalleryRow {
   id: number;
   created_at: string;
   img_url: string | null;
+  tag: string | null;
+  title: string | null;
+  description: string | null;
 }
+
+export type LifeStyleImageRow = GalleryRow;
 
 export interface FaqRow {
   id: number;

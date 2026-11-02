@@ -77,7 +77,7 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
         Array.from({ length: 5 }).map((_, idx) => (
           <div
             key={idx}
-            className="aspect-square w-full rounded-2xl bg-surface-container animate-pulse border border-border-default/40"
+            className="min-h-[220px] w-full rounded-2xl bg-surface-container animate-pulse border border-border-default/40"
           />
         ))
       ) : assets.length > 0 ? (
@@ -94,10 +94,10 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
         ))
       ) : (
         /* Empty State */
-        <div className="col-span-1 aspect-square rounded-2xl border border-dashed border-border-default/60 flex flex-col items-center justify-center p-4 text-center bg-surface-container-lowest">
+        <div className="col-span-1 min-h-[220px] rounded-2xl border border-dashed border-border-default/60 flex flex-col items-center justify-center p-4 text-center bg-surface-container-lowest">
           <p className="text-[12px] font-medium text-on-surface">No images yet</p>
           <p className="text-[10px] text-on-surface-variant mt-0.5">
-            Click upload to add lifestyle photos
+            Click upload to add gallery items
           </p>
         </div>
       )}

@@ -1,14 +1,19 @@
 import {
+  getGalleryItemsAction,
   getLifeStyleImagesAction,
+  uploadGalleryItemAction,
   uploadLifeStyleImageAction,
+  updateGalleryItemAction,
+  deleteGalleryItemAction,
   deleteLifeStyleImageAction,
+  deleteGalleryItemsAction,
   deleteLifeStyleImagesAction,
   getFaqsAction,
   createFaqAction,
   updateFaqAction,
   deleteFaqAction,
 } from "@/app/actions/content";
-import { LifeStyleImageRow, FaqRow } from "@/types/database";
+import { GalleryRow, LifeStyleImageRow, FaqRow } from "@/types/database";
 import { GalleryAsset, FaqItem, FaqStatus } from "@/components/content/types";
 import { resolveMediaUrl } from "@/lib/utils/media";
 
@@ -40,15 +45,15 @@ function formatUploadedDate(isoDate: string): string {
 }
 
 /**
- * Maps a database LifeStyleImageRow to a UI GalleryAsset.
+ * Maps a database GalleryRow to a UI GalleryAsset.
  */
-export function mapLifeStyleImageToGalleryAsset(
-  row: LifeStyleImageRow
+export function mapGalleryRowToAsset(
+  row: GalleryRow
 ): GalleryAsset {
   const rawPath = row.img_url || "";
   const publicUrl = resolveMediaUrl(rawPath);
 
-  // Extract a readable name from path, e.g. "lifestyle/ly4.jpeg" -> "ly4"
+  // Extract a readable name from path, e.g. "gallery/ly4.jpeg" -> "ly4"
   const fileName = rawPath
     ? rawPath.split("/").pop()?.replace(/\.[^/.]+$/, "") || ""
     : "";
@@ -57,8 +62,10 @@ export function mapLifeStyleImageToGalleryAsset(
     id: String(row.id),
     url: publicUrl,
     rawPath,
-    alt: fileName ? `Lifestyle photo (${fileName})` : `Lifestyle photo #${row.id}`,
-    tag: "Lifestyle Gallery",
+    alt: row.title || row.tag || (fileName ? `Photo (${fileName})` : `Gallery photo #${row.id}`),
+    tag: row.tag || "General",
+    title: row.title || "",
+    description: row.description || "",
     uploadedAt: formatUploadedDate(row.created_at),
     createdAt: row.created_at,
     dimensions: "2400 × 2400",
@@ -66,29 +73,72 @@ export function mapLifeStyleImageToGalleryAsset(
   };
 }
 
-/**
- * Fetches all lifestyle images from Supabase and converts to GalleryAsset items.
- */
-export async function getLifeStyleImages(): Promise<GalleryAsset[]> {
-  const rows = await getLifeStyleImagesAction();
-  return rows.map(mapLifeStyleImageToGalleryAsset);
-}
+/** Legacy alias */
+export const mapLifeStyleImageToGalleryAsset = mapGalleryRowToAsset;
 
 /**
- * Uploads a lifestyle image file and returns the newly created GalleryAsset.
+ * Fetches all gallery items from Supabase and converts to GalleryAsset items.
  */
-export async function uploadLifeStyleImage(file: File): Promise<GalleryAsset> {
+export async function getGalleryItems(): Promise<GalleryAsset[]> {
+  const rows = await getGalleryItemsAction();
+  return rows.map(mapGalleryRowToAsset);
+}
+
+/** Legacy alias */
+export const getLifeStyleImages = getGalleryItems;
+
+/**
+ * Uploads a gallery image file with metadata and returns the newly created GalleryAsset.
+ */
+export async function uploadGalleryItem(data: {
+  file: File;
+  tag?: string;
+  title?: string;
+  description?: string;
+}): Promise<GalleryAsset> {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file", data.file);
+  if (data.tag) formData.append("tag", data.tag);
+  if (data.title) formData.append("title", data.title);
+  if (data.description) formData.append("description", data.description);
 
-  const row = await uploadLifeStyleImageAction(formData);
-  return mapLifeStyleImageToGalleryAsset(row);
+  const row = await uploadGalleryItemAction(formData);
+  return mapGalleryRowToAsset(row);
 }
 
 /**
- * Deletes a lifestyle image by string ID.
+ * Uploads a gallery image (compatible with previous signature).
  */
-export async function deleteLifeStyleImage(
+export async function uploadLifeStyleImage(
+  file: File,
+  meta?: { tag?: string; title?: string; description?: string }
+): Promise<GalleryAsset> {
+  return uploadGalleryItem({ file, ...meta });
+}
+
+/**
+ * Updates text metadata for an existing gallery record.
+ */
+export async function updateGalleryItem(
+  id: string,
+  data: {
+    tag?: string;
+    title?: string;
+    description?: string;
+  }
+): Promise<GalleryAsset> {
+  const numId = Number(id);
+  if (isNaN(numId)) {
+    throw new Error(`Invalid asset ID: ${id}`);
+  }
+  const row = await updateGalleryItemAction(numId, data);
+  return mapGalleryRowToAsset(row);
+}
+
+/**
+ * Deletes a gallery image by string ID.
+ */
+export async function deleteGalleryItem(
   id: string,
   rawPath?: string
 ): Promise<void> {
@@ -96,17 +146,23 @@ export async function deleteLifeStyleImage(
   if (isNaN(numId)) {
     throw new Error(`Invalid asset ID: ${id}`);
   }
-  await deleteLifeStyleImageAction(numId, rawPath);
+  await deleteGalleryItemAction(numId, rawPath);
 }
 
+/** Legacy alias */
+export const deleteLifeStyleImage = deleteGalleryItem;
+
 /**
- * Bulk deletes lifestyle images by string IDs.
+ * Bulk deletes gallery images by string IDs.
  */
-export async function deleteLifeStyleImages(ids: string[]): Promise<void> {
+export async function deleteGalleryItems(ids: string[]): Promise<void> {
   const numIds = ids.map((id) => Number(id)).filter((n) => !isNaN(n));
   if (numIds.length === 0) return;
-  await deleteLifeStyleImagesAction(numIds);
+  await deleteGalleryItemsAction(numIds);
 }
+
+/** Legacy alias */
+export const deleteLifeStyleImages = deleteGalleryItems;
 
 /**
  * Maps a database FaqRow to a UI FaqItem.

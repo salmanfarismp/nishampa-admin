@@ -11,6 +11,7 @@ import {
 import {
   getLifeStyleImages,
   uploadLifeStyleImage,
+  updateGalleryItem,
   deleteLifeStyleImage,
   deleteLifeStyleImages,
   getFaqs,
@@ -196,14 +197,20 @@ export default function ContentPage() {
     url: string;
     alt: string;
     tag: string;
+    title?: string;
+    description?: string;
     dimensions: string;
     fileSize: string;
   }) => {
     if (newAssetData.file) {
       try {
-        const created = await uploadLifeStyleImage(newAssetData.file);
+        const created = await uploadLifeStyleImage(newAssetData.file, {
+          tag: newAssetData.tag,
+          title: newAssetData.title,
+          description: newAssetData.description,
+        });
         setGalleryAssets((prev) => [created, ...prev]);
-        showToast("Photo uploaded to lifestyle gallery");
+        showToast("Added to Workshops & Speaking gallery");
       } catch (err) {
         console.error("Failed to upload image:", err);
         showToast("Failed to upload photo to Supabase storage");
@@ -215,12 +222,41 @@ export default function ContentPage() {
         url: newAssetData.url,
         alt: newAssetData.alt,
         tag: newAssetData.tag,
+        title: newAssetData.title,
+        description: newAssetData.description,
         uploadedAt: "Just now",
         dimensions: newAssetData.dimensions,
         fileSize: newAssetData.fileSize,
       };
       setGalleryAssets((prev) => [newAsset, ...prev]);
-      showToast("Photo added to brand gallery");
+      showToast("Added to Workshops & Speaking gallery");
+    }
+  };
+
+  const handleUpdateAsset = async (
+    id: string,
+    updates: { tag?: string; title?: string; description?: string }
+  ) => {
+    const backup = [...galleryAssets];
+    // Optimistic update
+    setGalleryAssets((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...updates } : a))
+    );
+    setActiveDetailAsset((prev) =>
+      prev && prev.id === id ? { ...prev, ...updates } : prev
+    );
+    showToast("Item details updated");
+
+    try {
+      const updated = await updateGalleryItem(id, updates);
+      setGalleryAssets((prev) =>
+        prev.map((a) => (a.id === id ? updated : a))
+      );
+      setActiveDetailAsset(updated);
+    } catch (err) {
+      console.error("Failed to update gallery item:", err);
+      setGalleryAssets(backup);
+      showToast("Failed to save changes to database");
     }
   };
 
@@ -616,6 +652,7 @@ export default function ContentPage() {
         isOpen={Boolean(activeDetailAsset)}
         onClose={() => setActiveDetailAsset(null)}
         onDelete={handleDeleteAsset}
+        onUpdate={handleUpdateAsset}
       />
 
       {/* 3. FAQ Create / Edit Modal */}

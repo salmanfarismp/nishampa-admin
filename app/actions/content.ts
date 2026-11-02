@@ -3,36 +3,39 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { assertAdmin } from "@/lib/auth/assertAdmin";
-import { LifeStyleImageRow, FaqRow } from "@/types/database";
+import { GalleryRow, LifeStyleImageRow, FaqRow } from "@/types/database";
 
 /**
- * Server Action: Fetches all lifestyle images from public."LifeStyleImage"
+ * Server Action: Fetches all gallery records from public."Gallery"
  * Strictly guarded by assertAdmin() and runs with createAdminClient() to bypass RLS.
  */
-export async function getLifeStyleImagesAction(): Promise<LifeStyleImageRow[]> {
+export async function getGalleryItemsAction(): Promise<GalleryRow[]> {
   await assertAdmin();
   const adminClient = createAdminClient();
 
   const { data, error } = await adminClient
-    .from("LifeStyleImage")
+    .from("Gallery")
     .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Failed to fetch LifeStyleImage records:", error);
-    throw new Error(`Failed to fetch lifestyle images: ${error.message}`);
+    console.error("Failed to fetch Gallery records:", error);
+    throw new Error(`Failed to fetch gallery records: ${error.message}`);
   }
 
-  return (data as unknown as LifeStyleImageRow[]) || [];
+  return (data as unknown as GalleryRow[]) || [];
 }
 
+/** Legacy alias for backwards compatibility */
+export const getLifeStyleImagesAction = getGalleryItemsAction;
+
 /**
- * Server Action: Uploads an image file to Supabase storage ("production" bucket, "lifestyle/" prefix)
- * and creates a corresponding record in public."LifeStyleImage".
+ * Server Action: Uploads an image file to Supabase storage ("production" bucket, "gallery/" prefix)
+ * and creates a corresponding record in public."Gallery".
  */
-export async function uploadLifeStyleImageAction(
+export async function uploadGalleryItemAction(
   formData: FormData
-): Promise<LifeStyleImageRow> {
+): Promise<GalleryRow> {
   await assertAdmin();
   const adminClient = createAdminClient();
 
@@ -40,6 +43,10 @@ export async function uploadLifeStyleImageAction(
   if (!(file instanceof File) || file.size === 0) {
     throw new Error("No valid image file provided.");
   }
+
+  const tag = (formData.get("tag") as string)?.trim() || null;
+  const title = (formData.get("title") as string)?.trim() || null;
+  const description = (formData.get("description") as string)?.trim() || null;
 
   const bucket =
     process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "production";
@@ -49,7 +56,7 @@ export async function uploadLifeStyleImageAction(
     .replace(/\.[^/.]+$/, "")
     .replace(/[^a-zA-Z0-9_-]/g, "_")
     .slice(0, 30);
-  const filePath = `lifestyle/${Date.now()}_${safeName}.${fileExt}`;
+  const filePath = `gallery/${Date.now()}_${safeName}.${fileExt}`;
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
@@ -63,32 +70,75 @@ export async function uploadLifeStyleImageAction(
     });
 
   if (uploadError) {
-    console.error("Storage upload failed for lifestyle image:", uploadError);
+    console.error("Storage upload failed for gallery item:", uploadError);
     throw new Error(`Storage upload failed: ${uploadError.message}`);
   }
 
-  // Insert into LifeStyleImage table
+  // Insert into Gallery table
   const { data: inserted, error: insertError } = await adminClient
-    .from("LifeStyleImage")
-    .insert({ img_url: filePath })
+    .from("Gallery")
+    .insert({
+      img_url: filePath,
+      tag,
+      title,
+      description,
+    })
     .select()
     .single();
 
   if (insertError) {
-    console.error("Failed to insert LifeStyleImage record:", insertError);
+    console.error("Failed to insert Gallery record:", insertError);
     // Cleanup uploaded storage file if DB insert fails
     await adminClient.storage.from(bucket).remove([filePath]);
     throw new Error(`Database insert failed: ${insertError.message}`);
   }
 
   revalidatePath("/content");
-  return inserted as LifeStyleImageRow;
+  return inserted as GalleryRow;
+}
+
+/** Legacy alias for backwards compatibility */
+export const uploadLifeStyleImageAction = uploadGalleryItemAction;
+
+/**
+ * Server Action: Updates text metadata (tag, title, description) of a gallery record in public."Gallery".
+ */
+export async function updateGalleryItemAction(
+  id: number,
+  data: {
+    tag?: string | null;
+    title?: string | null;
+    description?: string | null;
+  }
+): Promise<GalleryRow> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const updatePayload: Record<string, any> = {};
+  if (data.tag !== undefined) updatePayload.tag = data.tag?.trim() || null;
+  if (data.title !== undefined) updatePayload.title = data.title?.trim() || null;
+  if (data.description !== undefined) updatePayload.description = data.description?.trim() || null;
+
+  const { data: updated, error } = await adminClient
+    .from("Gallery")
+    .update(updatePayload)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Failed to update Gallery (${id}):`, error);
+    throw new Error(`Failed to update gallery record: ${error.message}`);
+  }
+
+  revalidatePath("/content");
+  return updated as GalleryRow;
 }
 
 /**
- * Server Action: Deletes a lifestyle image record and removes its storage file.
+ * Server Action: Deletes a gallery record and removes its storage file.
  */
-export async function deleteLifeStyleImageAction(
+export async function deleteGalleryItemAction(
   id: number,
   storagePath?: string | null
 ): Promise<void> {
@@ -96,13 +146,13 @@ export async function deleteLifeStyleImageAction(
   const adminClient = createAdminClient();
 
   const { error } = await adminClient
-    .from("LifeStyleImage")
+    .from("Gallery")
     .delete()
     .eq("id", id);
 
   if (error) {
-    console.error(`Failed to delete LifeStyleImage (${id}):`, error);
-    throw new Error(`Failed to delete lifestyle image: ${error.message}`);
+    console.error(`Failed to delete Gallery (${id}):`, error);
+    throw new Error(`Failed to delete gallery record: ${error.message}`);
   }
 
   // Optionally clean up storage object if relative path
@@ -120,10 +170,13 @@ export async function deleteLifeStyleImageAction(
   revalidatePath("/content");
 }
 
+/** Legacy alias for backwards compatibility */
+export const deleteLifeStyleImageAction = deleteGalleryItemAction;
+
 /**
- * Server Action: Bulk deletes multiple lifestyle image records by ID.
+ * Server Action: Bulk deletes multiple gallery records by ID.
  */
-export async function deleteLifeStyleImagesAction(
+export async function deleteGalleryItemsAction(
   ids: number[]
 ): Promise<void> {
   if (ids.length === 0) return;
@@ -132,17 +185,20 @@ export async function deleteLifeStyleImagesAction(
   const adminClient = createAdminClient();
 
   const { error } = await adminClient
-    .from("LifeStyleImage")
+    .from("Gallery")
     .delete()
     .in("id", ids);
 
   if (error) {
-    console.error("Failed to bulk delete LifeStyleImage records:", error);
-    throw new Error(`Failed to delete lifestyle images: ${error.message}`);
+    console.error("Failed to bulk delete Gallery records:", error);
+    throw new Error(`Failed to delete gallery records: ${error.message}`);
   }
 
   revalidatePath("/content");
 }
+
+/** Legacy alias for backwards compatibility */
+export const deleteLifeStyleImagesAction = deleteGalleryItemsAction;
 
 /**
  * Server Action: Fetches all FAQ items from public."Faq"
