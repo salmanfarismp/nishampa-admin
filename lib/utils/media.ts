@@ -1,5 +1,5 @@
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://wclcgdtqhdamtjbydyeo.supabase.co";
-const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "production";
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dugcpfywxikumhwixsmh.supabase.co";
+const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
 
 export const FALLBACK_IMAGE_URL = "/icons/icon-192.png";
 

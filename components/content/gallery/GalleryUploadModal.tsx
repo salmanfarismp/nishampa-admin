@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import { optimizeImage } from "@/lib/utils/imageOptimizer";
 
 interface GalleryUploadModalProps {
   isOpen: boolean;
@@ -32,20 +33,50 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   if (!isOpen) return null;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      const url = URL.createObjectURL(file);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    if (rawFile) {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      let fileToUse = rawFile;
+      try {
+        fileToUse = await optimizeImage(rawFile, {
+          maxWidth: 1080,
+          quality: 0.8,
+        });
+      } catch (err) {
+        console.warn("Pre-upload image optimization warning:", err);
+      }
+
+      setSelectedFile(fileToUse);
+      const url = URL.createObjectURL(fileToUse);
       setPreviewUrl(url);
-      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-      setFileSizeText(`${sizeMb} MB`);
+
+      const sizeKb = Math.round(fileToUse.size / 1024);
+      const sizeText =
+        sizeKb >= 1024
+          ? `${(sizeKb / 1024).toFixed(1)} MB`
+          : `${sizeKb} KB`;
+      setFileSizeText(`${sizeText} • WebP`);
     }
   };
 
   const handleClose = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setPreviewUrl(null);
     setSelectedFile(null);
     setTag("");

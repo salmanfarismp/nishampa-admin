@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef, Suspense } from "react";
 import { Order, OrderFilterStatus, PrimaryStatus, SecondaryStatus, PaymentStatus, OrderTelemetryData } from "@/components/orders/types";
 import { OrderTelemetryBar } from "@/components/orders/OrderTelemetryBar";
 import { OrderSearchBar } from "@/components/orders/OrderSearchBar";
@@ -22,7 +22,7 @@ import {
 } from "@/lib/api/orders";
 import { OrderActionType } from "@/lib/orders/orderStateMachine";
 
-export default function OrdersScreen() {
+function OrdersScreenContent() {
   // Orders State
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,46 +36,75 @@ export default function OrdersScreen() {
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
 
-  // Micro-interaction Toast Notification State
+  // Micro-interaction Toast Notification State with timer ref
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isToastVisible, setIsToastVisible] = useState(false);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const triggerToast = useCallback((msg: string) => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
     setToastMessage(msg);
     setIsToastVisible(true);
-    setTimeout(() => {
+    toastTimerRef.current = setTimeout(() => {
       setIsToastVisible(false);
     }, 2800);
   }, []);
 
-  // Fetch orders from Supabase via Server Action
-  const loadOrders = useCallback(async (isSilent = false) => {
-    if (!isSilent) setIsLoading(true);
-    else setIsRefreshing(true);
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
+  // User-triggered refresh (e.g. pull to refresh or header button)
+  const refreshOrders = useCallback(async () => {
+    setIsRefreshing(true);
     try {
       const data = await getAdminOrders();
       setOrders(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Could not load orders.";
       console.error("Failed to load orders:", err);
-      triggerToast(err.message || "Could not load orders.");
+      triggerToast(msg);
     } finally {
-      setIsLoading(false);
       setIsRefreshing(false);
     }
   }, [triggerToast]);
 
+  // Initial orders load on mount
   useEffect(() => {
-    loadOrders();
-  }, [loadOrders]);
+    let mounted = true;
 
-  // Dynamic Telemetry Metrics
-  const [telemetry, setTelemetry] = useState<OrderTelemetryData>({
-    pendingCount: 0,
-    todayCount: 0,
-  });
+    async function initOrders() {
+      try {
+        const data = await getAdminOrders();
+        if (mounted) {
+          setOrders(data);
+          setIsLoading(false);
+        }
+      } catch (err: unknown) {
+        if (mounted) {
+          const msg = err instanceof Error ? err.message : "Could not load orders.";
+          console.error("Failed to load orders:", err);
+          triggerToast(msg);
+          setIsLoading(false);
+        }
+      }
+    }
 
-  useEffect(() => {
+    initOrders();
+
+    return () => {
+      mounted = false;
+    };
+  }, [triggerToast]);
+
+  // Dynamic Telemetry Metrics computed directly from orders (no cascading render)
+  const telemetry = useMemo<OrderTelemetryData>(() => {
     const pendingCount = orders.filter(
       (o) =>
         (o.primaryStatus === "new" || o.primaryStatus === "accepted") &&
@@ -91,10 +120,10 @@ export default function OrdersScreen() {
       return orderDate >= startOfToday;
     }).length;
 
-    setTelemetry({
+    return {
       pendingCount,
       todayCount: todayCount > 0 ? todayCount : orders.length,
-    });
+    };
   }, [orders]);
 
   // Dynamic counts for status tabs based on loaded orders
@@ -467,7 +496,7 @@ export default function OrdersScreen() {
       {/* 2. Operational Telemetry Bar (Pending | Total Today) + Refresh */}
       <OrderTelemetryBar
         telemetry={telemetry}
-        onRefresh={() => loadOrders(true)}
+        onRefresh={refreshOrders}
         isRefreshing={isRefreshing}
       />
 
@@ -591,5 +620,19 @@ export default function OrdersScreen() {
         onClose={() => setIsTrackingOpen(false)}
       />
     </div>
+  );
+}
+
+export default function OrdersScreen() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center p-12 text-center">
+          <div className="w-8 h-8 rounded-full border-2 border-border-default border-t-primary animate-spin" />
+        </div>
+      }
+    >
+      <OrdersScreenContent />
+    </Suspense>
   );
 }

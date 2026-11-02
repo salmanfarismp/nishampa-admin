@@ -205,7 +205,7 @@ export async function createProductAction(
 
   const productId = insertedProduct.id;
   const bucket =
-    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "production";
+    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
 
   // 2. Upload images to Supabase Storage with admin credentials
   try {
@@ -411,7 +411,7 @@ export async function updateProductAction(
   }
 
   const bucket =
-    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "production";
+    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
 
   // 2. Synchronize associated Colors
   try {
@@ -436,8 +436,13 @@ export async function updateProductAction(
 
   // 3. Reconcile Images
   try {
-    // 3a. Delete removed images from ProductImage table
+    // 3a. Delete removed images from ProductImage table and remove from storage
     if (deletedImageIds.length > 0) {
+      const { data: imagesToDelete } = await adminClient
+        .from("ProductImage")
+        .select("img_url")
+        .in("id", deletedImageIds);
+
       const { error: delImgError } = await adminClient
         .from("ProductImage")
         .delete()
@@ -445,6 +450,19 @@ export async function updateProductAction(
 
       if (delImgError) {
         console.error("Failed to delete old images:", delImgError);
+      } else if (imagesToDelete && imagesToDelete.length > 0) {
+        const filePaths = imagesToDelete
+          .map((img) => img.img_url)
+          .filter((p): p is string => Boolean(p && !p.startsWith("http://") && !p.startsWith("https://")))
+          .map((p) => (p.startsWith("/") ? p.slice(1) : p));
+
+        if (filePaths.length > 0) {
+          try {
+            await adminClient.storage.from(bucket).remove(filePaths);
+          } catch (storageDelErr) {
+            console.warn("Storage deletion warning for removed product images:", storageDelErr);
+          }
+        }
       }
     }
 

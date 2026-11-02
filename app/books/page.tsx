@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { BookItem, BookReviewItem } from "@/components/books/types";
 import {
   getBooks,
@@ -36,17 +36,28 @@ export default function BooksPage() {
     null
   );
 
-  // Toast feedback state
+  // Toast feedback state with active timer ref
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isToastVisible, setIsToastVisible] = useState(false);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const triggerToast = useCallback((msg: string) => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
     setToastMessage(msg);
     setIsToastVisible(true);
-    const timer = setTimeout(() => {
+    toastTimerRef.current = setTimeout(() => {
       setIsToastVisible(false);
     }, 3200);
-    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
   }, []);
 
   // Fetch reviews for a specific book

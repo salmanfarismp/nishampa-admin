@@ -38,83 +38,74 @@ const BADGE_OPTIONS: { value: ProductBadge; label: string; desc: string }[] = [
   { value: "POPULAR", label: "Popular", desc: "Marks as top trending" },
 ];
 
-export function EditProductDrawer({
+interface EditProductFormContentProps {
+  product: ProductItem;
+  onClose: () => void;
+  onUpdateProduct: (productData: UpdateProductInput) => Promise<void> | void;
+  categories: AdminCategoryOption[];
+  colors?: ColorRow[];
+  isSubmitting?: boolean;
+}
+
+function EditProductFormContent({
   product,
-  isOpen,
   onClose,
   onUpdateProduct,
   categories,
   colors: initialColors,
   isSubmitting = false,
-}: EditProductDrawerProps) {
-  // Field States
-  const [name, setName] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [originalPrice, setOriginalPrice] = useState("");
-  const [userSelectedCategoryId, setUserSelectedCategoryId] = useState<string>("");
+}: EditProductFormContentProps) {
+  // Field States directly initialized from product
+  const [name, setName] = useState(product.title || "");
+  const [subtitle, setSubtitle] = useState(product.subtitle || "");
+  const [price, setPrice] = useState(product.price ? String(product.price) : "");
+  const [originalPrice, setOriginalPrice] = useState(
+    product.originalPrice ? String(product.originalPrice) : ""
+  );
+  const [userSelectedCategoryId, setUserSelectedCategoryId] = useState<string>(
+    product.categoryId ? String(product.categoryId) : ""
+  );
   const categoryId =
     userSelectedCategoryId || (categories[0]?.dbId ? String(categories[0].dbId) : "");
 
-  const [description, setDescription] = useState("");
-  const [badge, setBadge] = useState<ProductBadge>(null);
-  const [hasHangingKit, setHasHangingKit] = useState(false);
-  const [isActive, setIsActive] = useState(true);
+  const [description, setDescription] = useState(product.description || "");
+  const [badge, setBadge] = useState<ProductBadge>((product.badge as ProductBadge) || null);
+  const [hasHangingKit, setHasHangingKit] = useState(Boolean(product.has_hanging_kit));
+  const [isActive, setIsActive] = useState(Boolean(product.is_active));
 
   // Available Colors & Selection
   const [fetchedColors, setFetchedColors] = useState<ColorRow[]>([]);
-  const [selectedColorIds, setSelectedColorIds] = useState<number[]>([]);
+  const [selectedColorIds, setSelectedColorIds] = useState<number[]>(
+    (product.colors || []).map((c) => c.id)
+  );
   const availableColors =
     initialColors && initialColors.length > 0 ? initialColors : fetchedColors;
 
-  // Images state (up to 5 photos)
-  const [images, setImages] = useState<DrawerImageItem[]>([]);
-  const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
-
-  // Hidden File Input Ref
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Prepopulate form state whenever product changes or drawer opens
-  useEffect(() => {
-    if (product && isOpen) {
-      setName(product.title || "");
-      setSubtitle(product.subtitle || "");
-      setDescription(product.description || "");
-      setPrice(product.price ? String(product.price) : "");
-      setOriginalPrice(product.originalPrice ? String(product.originalPrice) : "");
-      setUserSelectedCategoryId(product.categoryId ? String(product.categoryId) : "");
-      setBadge((product.badge as ProductBadge) || null);
-      setHasHangingKit(Boolean(product.has_hanging_kit));
-      setIsActive(Boolean(product.is_active));
-      setSelectedColorIds((product.colors || []).map((c) => c.id));
-      setDeletedImageIds([]);
-
-      // Initialize images from product.images
-      if (product.images && product.images.length > 0) {
-        setImages(
-          product.images.map((img) => ({
-            id: `existing-${img.id}`,
-            isExisting: true as const,
-            existingId: img.id,
-            url: img.url,
-            imgUrl: img.imgUrl,
-          }))
-        );
-      } else if (product.imageUrl) {
-        setImages([
-          {
-            id: `existing-${product.id}`,
-            isExisting: true as const,
-            existingId: 0,
-            url: product.imageUrl,
-            imgUrl: product.imageUrl,
-          },
-        ]);
-      } else {
-        setImages([]);
-      }
+  // Initialize images from product
+  const [images, setImages] = useState<DrawerImageItem[]>(() => {
+    if (product.images && product.images.length > 0) {
+      return product.images.map((img) => ({
+        id: `existing-${img.id}`,
+        isExisting: true as const,
+        existingId: img.id,
+        url: img.url,
+        imgUrl: img.imgUrl,
+      }));
+    } else if (product.imageUrl) {
+      return [
+        {
+          id: `existing-${product.id}`,
+          isExisting: true as const,
+          existingId: 0,
+          url: product.imageUrl,
+          imgUrl: product.imageUrl,
+        },
+      ];
     }
-  }, [product, isOpen]);
+    return [];
+  });
+  const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch colors if not passed as prop
   useEffect(() => {
@@ -131,18 +122,22 @@ export function EditProductDrawer({
     };
   }, [initialColors]);
 
-  // Cleanup object URLs when newly added images are discarded
+  const imagesRef = useRef(images);
+
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+
+  // Cleanup object URLs on unmount only
   useEffect(() => {
     return () => {
-      images.forEach((img) => {
+      imagesRef.current.forEach((img) => {
         if (!img.isExisting) {
           URL.revokeObjectURL(img.previewUrl);
         }
       });
     };
-  }, [images]);
-
-  if (!isOpen || !product) return null;
+  }, []);
 
   // Add Files (multi-file or single file up to max 5)
   const handleAddFiles = (files: FileList | null) => {
@@ -881,5 +876,29 @@ export function EditProductDrawer({
         </div>
       </form>
     </div>
+  );
+}
+
+export function EditProductDrawer({
+  product,
+  isOpen,
+  onClose,
+  onUpdateProduct,
+  categories,
+  colors,
+  isSubmitting = false,
+}: EditProductDrawerProps) {
+  if (!isOpen || !product) return null;
+
+  return (
+    <EditProductFormContent
+      key={product.id}
+      product={product}
+      onClose={onClose}
+      onUpdateProduct={onUpdateProduct}
+      categories={categories}
+      colors={colors}
+      isSubmitting={isSubmitting}
+    />
   );
 }

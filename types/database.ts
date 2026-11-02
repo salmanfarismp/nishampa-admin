@@ -159,7 +159,7 @@ export interface PaymentRow {
   gateway_signature: string | null;
   amount: string | null;
   status: string | null;
-  raw_response: any;
+  raw_response: Record<string, unknown> | null;
   updated_at: string | null;
 }
 

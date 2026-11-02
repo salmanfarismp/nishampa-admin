@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { Order, PrimaryStatus, SecondaryStatus } from "./types";
+import { Order } from "./types";
 import { getAvailableOrderActions, OrderActionType, OrderActionDefinition } from "@/lib/orders/orderStateMachine";
 
 interface OrderDetailsDrawerProps {
@@ -47,7 +47,6 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      setCopied(false);
     } else {
       document.body.style.overflow = "";
     }
@@ -141,7 +140,8 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
   };
 
   const formatCurrency = (val: number) => {
-    return `₹${val.toLocaleString("en-IN", {
+    const amount = Number.isFinite(val) ? val : 0;
+    return `₹${amount.toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;

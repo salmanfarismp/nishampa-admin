@@ -2,10 +2,19 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+function getSafeRedirectPath(candidate: string | null): string {
+  if (!candidate || typeof candidate !== "string") return "/";
+  // Must start with single slash, not double slash (//evil.com), and must not contain protocol schemes
+  if (!candidate.startsWith("/") || candidate.startsWith("//") || candidate.includes("://")) {
+    return "/";
+  }
+  return candidate;
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") || "/";
+  const next = getSafeRedirectPath(searchParams.get("next"));
 
   if (code) {
     const cookieStore = await cookies();

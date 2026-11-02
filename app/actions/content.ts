@@ -49,7 +49,7 @@ export async function uploadGalleryItemAction(
   const description = (formData.get("description") as string)?.trim() || null;
 
   const bucket =
-    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "production";
+    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
 
   const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpeg";
   const safeName = file.name
@@ -114,7 +114,7 @@ export async function updateGalleryItemAction(
   await assertAdmin();
   const adminClient = createAdminClient();
 
-  const updatePayload: Record<string, any> = {};
+  const updatePayload: Record<string, unknown> = {};
   if (data.tag !== undefined) updatePayload.tag = data.tag?.trim() || null;
   if (data.title !== undefined) updatePayload.title = data.title?.trim() || null;
   if (data.description !== undefined) updatePayload.description = data.description?.trim() || null;
@@ -158,7 +158,7 @@ export async function deleteGalleryItemAction(
   // Optionally clean up storage object if relative path
   if (storagePath && !storagePath.startsWith("http://") && !storagePath.startsWith("https://")) {
     const bucket =
-      process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "production";
+      process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
     const cleanPath = storagePath.startsWith("/") ? storagePath.slice(1) : storagePath;
     try {
       await adminClient.storage.from(bucket).remove([cleanPath]);
@@ -174,7 +174,7 @@ export async function deleteGalleryItemAction(
 export const deleteLifeStyleImageAction = deleteGalleryItemAction;
 
 /**
- * Server Action: Bulk deletes multiple gallery records by ID.
+ * Server Action: Bulk deletes multiple gallery records by ID and removes storage files.
  */
 export async function deleteGalleryItemsAction(
   ids: number[]
@@ -184,6 +184,12 @@ export async function deleteGalleryItemsAction(
   await assertAdmin();
   const adminClient = createAdminClient();
 
+  // Retrieve storage file paths before deleting records
+  const { data: rowsToDelete } = await adminClient
+    .from("Gallery")
+    .select("img_url")
+    .in("id", ids);
+
   const { error } = await adminClient
     .from("Gallery")
     .delete()
@@ -192,6 +198,24 @@ export async function deleteGalleryItemsAction(
   if (error) {
     console.error("Failed to bulk delete Gallery records:", error);
     throw new Error(`Failed to delete gallery records: ${error.message}`);
+  }
+
+  // Cleanup storage objects
+  if (rowsToDelete && rowsToDelete.length > 0) {
+    const bucket =
+      process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
+    const cleanPaths = rowsToDelete
+      .map((r) => r.img_url)
+      .filter((p): p is string => Boolean(p && !p.startsWith("http://") && !p.startsWith("https://")))
+      .map((p) => (p.startsWith("/") ? p.slice(1) : p));
+
+    if (cleanPaths.length > 0) {
+      try {
+        await adminClient.storage.from(bucket).remove(cleanPaths);
+      } catch (storageErr) {
+        console.warn("Bulk storage cleanup warning:", storageErr);
+      }
+    }
   }
 
   revalidatePath("/content");

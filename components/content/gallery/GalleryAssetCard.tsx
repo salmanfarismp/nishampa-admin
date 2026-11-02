@@ -46,15 +46,31 @@ export const GalleryAssetCard: React.FC<GalleryAssetCardProps> = ({
       }`}
     >
       {/* Top Image Container */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-container">
-        <Image
-          src={asset.url}
-          alt={asset.title || asset.alt}
-          fill
-          unoptimized
-          sizes="(max-width: 640px) 50vw, 240px"
-          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-        />
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-container flex items-center justify-center">
+        {asset.url ? (
+          <Image
+            src={asset.url}
+            alt={asset.title || asset.alt}
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 50vw, 240px"
+            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center text-text-subtle">
+            <svg
+              className="w-8 h-8 opacity-40"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+              <circle cx="9" cy="9" r="2" />
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+            </svg>
+          </div>
+        )}
 
         {/* Selection Checkbox Overlay */}
         {isSelecting && (

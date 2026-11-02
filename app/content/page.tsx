@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   ContentTab,
   GalleryAsset,
@@ -60,17 +60,29 @@ export default function ContentPage() {
   const [reviewToEdit, setReviewToEdit] = useState<ServiceReviewItem | null>(null);
   const [activeReviewMenu, setActiveReviewMenu] = useState<ServiceReviewItem | null>(null);
 
-  // Toast Notification State
+  // Toast Notification State with timer ref
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isToastVisible, setIsToastVisible] = useState(false);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const showToast = (message: string) => {
+  const showToast = useCallback((message: string) => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
     setToastMessage(message);
     setIsToastVisible(true);
-    setTimeout(() => {
+    toastTimerRef.current = setTimeout(() => {
       setIsToastVisible(false);
     }, 3000);
-  };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
   // Fetch lifestyle gallery from Supabase
   const reloadGallery = useCallback(async () => {

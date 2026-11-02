@@ -16,6 +16,7 @@ import {
 import { GalleryRow, FaqRow, ServiceReviewRow } from "@/types/database";
 import { GalleryAsset, FaqItem, FaqStatus, ServiceReviewItem } from "@/components/content/types";
 import { resolveMediaUrl } from "@/lib/utils/media";
+import { optimizeImage } from "@/lib/utils/imageOptimizer";
 
 /**
  * Formats an ISO date string into human-friendly relative or date display.
@@ -96,8 +97,19 @@ export async function uploadGalleryItem(data: {
   title?: string;
   description?: string;
 }): Promise<GalleryAsset> {
+  // Client-side image optimization before transport (consistent with product images)
+  let optimizedFile = data.file;
+  try {
+    optimizedFile = await optimizeImage(data.file, {
+      maxWidth: 1080,
+      quality: 0.8,
+    });
+  } catch (e) {
+    console.warn("Client image optimization failed for gallery item, using original:", e);
+  }
+
   const formData = new FormData();
-  formData.append("file", data.file);
+  formData.append("file", optimizedFile);
   if (data.tag) formData.append("tag", data.tag);
   if (data.title) formData.append("title", data.title);
   if (data.description) formData.append("description", data.description);

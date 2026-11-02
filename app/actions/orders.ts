@@ -70,11 +70,11 @@ export async function transitionOrderStateAction(
     const currentFulfillment = (orderRow.fulfillment || "active") as FulfillmentStatus;
 
     // Determine current payment status
-    const rawPaymentStatus = (
-      orderRow.Payment && Array.isArray(orderRow.Payment)
-        ? orderRow.Payment[0]?.status
-        : (orderRow.Payment as any)?.status || "pending"
-    ).toLowerCase();
+    const paymentRelation = orderRow.Payment;
+    const statusCandidate = Array.isArray(paymentRelation)
+      ? (paymentRelation[0] as { status?: string } | undefined)?.status
+      : (paymentRelation as { status?: string } | null)?.status;
+    const rawPaymentStatus = (statusCandidate || "pending").toLowerCase();
 
     let currentPayment: PaymentStatus = "pending";
     if (rawPaymentStatus === "paid" || rawPaymentStatus === "captured" || rawPaymentStatus === "completed") {
@@ -119,8 +119,13 @@ export async function transitionOrderStateAction(
     }
 
     // 5. Update Payment table if paymentStatus changed
-    if (target.paymentStatus !== undefined && orderRow.payment) {
-      const paymentId = orderRow.payment;
+    const paymentId =
+      orderRow.payment ||
+      (Array.isArray(orderRow.Payment)
+        ? (orderRow.Payment[0] as { id?: string } | undefined)?.id
+        : (orderRow.Payment as { id?: string } | null)?.id);
+
+    if (target.paymentStatus !== undefined && paymentId) {
       const { error: paymentUpdateErr } = await adminClient
         .from("Payment")
         .update({
@@ -137,9 +142,11 @@ export async function transitionOrderStateAction(
 
     revalidatePath("/orders");
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMsg =
+      err instanceof Error ? err.message : "Failed to transition order state.";
     console.error(`Error in transitionOrderStateAction for order #${orderId}:`, err);
-    return { success: false, error: err.message || "Failed to transition order state." };
+    return { success: false, error: errorMsg };
   }
 }
 

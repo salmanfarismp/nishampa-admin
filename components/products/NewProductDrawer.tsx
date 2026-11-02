@@ -78,12 +78,18 @@ export function NewProductDrawer({
     };
   }, [initialColors]);
 
-  // Cleanup object URLs on unmount/removal
+  const imagesRef = useRef(images);
+
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+
+  // Cleanup object URLs on unmount only
   useEffect(() => {
     return () => {
-      images.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      imagesRef.current.forEach((img) => URL.revokeObjectURL(img.previewUrl));
     };
-  }, [images]);
+  }, []);
 
   if (!isOpen) return null;
 
