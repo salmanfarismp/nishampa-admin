@@ -9,6 +9,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "Yesterday",
     dimensions: "2048 × 2048",
     fileSize: "1.8 MB",
+    is_active: true,
   },
   {
     id: "gal-2",
@@ -18,6 +19,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "2h ago",
     dimensions: "2400 × 2400",
     fileSize: "2.4 MB",
+    is_active: true,
   },
   {
     id: "gal-3",
@@ -27,6 +29,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "3d ago",
     dimensions: "3000 × 3000",
     fileSize: "3.2 MB",
+    is_active: true,
   },
   {
     id: "gal-4",
@@ -36,6 +39,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "4d ago",
     dimensions: "2800 × 2800",
     fileSize: "2.1 MB",
+    is_active: true,
   },
   {
     id: "gal-5",
@@ -45,6 +49,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "5d ago",
     dimensions: "2600 × 2600",
     fileSize: "2.9 MB",
+    is_active: true,
   },
   {
     id: "gal-6",
@@ -54,6 +59,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "1w ago",
     dimensions: "2400 × 2400",
     fileSize: "1.9 MB",
+    is_active: true,
   },
   {
     id: "gal-7",
@@ -63,6 +69,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "1w ago",
     dimensions: "2200 × 2200",
     fileSize: "2.3 MB",
+    is_active: true,
   },
   {
     id: "gal-8",
@@ -72,6 +79,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "2w ago",
     dimensions: "2000 × 2000",
     fileSize: "1.4 MB",
+    is_active: true,
   },
   {
     id: "gal-9",
@@ -81,6 +89,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "2w ago",
     dimensions: "2500 × 2500",
     fileSize: "2.0 MB",
+    is_active: true,
   },
   {
     id: "gal-10",
@@ -90,6 +99,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "3w ago",
     dimensions: "2400 × 2400",
     fileSize: "2.7 MB",
+    is_active: true,
   },
   {
     id: "gal-11",
@@ -99,6 +109,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "3w ago",
     dimensions: "2600 × 2600",
     fileSize: "3.1 MB",
+    is_active: true,
   },
   {
     id: "gal-12",
@@ -108,6 +119,7 @@ export const INITIAL_GALLERY_ASSETS: GalleryAsset[] = [
     uploadedAt: "1mo ago",
     dimensions: "2100 × 2100",
     fileSize: "1.6 MB",
+    is_active: true,
   },
 ];
 
@@ -189,6 +201,7 @@ export const INITIAL_SERVICE_REVIEWS: ServiceReviewItem[] = [
       "Nisham sir explains deep psychology in simple, clear Malayalam and English. His sessions helped our family talk through difficult business decisions without damaging our relationships.",
     createdAt: "Just now",
     displaySubtitle: "Sensebridge Student & Counselor",
+    is_active: true,
   },
   {
     id: "sr-2",
@@ -200,5 +213,6 @@ export const INITIAL_SERVICE_REVIEWS: ServiceReviewItem[] = [
       "During a stressful business restructuring, his counseling gave our team clear perspective and prevented burnout. His insights on pressure and decision-making are genuinely practical.",
     createdAt: "2d ago",
     displaySubtitle: "Managing Director, Dubai",
+    is_active: true,
   },
 ];

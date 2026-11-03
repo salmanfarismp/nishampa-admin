@@ -1,5 +1,7 @@
 import { BookRow, BookReviewRow } from "@/types/database";
 
+export type BookReviewStatusFilter = "all" | "active" | "draft";
+
 export interface BookItem {
   id: number;
   name: string;
@@ -22,6 +24,7 @@ export interface BookReviewItem {
   place: string;
   createdAt: string;
   displaySubtitle: string;
+  is_active: boolean;
 }
 
 export type { BookRow, BookReviewRow };

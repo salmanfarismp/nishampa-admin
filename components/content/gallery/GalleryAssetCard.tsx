@@ -42,6 +42,8 @@ export const GalleryAssetCard: React.FC<GalleryAssetCardProps> = ({
       className={`relative w-full rounded-2xl overflow-hidden bg-surface-container-lowest border transition-all duration-200 select-none cursor-pointer group active:scale-[0.98] shadow-2xs flex flex-col ${
         isSelected
           ? "ring-2 ring-primary ring-offset-2 ring-offset-surface border-primary"
+          : !asset.is_active
+          ? "border-border-default/60 bg-surface-container-low/40 hover:border-border-strong hover:shadow-xs opacity-90"
           : "border-border-default/50 hover:border-border-strong hover:shadow-xs"
       }`}
     >
@@ -54,7 +56,9 @@ export const GalleryAssetCard: React.FC<GalleryAssetCardProps> = ({
             fill
             unoptimized
             sizes="(max-width: 640px) 50vw, 240px"
-            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+            className={`object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 ${
+              !asset.is_active ? "grayscale opacity-80" : ""
+            }`}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-text-subtle">
@@ -69,6 +73,16 @@ export const GalleryAssetCard: React.FC<GalleryAssetCardProps> = ({
               <circle cx="9" cy="9" r="2" />
               <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
             </svg>
+          </div>
+        )}
+
+        {/* Draft Badge Overlay */}
+        {!asset.is_active && (
+          <div className="absolute top-2 left-2 z-10">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/60 text-amber-300 backdrop-blur-xs border border-amber-400/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              Draft
+            </span>
           </div>
         )}
 

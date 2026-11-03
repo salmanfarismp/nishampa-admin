@@ -12,9 +12,13 @@ import {
   createServiceReviewAction,
   updateServiceReviewAction,
   deleteServiceReviewAction,
+  getClientItemsAction,
+  createClientItemAction,
+  updateClientItemAction,
+  deleteClientItemAction,
 } from "@/app/actions/content";
-import { GalleryRow, FaqRow, ServiceReviewRow } from "@/types/database";
-import { GalleryAsset, FaqItem, FaqStatus, ServiceReviewItem } from "@/components/content/types";
+import { GalleryRow, FaqRow, ServiceReviewRow, ClientRow } from "@/types/database";
+import { GalleryAsset, FaqItem, FaqStatus, ServiceReviewItem, ClientItem } from "@/components/content/types";
 import { resolveMediaUrl } from "@/lib/utils/media";
 import { optimizeImage } from "@/lib/utils/imageOptimizer";
 
@@ -71,6 +75,7 @@ export function mapGalleryRowToAsset(
     createdAt: row.created_at,
     dimensions: "2400 × 2400",
     fileSize: "Optimized",
+    is_active: Boolean(row.is_active ?? true),
   };
 }
 
@@ -96,6 +101,7 @@ export async function uploadGalleryItem(data: {
   tag?: string;
   title?: string;
   description?: string;
+  is_active?: boolean;
 }): Promise<GalleryAsset> {
   // Client-side image optimization before transport (consistent with product images)
   let optimizedFile = data.file;
@@ -113,6 +119,10 @@ export async function uploadGalleryItem(data: {
   if (data.tag) formData.append("tag", data.tag);
   if (data.title) formData.append("title", data.title);
   if (data.description) formData.append("description", data.description);
+  formData.append(
+    "is_active",
+    String(data.is_active !== undefined ? data.is_active : true)
+  );
 
   const row = await uploadGalleryItemAction(formData);
   return mapGalleryRowToAsset(row);
@@ -123,13 +133,18 @@ export async function uploadGalleryItem(data: {
  */
 export async function uploadLifeStyleImage(
   file: File,
-  meta?: { tag?: string; title?: string; description?: string }
+  meta?: {
+    tag?: string;
+    title?: string;
+    description?: string;
+    is_active?: boolean;
+  }
 ): Promise<GalleryAsset> {
   return uploadGalleryItem({ file, ...meta });
 }
 
 /**
- * Updates text metadata for an existing gallery record.
+ * Updates text metadata and status for an existing gallery record.
  */
 export async function updateGalleryItem(
   id: string,
@@ -137,6 +152,7 @@ export async function updateGalleryItem(
     tag?: string;
     title?: string;
     description?: string;
+    is_active?: boolean;
   }
 ): Promise<GalleryAsset> {
   const numId = Number(id);
@@ -145,6 +161,16 @@ export async function updateGalleryItem(
   }
   const row = await updateGalleryItemAction(numId, data);
   return mapGalleryRowToAsset(row);
+}
+
+/**
+ * Toggles an existing gallery item's active/draft status.
+ */
+export async function toggleGalleryItemStatus(
+  id: string,
+  currentStatus: boolean
+): Promise<GalleryAsset> {
+  return updateGalleryItem(id, { is_active: !currentStatus });
 }
 
 /**
@@ -293,6 +319,7 @@ export function mapServiceReviewRowToItem(
     place: row.place || "",
     createdAt: formatUploadedDate(row.created_at),
     displaySubtitle: formatReviewSubtitle(row.occupation, row.place),
+    is_active: Boolean(row.is_active ?? true),
   };
 }
 
@@ -312,12 +339,14 @@ export async function createServiceReview(data: {
   name?: string | null;
   occupation?: string | null;
   place?: string | null;
+  is_active?: boolean;
 }): Promise<ServiceReviewItem> {
   const row = await createServiceReviewAction({
     comment: data.comment,
     name: data.name,
     occupation: data.occupation,
     place: data.place,
+    is_active: data.is_active,
   });
   return mapServiceReviewRowToItem(row);
 }
@@ -332,6 +361,7 @@ export async function updateServiceReview(
     name?: string | null;
     occupation?: string | null;
     place?: string | null;
+    is_active?: boolean;
   }
 ): Promise<ServiceReviewItem> {
   const numId = Number(id);
@@ -344,8 +374,19 @@ export async function updateServiceReview(
     name: data.name,
     occupation: data.occupation,
     place: data.place,
+    is_active: data.is_active,
   });
   return mapServiceReviewRowToItem(row);
+}
+
+/**
+ * Toggles a service review active/draft status.
+ */
+export async function toggleServiceReviewStatus(
+  id: string,
+  currentStatus: boolean
+): Promise<ServiceReviewItem> {
+  return updateServiceReview(id, { is_active: !currentStatus });
 }
 
 /**
@@ -357,4 +398,113 @@ export async function deleteServiceReview(id: string): Promise<void> {
     throw new Error(`Invalid ServiceReview ID: ${id}`);
   }
   await deleteServiceReviewAction(numId);
+}
+
+/**
+ * Maps a database ClientRow to a UI ClientItem.
+ */
+export function mapClientRowToItem(row: ClientRow): ClientItem {
+  const rawLogoPath = row.logo_url || "";
+  const publicUrl = resolveMediaUrl(rawLogoPath);
+
+  return {
+    id: String(row.id),
+    rawId: row.id,
+    name: row.name || "",
+    logoUrl: publicUrl,
+    rawLogoPath,
+    createdAt: row.created_at,
+    formattedDate: formatUploadedDate(row.created_at),
+  };
+}
+
+/**
+ * Fetches all clients from Supabase and converts to ClientItem[].
+ */
+export async function getClients(): Promise<ClientItem[]> {
+  const rows = await getClientItemsAction();
+  return rows.map(mapClientRowToItem);
+}
+
+/**
+ * Creates a new client in Supabase with image refinement for uploaded logos.
+ */
+export async function createClient(data: {
+  name: string;
+  file?: File | null;
+  logoUrl?: string;
+}): Promise<ClientItem> {
+  const formData = new FormData();
+  formData.append("name", data.name);
+
+  if (data.file) {
+    let fileToUpload = data.file;
+    try {
+      fileToUpload = await optimizeImage(data.file, {
+        maxWidth: 1080,
+        quality: 0.8,
+      });
+    } catch (e) {
+      console.warn("Client image optimization failed for client logo, using original:", e);
+    }
+    formData.append("file", fileToUpload);
+  } else if (data.logoUrl) {
+    formData.append("logo_url", data.logoUrl);
+  }
+
+  const row = await createClientItemAction(formData);
+  return mapClientRowToItem(row);
+}
+
+/**
+ * Updates a client in Supabase with image refinement for newly uploaded logos.
+ */
+export async function updateClient(
+  id: string,
+  data: {
+    name?: string;
+    file?: File | null;
+    logoUrl?: string;
+    removeLogo?: boolean;
+  }
+): Promise<ClientItem> {
+  const numId = Number(id);
+  if (isNaN(numId)) {
+    throw new Error(`Invalid Client ID: ${id}`);
+  }
+
+  const formData = new FormData();
+  if (data.name !== undefined) {
+    formData.append("name", data.name);
+  }
+  if (data.removeLogo) {
+    formData.append("remove_logo", "true");
+  } else if (data.file) {
+    let fileToUpload = data.file;
+    try {
+      fileToUpload = await optimizeImage(data.file, {
+        maxWidth: 1080,
+        quality: 0.8,
+      });
+    } catch (e) {
+      console.warn("Client image optimization failed for client logo, using original:", e);
+    }
+    formData.append("file", fileToUpload);
+  } else if (data.logoUrl !== undefined) {
+    formData.append("logo_url", data.logoUrl);
+  }
+
+  const row = await updateClientItemAction(numId, formData);
+  return mapClientRowToItem(row);
+}
+
+/**
+ * Deletes a client by ID.
+ */
+export async function deleteClient(id: string): Promise<void> {
+  const numId = Number(id);
+  if (isNaN(numId)) {
+    throw new Error(`Invalid Client ID: ${id}`);
+  }
+  await deleteClientItemAction(numId);
 }

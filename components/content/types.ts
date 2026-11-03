@@ -1,4 +1,6 @@
-export type ContentTab = "gallery" | "service-reviews";
+export type ContentTab = "gallery" | "service-reviews" | "clients";
+
+export type ContentStatusFilter = "all" | "active" | "draft";
 
 export type FaqStatus = "published" | "draft";
 export type FaqFilter = "all" | "published" | "draft";
@@ -16,6 +18,7 @@ export interface GalleryAsset {
   dimensions?: string;
   fileSize?: string;
   aspectRatio?: string;
+  is_active: boolean;
 }
 
 export interface FaqItem {
@@ -37,11 +40,23 @@ export interface ServiceReviewItem {
   place: string;
   createdAt: string;
   displaySubtitle: string;
+  is_active: boolean;
+}
+
+export interface ClientItem {
+  id: string;
+  rawId: number;
+  name: string;
+  logoUrl: string;
+  rawLogoPath?: string;
+  createdAt: string;
+  formattedDate?: string;
 }
 
 export interface ContentStats {
   totalAssets: number;
   totalServiceReviews: number;
+  totalClients?: number;
   totalFaqs?: number;
   publishedFaqs?: number;
   draftFaqs?: number;

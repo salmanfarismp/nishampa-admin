@@ -1,17 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { BookItem, BookReviewItem } from "@/components/books/types";
+import {
+  BookItem,
+  BookReviewItem,
+  BookReviewStatusFilter,
+} from "@/components/books/types";
 import {
   getBooks,
   getBookReviews,
   createBookReview,
   updateBookReview,
+  toggleBookReviewStatus,
   deleteBookReview,
 } from "@/lib/api/books";
 import { BookSelector } from "@/components/books/BookSelector";
 import { BookReviewCard } from "@/components/books/BookReviewCard";
 import { BookReviewSearchBar } from "@/components/books/BookReviewSearchBar";
+import { BookReviewFilterChips } from "@/components/books/BookReviewFilterChips";
 import { BookReviewCreateEditModal } from "@/components/books/BookReviewCreateEditModal";
 import { BookReviewActionSheet } from "@/components/books/BookReviewActionSheet";
 import { BookReviewFloatingActionButton } from "@/components/books/BookReviewFloatingActionButton";
@@ -23,6 +29,8 @@ export default function BooksPage() {
   const [selectedBook, setSelectedBook] = useState<BookItem | null>(null);
   const [reviews, setReviews] = useState<BookReviewItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] =
+    useState<BookReviewStatusFilter>("all");
 
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
@@ -123,30 +131,45 @@ export default function BooksPage() {
     if (selectedBook?.id === book.id) return;
     setSelectedBook(book);
     setSearchQuery("");
+    setStatusFilter("all");
     loadReviewsForBook(book.id);
   };
 
-  // Compute average rating for active reviews
+  // Compute review counts for all / active / draft
+  const reviewCounts = useMemo(() => {
+    const active = reviews.filter((r) => r.is_active).length;
+    const draft = reviews.filter((r) => !r.is_active).length;
+    return { all: reviews.length, active, draft };
+  }, [reviews]);
+
+  // Compute average rating for active reviews only
   const averageRating = useMemo(() => {
-    const rated = reviews.filter((r) => r.stars != null && r.stars > 0);
+    const rated = reviews.filter(
+      (r) => r.is_active && r.stars != null && r.stars > 0
+    );
     if (rated.length === 0) return null;
     const sum = rated.reduce((acc, r) => acc + (r.stars || 0), 0);
     return sum / rated.length;
   }, [reviews]);
 
-  // Filter reviews by search query
+  // Filter reviews by search query and active/draft status
   const filteredReviews = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    if (!q) return reviews;
 
     return reviews.filter((r) => {
+      // 1. Status Filter
+      if (statusFilter === "active" && !r.is_active) return false;
+      if (statusFilter === "draft" && r.is_active) return false;
+
+      // 2. Search Query
+      if (!q) return true;
       const matchName = r.name.toLowerCase().includes(q);
       const matchComment = r.comment.toLowerCase().includes(q);
       const matchOcc = r.occupation.toLowerCase().includes(q);
       const matchPlace = r.place.toLowerCase().includes(q);
       return matchName || matchComment || matchOcc || matchPlace;
     });
-  }, [reviews, searchQuery]);
+  }, [reviews, searchQuery, statusFilter]);
 
   // CRUD Handlers
   const handleSaveReview = async (reviewData: {
@@ -157,6 +180,7 @@ export default function BooksPage() {
     occupation: string;
     place: string;
     comment: string;
+    is_active: boolean;
   }) => {
     try {
       if (reviewData.id) {
@@ -170,12 +194,46 @@ export default function BooksPage() {
         // Create review
         const created = await createBookReview(reviewData);
         setReviews((prev) => [created, ...prev]);
-        triggerToast(`Added new review for ${selectedBook?.name}`);
+        triggerToast(
+          reviewData.is_active
+            ? `Added new review for ${selectedBook?.name}`
+            : `Saved draft review for ${selectedBook?.name}`
+        );
       }
     } catch (err: unknown) {
       console.error("Failed to save book review:", err);
       triggerToast(
         err instanceof Error ? err.message : "Failed to save review."
+      );
+    }
+  };
+
+  const handleToggleReviewStatus = async (review: BookReviewItem) => {
+    const nextStatus = !review.is_active;
+    const backup = [...reviews];
+
+    // Optimistic toggle
+    setReviews((prev) =>
+      prev.map((r) =>
+        r.id === review.id ? { ...r, is_active: nextStatus } : r
+      )
+    );
+    triggerToast(
+      nextStatus
+        ? `Published review by ${review.name || "Reader"}`
+        : `Moved review by ${review.name || "Reader"} to drafts`
+    );
+
+    try {
+      const updated = await toggleBookReviewStatus(review.id, review.is_active);
+      setReviews((prev) =>
+        prev.map((r) => (r.id === review.id ? updated : r))
+      );
+    } catch (err: unknown) {
+      console.error("Failed to toggle review status:", err);
+      setReviews(backup);
+      triggerToast(
+        err instanceof Error ? err.message : "Failed to toggle review status."
       );
     }
   };
@@ -297,12 +355,19 @@ export default function BooksPage() {
               )}
             </div>
 
-            {/* Search Bar */}
-            <BookReviewSearchBar
-              query={searchQuery}
-              onChange={setSearchQuery}
-              onClear={() => setSearchQuery("")}
-            />
+            {/* Search Bar & Status Filter */}
+            <div className="flex flex-col gap-2">
+              <BookReviewSearchBar
+                query={searchQuery}
+                onChange={setSearchQuery}
+                onClear={() => setSearchQuery("")}
+              />
+              <BookReviewFilterChips
+                activeFilter={statusFilter}
+                onSelectFilter={setStatusFilter}
+                counts={reviewCounts}
+              />
+            </div>
 
             {/* Reviews Stream Content */}
             <div className="flex flex-col gap-3" id="bookReviewsContainer">
@@ -384,12 +449,13 @@ export default function BooksPage() {
         onSave={handleSaveReview}
       />
 
-      {/* Review Action Sheet (Edit / Delete) */}
+      {/* Review Action Sheet (Edit / Delete / Toggle Status) */}
       <BookReviewActionSheet
         isOpen={Boolean(activeReviewMenu)}
         review={activeReviewMenu}
         onClose={() => setActiveReviewMenu(null)}
         onEdit={handleOpenEdit}
+        onToggleStatus={handleToggleReviewStatus}
         onDelete={handleDeleteReview}
       />
     </div>

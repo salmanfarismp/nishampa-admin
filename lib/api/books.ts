@@ -82,6 +82,7 @@ export function mapBookReviewRowToItem(row: BookReviewRow): BookReviewItem {
     place: row.place || "",
     createdAt: formatUploadedDate(row.created_at),
     displaySubtitle: formatReviewSubtitle(row.occupation, row.place),
+    is_active: Boolean(row.is_active ?? true),
   };
 }
 
@@ -113,6 +114,7 @@ export async function createBookReview(data: {
   occupation?: string | null;
   place?: string | null;
   comment?: string | null;
+  is_active?: boolean;
 }): Promise<BookReviewItem> {
   const row = await createBookReviewAction({
     book_id: data.book_id,
@@ -121,6 +123,7 @@ export async function createBookReview(data: {
     occupation: data.occupation,
     place: data.place,
     comment: data.comment,
+    is_active: data.is_active,
   });
   return mapBookReviewRowToItem(row);
 }
@@ -136,6 +139,7 @@ export async function updateBookReview(
     occupation?: string | null;
     place?: string | null;
     comment?: string | null;
+    is_active?: boolean;
   }
 ): Promise<BookReviewItem> {
   const numId = Number(id);
@@ -149,8 +153,19 @@ export async function updateBookReview(
     occupation: data.occupation,
     place: data.place,
     comment: data.comment,
+    is_active: data.is_active,
   });
   return mapBookReviewRowToItem(row);
+}
+
+/**
+ * Toggles a book review's active/draft status.
+ */
+export async function toggleBookReviewStatus(
+  id: string,
+  currentStatus: boolean
+): Promise<BookReviewItem> {
+  return updateBookReview(id, { is_active: !currentStatus });
 }
 
 /**

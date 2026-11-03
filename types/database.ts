@@ -67,6 +67,7 @@ export interface GalleryRow {
   tag: string | null;
   title: string | null;
   description: string | null;
+  is_active: boolean;
 }
 
 export type LifeStyleImageRow = GalleryRow;
@@ -86,6 +87,14 @@ export interface ServiceReviewRow {
   name: string | null;
   occupation: string | null;
   place: string | null;
+  is_active: boolean;
+}
+
+export interface ClientRow {
+  id: number;
+  created_at: string;
+  name: string | null;
+  logo_url: string | null;
 }
 
 export type OrderStatus =
@@ -136,6 +145,7 @@ export interface BookReviewRow {
   occupation: string | null;
   place: string | null;
   book_id: number | null;
+  is_active: boolean;
 }
 
 export interface OrderItemRow {

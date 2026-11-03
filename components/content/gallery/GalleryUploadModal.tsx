@@ -16,6 +16,7 @@ interface GalleryUploadModalProps {
     description: string;
     dimensions: string;
     fileSize: string;
+    is_active?: boolean;
   }) => Promise<void> | void;
 }
 
@@ -27,6 +28,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
   const [tag, setTag] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isActive, setIsActive] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileSizeText, setFileSizeText] = useState("Optimized");
@@ -82,6 +84,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
     setTag("");
     setTitle("");
     setDescription("");
+    setIsActive(true);
     onClose();
   };
 
@@ -112,6 +115,7 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
         description: description.trim(),
         dimensions: "2400 × 2400",
         fileSize: fileSizeText,
+        is_active: isActive,
       });
 
       handleClose();
@@ -298,6 +302,38 @@ export const GalleryUploadModal: React.FC<GalleryUploadModalProps> = ({
               className="w-full p-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest transition-colors resize-none leading-relaxed"
             />
           </label>
+
+          {/* Status Toggle */}
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low border border-border-default/50">
+            <div className="flex flex-col">
+              <span className="text-[12px] font-semibold text-on-surface flex items-center gap-1.5">
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    isActive ? "bg-emerald-500" : "bg-outline"
+                  }`}
+                />
+                Status: {isActive ? "Active (Publish immediately)" : "Draft (Hidden)"}
+              </span>
+              <span className="text-[11px] text-on-surface-variant">
+                {isActive
+                  ? "Will be immediately visible on public site"
+                  : "Saved as draft, hidden from storefront"}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsActive(!isActive)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                isActive ? "bg-primary" : "bg-surface-container-highest"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isActive ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
         </div>
 
         {/* Action Buttons */}

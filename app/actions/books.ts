@@ -58,6 +58,7 @@ export async function createBookReviewAction(payload: {
   occupation?: string | null;
   place?: string | null;
   comment?: string | null;
+  is_active?: boolean;
 }): Promise<BookReviewRow> {
   await assertAdmin();
   const adminClient = createAdminClient();
@@ -71,6 +72,7 @@ export async function createBookReviewAction(payload: {
       occupation: payload.occupation?.trim() || null,
       place: payload.place?.trim() || null,
       comment: payload.comment?.trim() || null,
+      is_active: payload.is_active !== undefined ? Boolean(payload.is_active) : true,
     })
     .select()
     .single();
@@ -95,6 +97,7 @@ export async function updateBookReviewAction(
     occupation?: string | null;
     place?: string | null;
     comment?: string | null;
+    is_active?: boolean;
   }
 ): Promise<BookReviewRow> {
   await assertAdmin();
@@ -112,6 +115,9 @@ export async function updateBookReviewAction(
   if (payload.place !== undefined) updates.place = payload.place?.trim() || null;
   if (payload.comment !== undefined) {
     updates.comment = payload.comment?.trim() || null;
+  }
+  if (payload.is_active !== undefined) {
+    updates.is_active = Boolean(payload.is_active);
   }
 
   const { data, error } = await adminClient

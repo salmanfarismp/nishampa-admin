@@ -17,6 +17,7 @@ interface BookReviewCreateEditModalProps {
     occupation: string;
     place: string;
     comment: string;
+    is_active: boolean;
   }) => void;
 }
 
@@ -32,6 +33,7 @@ interface FormContentProps {
     occupation: string;
     place: string;
     comment: string;
+    is_active: boolean;
   }) => void;
 }
 
@@ -47,6 +49,7 @@ const BookReviewFormContent: React.FC<FormContentProps> = ({
   const [occupation, setOccupation] = useState(reviewToEdit?.occupation ?? "");
   const [place, setPlace] = useState(reviewToEdit?.place ?? "");
   const [comment, setComment] = useState(reviewToEdit?.comment ?? "");
+  const [isActive, setIsActive] = useState(reviewToEdit?.is_active ?? true);
   const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -72,6 +75,7 @@ const BookReviewFormContent: React.FC<FormContentProps> = ({
       occupation: occupation.trim(),
       place: place.trim(),
       comment: comment.trim(),
+      is_active: isActive,
     });
     onClose();
   };
@@ -251,6 +255,38 @@ const BookReviewFormContent: React.FC<FormContentProps> = ({
             className="w-full p-3 bg-surface-container-low rounded-xl text-[13px] text-on-surface placeholder:text-on-surface-variant/50 border border-border-default/50 focus:border-border-strong focus:outline-none focus:bg-surface-container-lowest resize-none transition-colors"
           />
         </label>
+
+        {/* Status Toggle */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-border-default/50">
+          <div className="flex flex-col">
+            <span className="text-[12px] font-semibold text-on-surface flex items-center gap-1.5">
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isActive ? "bg-emerald-500" : "bg-outline"
+                }`}
+              />
+              Status: {isActive ? "Active (Visible on site)" : "Draft (Hidden)"}
+            </span>
+            <span className="text-[11px] text-on-surface-variant">
+              {isActive
+                ? "Will be immediately visible on book page reviews"
+                : "Saved as draft, hidden from storefront"}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsActive(!isActive)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+              isActive ? "bg-primary" : "bg-surface-container-highest"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                isActive ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 pt-2">

@@ -11,7 +11,7 @@ interface GalleryDetailModalProps {
   onDelete: (id: string, rawPath?: string) => void;
   onUpdate?: (
     id: string,
-    data: { tag?: string; title?: string; description?: string }
+    data: { tag?: string; title?: string; description?: string; is_active?: boolean }
   ) => Promise<void> | void;
 }
 
@@ -21,7 +21,7 @@ interface GalleryDetailContentProps {
   onDelete: (id: string, rawPath?: string) => void;
   onUpdate?: (
     id: string,
-    data: { tag?: string; title?: string; description?: string }
+    data: { tag?: string; title?: string; description?: string; is_active?: boolean }
   ) => Promise<void> | void;
 }
 
@@ -36,6 +36,7 @@ const GalleryDetailContent: React.FC<GalleryDetailContentProps> = ({
   const [editTag, setEditTag] = useState(asset.tag || "");
   const [editTitle, setEditTitle] = useState(asset.title || "");
   const [editDescription, setEditDescription] = useState(asset.description || "");
+  const [editIsActive, setEditIsActive] = useState(Boolean(asset.is_active));
   const [isSaving, setIsSaving] = useState(false);
 
   const handleCopyLink = () => {
@@ -57,6 +58,7 @@ const GalleryDetailContent: React.FC<GalleryDetailContentProps> = ({
         tag: editTag.trim().toUpperCase(),
         title: editTitle.trim(),
         description: editDescription.trim(),
+        is_active: editIsActive,
       });
       setIsEditing(false);
     } catch (err) {
@@ -185,6 +187,36 @@ const GalleryDetailContent: React.FC<GalleryDetailContentProps> = ({
             />
           </div>
 
+          {/* Status Toggle in Edit Mode */}
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-lowest border border-border-default/60">
+            <div className="flex flex-col">
+              <span className="text-[12px] font-semibold text-on-surface flex items-center gap-1.5">
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    editIsActive ? "bg-emerald-500" : "bg-outline"
+                  }`}
+                />
+                Status: {editIsActive ? "Active" : "Draft"}
+              </span>
+              <span className="text-[11px] text-on-surface-variant">
+                {editIsActive ? "Visible on brand gallery" : "Hidden in drafts"}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setEditIsActive(!editIsActive)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                editIsActive ? "bg-primary" : "bg-surface-container-highest"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  editIsActive ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+
           {/* Edit Buttons */}
           <div className="flex gap-2 pt-1">
             <button
@@ -209,9 +241,25 @@ const GalleryDetailContent: React.FC<GalleryDetailContentProps> = ({
           {/* Metadata Grid */}
           <div className="p-3.5 bg-surface-container-low rounded-2xl border border-surface-container flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
-                {asset.tag || "GENERAL"}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
+                  {asset.tag || "GENERAL"}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[10px] font-medium ${
+                    asset.is_active
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                      : "bg-surface-container-highest text-on-surface-variant"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      asset.is_active ? "bg-emerald-500" : "bg-outline"
+                    }`}
+                  />
+                  {asset.is_active ? "Active" : "Draft"}
+                </span>
+              </div>
               {onUpdate && (
                 <button
                   type="button"
@@ -273,10 +321,47 @@ const GalleryDetailContent: React.FC<GalleryDetailContentProps> = ({
       {/* Action Footer */}
       {!isEditing && (
         <div className="flex items-center gap-2 pt-1 flex-shrink-0">
+          {onUpdate && (
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={async () => {
+                setIsSaving(true);
+                try {
+                  await onUpdate(asset.id, { is_active: !asset.is_active });
+                } finally {
+                  setIsSaving(false);
+                }
+              }}
+              className={`h-11 px-3.5 rounded-xl text-[13px] font-medium transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
+                asset.is_active
+                  ? "bg-surface-container hover:bg-surface-container-high text-on-surface"
+                  : "bg-primary hover:bg-primary-container text-on-primary shadow-xs"
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M2 12h20" />
+                <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6" />
+                <path d="m16 8-4-4-4 4" />
+                <path d="M12 4v16" />
+              </svg>
+              <span>{asset.is_active ? "Move to Draft" : "Publish"}</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleCopyLink}
-            className="flex-1 h-11 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-[13px] font-medium transition-colors cursor-pointer flex items-center justify-center gap-2"
+            className="flex-1 h-11 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-[13px] font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5"
           >
             {copied ? (
               <>

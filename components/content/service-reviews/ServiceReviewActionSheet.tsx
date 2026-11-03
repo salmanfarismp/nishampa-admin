@@ -8,12 +8,13 @@ interface ServiceReviewActionSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onEdit: (review: ServiceReviewItem) => void;
+  onToggleStatus: (review: ServiceReviewItem) => void;
   onDelete: (review: ServiceReviewItem) => void;
 }
 
 export const ServiceReviewActionSheet: React.FC<
   ServiceReviewActionSheetProps
-> = ({ review, isOpen, onClose, onEdit, onDelete }) => {
+> = ({ review, isOpen, onClose, onEdit, onToggleStatus, onDelete }) => {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!isOpen || !review) return null;
@@ -37,21 +38,37 @@ export const ServiceReviewActionSheet: React.FC<
         <div className="w-10 h-1 bg-surface-container-highest rounded-full mx-auto -mt-1 mb-1" />
 
         {/* Client Preview Header */}
-        <div className="pb-2 border-b border-surface-container">
-          <span className="text-[11px] font-mono text-on-surface-variant uppercase tracking-wider">
-            Review Actions
-          </span>
-          <p
-            id="review-actions-title"
-            className="text-[15px] font-semibold text-on-surface line-clamp-1 mt-0.5"
-          >
-            {review.name || "Client Review"}
-          </p>
-          {review.displaySubtitle && (
-            <p className="text-[12px] text-on-surface-variant truncate">
-              {review.displaySubtitle}
+        <div className="pb-2 border-b border-surface-container flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <span className="text-[11px] font-mono text-on-surface-variant uppercase tracking-wider">
+              Review Actions
+            </span>
+            <p
+              id="review-actions-title"
+              className="text-[15px] font-semibold text-on-surface line-clamp-1 mt-0.5"
+            >
+              {review.name || "Client Review"}
             </p>
-          )}
+            {review.displaySubtitle && (
+              <p className="text-[12px] text-on-surface-variant truncate">
+                {review.displaySubtitle}
+              </p>
+            )}
+          </div>
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[10px] font-medium flex-shrink-0 mt-1 ${
+              review.is_active
+                ? "bg-surface-container text-on-surface"
+                : "bg-surface-container-highest text-secondary"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                review.is_active ? "bg-primary" : "bg-secondary"
+              }`}
+            />
+            {review.is_active ? "Active" : "Draft"}
+          </span>
         </div>
 
         {/* Actions List */}
@@ -79,6 +96,35 @@ export const ServiceReviewActionSheet: React.FC<
               <path d="m15 5 4 4" />
             </svg>
             <span>Edit Review Details</span>
+          </button>
+
+          {/* Toggle Status (Active / Draft) */}
+          <button
+            type="button"
+            onClick={() => {
+              handleClose();
+              onToggleStatus(review);
+            }}
+            className="w-full h-11 px-3 rounded-xl bg-surface-container-low hover:bg-surface-container flex items-center gap-3 text-left text-[13px] font-medium text-on-surface transition-colors cursor-pointer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4 text-on-surface-variant"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M2 12h20" />
+              <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6" />
+              <path d="m16 8-4-4-4 4" />
+              <path d="M12 4v16" />
+            </svg>
+            <span>
+              {review.is_active ? "Switch to Draft" : "Publish Review"}
+            </span>
           </button>
 
           {/* Delete Action with inline confirm */}

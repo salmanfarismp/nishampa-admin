@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { assertAdmin } from "@/lib/auth/assertAdmin";
-import { GalleryRow, FaqRow, ServiceReviewRow } from "@/types/database";
+import { GalleryRow, FaqRow, ServiceReviewRow, ClientRow } from "@/types/database";
 
 /**
  * Server Action: Fetches all gallery records from public."Gallery"
@@ -47,6 +47,8 @@ export async function uploadGalleryItemAction(
   const tag = (formData.get("tag") as string)?.trim() || null;
   const title = (formData.get("title") as string)?.trim() || null;
   const description = (formData.get("description") as string)?.trim() || null;
+  const isActiveRaw = formData.get("is_active");
+  const isActive = isActiveRaw !== null ? isActiveRaw === "true" || isActiveRaw === "1" : true;
 
   const bucket =
     process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
@@ -82,6 +84,7 @@ export async function uploadGalleryItemAction(
       tag,
       title,
       description,
+      is_active: isActive,
     })
     .select()
     .single();
@@ -109,6 +112,7 @@ export async function updateGalleryItemAction(
     tag?: string | null;
     title?: string | null;
     description?: string | null;
+    is_active?: boolean;
   }
 ): Promise<GalleryRow> {
   await assertAdmin();
@@ -118,6 +122,7 @@ export async function updateGalleryItemAction(
   if (data.tag !== undefined) updatePayload.tag = data.tag?.trim() || null;
   if (data.title !== undefined) updatePayload.title = data.title?.trim() || null;
   if (data.description !== undefined) updatePayload.description = data.description?.trim() || null;
+  if (data.is_active !== undefined) updatePayload.is_active = Boolean(data.is_active);
 
   const { data: updated, error } = await adminClient
     .from("Gallery")
@@ -354,6 +359,7 @@ export async function createServiceReviewAction(payload: {
   name?: string | null;
   occupation?: string | null;
   place?: string | null;
+  is_active?: boolean;
 }): Promise<ServiceReviewRow> {
   await assertAdmin();
   const adminClient = createAdminClient();
@@ -365,6 +371,7 @@ export async function createServiceReviewAction(payload: {
       name: payload.name?.trim() || null,
       occupation: payload.occupation?.trim() || null,
       place: payload.place?.trim() || null,
+      is_active: payload.is_active !== undefined ? Boolean(payload.is_active) : true,
     })
     .select()
     .single();
@@ -388,6 +395,7 @@ export async function updateServiceReviewAction(
     name?: string | null;
     occupation?: string | null;
     place?: string | null;
+    is_active?: boolean;
   }
 ): Promise<ServiceReviewRow> {
   await assertAdmin();
@@ -398,6 +406,7 @@ export async function updateServiceReviewAction(
   if (payload.name !== undefined) updates.name = payload.name?.trim() || null;
   if (payload.occupation !== undefined) updates.occupation = payload.occupation?.trim() || null;
   if (payload.place !== undefined) updates.place = payload.place?.trim() || null;
+  if (payload.is_active !== undefined) updates.is_active = Boolean(payload.is_active);
 
   const { data, error } = await adminClient
     .from("ServiceReview")
@@ -430,6 +439,242 @@ export async function deleteServiceReviewAction(id: number): Promise<void> {
   if (error) {
     console.error(`Failed to delete ServiceReview record (${id}):`, error);
     throw new Error(`Database delete failed: ${error.message}`);
+  }
+
+  revalidatePath("/content");
+}
+
+
+/**
+ * Server Action: Fetches all clients from public."Client"
+ */
+export async function getClientItemsAction(): Promise<ClientRow[]> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const { data, error } = await adminClient
+    .from("Client")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch Client records:", error);
+    throw new Error(`Failed to fetch client records: ${error.message}`);
+  }
+
+  return (data as unknown as ClientRow[]) || [];
+}
+
+/**
+ * Server Action: Creates a new Client record and optionally uploads logo file to Supabase storage.
+ */
+export async function createClientItemAction(
+  formData: FormData
+): Promise<ClientRow> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const name = (formData.get("name") as string)?.trim() || null;
+  const rawLogoUrl = (formData.get("logo_url") as string)?.trim() || null;
+  const file = formData.get("file");
+
+  let logoUrl: string | null = rawLogoUrl;
+
+  const bucket =
+    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
+
+  if (file instanceof File && file.size > 0) {
+    const fileExt = file.name.split(".").pop()?.toLowerCase() || "webp";
+    const safeName = file.name
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .slice(0, 30);
+    const filePath = `clients/${Date.now()}_${safeName}.${fileExt}`;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const { error: uploadError } = await adminClient.storage
+      .from(bucket)
+      .upload(filePath, buffer, {
+        contentType: file.type || "image/webp",
+        cacheControl: "31536000",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("Storage upload failed for client logo:", uploadError);
+      throw new Error(`Storage upload failed: ${uploadError.message}`);
+    }
+
+    logoUrl = filePath;
+  }
+
+  const { data, error } = await adminClient
+    .from("Client")
+    .insert({
+      name,
+      logo_url: logoUrl,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Failed to insert Client record:", error);
+    if (logoUrl && !logoUrl.startsWith("http://") && !logoUrl.startsWith("https://")) {
+      const cleanPath = logoUrl.startsWith("/") ? logoUrl.slice(1) : logoUrl;
+      await adminClient.storage.from(bucket).remove([cleanPath]);
+    }
+    throw new Error(`Database insert failed: ${error.message}`);
+  }
+
+  revalidatePath("/content");
+  return data as unknown as ClientRow;
+}
+
+/**
+ * Server Action: Updates an existing Client record and manages storage for replaced/removed logo.
+ */
+export async function updateClientItemAction(
+  id: number,
+  formData: FormData
+): Promise<ClientRow> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const bucket =
+    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
+
+  // Fetch current client to check previous logo path
+  const { data: existing, error: fetchError } = await adminClient
+    .from("Client")
+    .select("logo_url")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !existing) {
+    throw new Error(`Client not found with ID ${id}`);
+  }
+
+  const oldLogoUrl = existing.logo_url;
+  const updates: Record<string, unknown> = {};
+
+  if (formData.has("name")) {
+    const nameVal = formData.get("name") as string;
+    updates.name = nameVal ? nameVal.trim() : null;
+  }
+
+  const file = formData.get("file");
+  const removeLogo = formData.get("remove_logo") === "true";
+  const rawLogoUrl = formData.get("logo_url") as string | null;
+
+  let newUploadedPath: string | null = null;
+
+  if (file instanceof File && file.size > 0) {
+    const fileExt = file.name.split(".").pop()?.toLowerCase() || "webp";
+    const safeName = file.name
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .slice(0, 30);
+    const filePath = `clients/${Date.now()}_${safeName}.${fileExt}`;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const { error: uploadError } = await adminClient.storage
+      .from(bucket)
+      .upload(filePath, buffer, {
+        contentType: file.type || "image/webp",
+        cacheControl: "31536000",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("Storage upload failed during client update:", uploadError);
+      throw new Error(`Storage upload failed: ${uploadError.message}`);
+    }
+
+    newUploadedPath = filePath;
+    updates.logo_url = filePath;
+  } else if (removeLogo) {
+    updates.logo_url = null;
+  } else if (rawLogoUrl !== null) {
+    updates.logo_url = rawLogoUrl ? rawLogoUrl.trim() : null;
+  }
+
+  const { data, error } = await adminClient
+    .from("Client")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Failed to update Client record (${id}):`, error);
+    if (newUploadedPath) {
+      await adminClient.storage.from(bucket).remove([newUploadedPath]);
+    }
+    throw new Error(`Database update failed: ${error.message}`);
+  }
+
+  // If new logo was uploaded or logo was removed, delete old storage asset if it was internal
+  if (
+    (newUploadedPath || removeLogo) &&
+    oldLogoUrl &&
+    !oldLogoUrl.startsWith("http://") &&
+    !oldLogoUrl.startsWith("https://")
+  ) {
+    const cleanOldPath = oldLogoUrl.startsWith("/") ? oldLogoUrl.slice(1) : oldLogoUrl;
+    try {
+      await adminClient.storage.from(bucket).remove([cleanOldPath]);
+    } catch (e) {
+      console.warn("Old logo deletion warning from storage:", e);
+    }
+  }
+
+  revalidatePath("/content");
+  return data as unknown as ClientRow;
+}
+
+/**
+ * Server Action: Deletes a Client record from public."Client" and cleans up storage.
+ */
+export async function deleteClientItemAction(id: number): Promise<void> {
+  await assertAdmin();
+  const adminClient = createAdminClient();
+
+  const bucket =
+    process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "prod";
+
+  const { data: existing } = await adminClient
+    .from("Client")
+    .select("logo_url")
+    .eq("id", id)
+    .single();
+
+  const { error } = await adminClient
+    .from("Client")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error(`Failed to delete Client record (${id}):`, error);
+    throw new Error(`Database delete failed: ${error.message}`);
+  }
+
+  if (
+    existing?.logo_url &&
+    !existing.logo_url.startsWith("http://") &&
+    !existing.logo_url.startsWith("https://")
+  ) {
+    const cleanPath = existing.logo_url.startsWith("/")
+      ? existing.logo_url.slice(1)
+      : existing.logo_url;
+    try {
+      await adminClient.storage.from(bucket).remove([cleanPath]);
+    } catch (e) {
+      console.warn("Storage deletion warning for client logo:", e);
+    }
   }
 
   revalidatePath("/content");

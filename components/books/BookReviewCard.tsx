@@ -36,8 +36,14 @@ export const BookReviewCard: React.FC<BookReviewCardProps> = ({
   const starsCount = review.stars != null ? Math.min(5, Math.max(0, review.stars)) : null;
 
   return (
-    <article className="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-2xs border border-outline-variant/30 flex flex-col gap-3 transition-all duration-200 select-none">
-      {/* Top Header: Avatar, Name + Subtitle, Stars, Timestamp, and Action Menu */}
+    <article
+      className={`bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-2xs border flex flex-col gap-3 transition-all duration-200 select-none ${
+        !review.is_active
+          ? "border-dashed border-outline-variant/60 opacity-85 bg-surface-container-low/30"
+          : "border-outline-variant/30"
+      }`}
+    >
+      {/* Top Header: Avatar, Name + Subtitle, Stars, Timestamp, Status Badge, and Action Menu */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div
@@ -65,8 +71,23 @@ export const BookReviewCard: React.FC<BookReviewCardProps> = ({
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[10px] font-medium ${
+              review.is_active
+                ? "bg-surface-container text-on-surface"
+                : "bg-surface-container-highest text-secondary"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                review.is_active ? "bg-primary" : "bg-secondary"
+              }`}
+            />
+            {review.is_active ? "Active" : "Draft"}
+          </span>
+
           {review.createdAt && (
-            <span className="font-mono text-[11px] text-on-surface-variant/70 hidden xs:inline-block">
+            <span className="font-mono text-[11px] text-on-surface-variant/70 hidden sm:inline-block">
               {review.createdAt}
             </span>
           )}
