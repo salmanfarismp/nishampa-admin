@@ -413,6 +413,7 @@ export function mapClientRowToItem(row: ClientRow): ClientItem {
     name: row.name || "",
     logoUrl: publicUrl,
     rawLogoPath,
+    show_logo: Boolean(row.show_logo),
     createdAt: row.created_at,
     formattedDate: formatUploadedDate(row.created_at),
   };
@@ -433,9 +434,13 @@ export async function createClient(data: {
   name: string;
   file?: File | null;
   logoUrl?: string;
+  show_logo?: boolean;
 }): Promise<ClientItem> {
   const formData = new FormData();
   formData.append("name", data.name);
+  if (data.show_logo !== undefined) {
+    formData.append("show_logo", String(data.show_logo));
+  }
 
   if (data.file) {
     let fileToUpload = data.file;
@@ -466,6 +471,7 @@ export async function updateClient(
     file?: File | null;
     logoUrl?: string;
     removeLogo?: boolean;
+    show_logo?: boolean;
   }
 ): Promise<ClientItem> {
   const numId = Number(id);
@@ -476,6 +482,9 @@ export async function updateClient(
   const formData = new FormData();
   if (data.name !== undefined) {
     formData.append("name", data.name);
+  }
+  if (data.show_logo !== undefined) {
+    formData.append("show_logo", String(data.show_logo));
   }
   if (data.removeLogo) {
     formData.append("remove_logo", "true");
@@ -496,6 +505,16 @@ export async function updateClient(
 
   const row = await updateClientItemAction(numId, formData);
   return mapClientRowToItem(row);
+}
+
+/**
+ * Toggles whether a client is displayed via logo or brand name.
+ */
+export async function toggleClientShowLogo(
+  id: string,
+  currentShowLogo: boolean
+): Promise<ClientItem> {
+  return updateClient(id, { show_logo: !currentShowLogo });
 }
 
 /**

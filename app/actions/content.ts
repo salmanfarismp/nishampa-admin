@@ -476,6 +476,7 @@ export async function createClientItemAction(
 
   const name = (formData.get("name") as string)?.trim() || null;
   const rawLogoUrl = (formData.get("logo_url") as string)?.trim() || null;
+  const showLogo = formData.get("show_logo") === "true";
   const file = formData.get("file");
 
   let logoUrl: string | null = rawLogoUrl;
@@ -515,6 +516,7 @@ export async function createClientItemAction(
     .insert({
       name,
       logo_url: logoUrl,
+      show_logo: showLogo,
     })
     .select()
     .single();
@@ -562,6 +564,10 @@ export async function updateClientItemAction(
   if (formData.has("name")) {
     const nameVal = formData.get("name") as string;
     updates.name = nameVal ? nameVal.trim() : null;
+  }
+
+  if (formData.has("show_logo")) {
+    updates.show_logo = formData.get("show_logo") === "true";
   }
 
   const file = formData.get("file");

@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from "react"
 import {
   ContentTab,
   ContentStatusFilter,
+  ClientDisplayFilter,
   GalleryAsset,
   ServiceReviewItem,
   ClientItem,
@@ -45,6 +46,7 @@ import { ServiceReviewActionSheet } from "@/components/content/service-reviews/S
 // Client Subcomponents
 import { ClientCard } from "@/components/content/clients/ClientCard";
 import { ClientSearchBar } from "@/components/content/clients/ClientSearchBar";
+import { ClientFilterChips } from "@/components/content/clients/ClientFilterChips";
 import { ClientFloatingActionButton } from "@/components/content/clients/ClientFloatingActionButton";
 import { ClientCreateEditModal } from "@/components/content/clients/ClientCreateEditModal";
 import { ClientActionSheet } from "@/components/content/clients/ClientActionSheet";
@@ -56,6 +58,7 @@ export default function ContentPage() {
   // Filters for Draft Mode
   const [galleryFilter, setGalleryFilter] = useState<ContentStatusFilter>("all");
   const [serviceReviewFilter, setServiceReviewFilter] = useState<ContentStatusFilter>("all");
+  const [clientFilter, setClientFilter] = useState<ClientDisplayFilter>("all");
 
   // Gallery State (Supabase LifeStyleImage)
   const [galleryAssets, setGalleryAssets] = useState<GalleryAsset[]>([]);
@@ -279,13 +282,25 @@ export default function ContentPage() {
     });
   }, [serviceReviews, reviewSearchQuery, serviceReviewFilter]);
 
+  // Client Filtering & Counts Computation
+  const clientCounts = useMemo(() => {
+    const logo = clients.filter((c) => c.show_logo).length;
+    const name = clients.filter((c) => !c.show_logo).length;
+    return { all: clients.length, logo, name };
+  }, [clients]);
+
   const filteredClients = useMemo(() => {
     const q = clientSearchQuery.toLowerCase().trim();
-    if (!q) return clients;
-    return clients.filter((client) =>
-      client.name.toLowerCase().includes(q)
-    );
-  }, [clients, clientSearchQuery]);
+    return clients.filter((client) => {
+      // 1. Display Mode Filter (Logo vs Brand Name display)
+      if (clientFilter === "logo" && !client.show_logo) return false;
+      if (clientFilter === "name" && client.show_logo) return false;
+
+      // 2. Search Query
+      if (!q) return true;
+      return client.name.toLowerCase().includes(q);
+    });
+  }, [clients, clientSearchQuery, clientFilter]);
 
   // Gallery Actions
   const handleUploadAsset = async (newAssetData: {
@@ -582,6 +597,7 @@ export default function ContentPage() {
     file?: File | null;
     logoUrl?: string;
     removeLogo?: boolean;
+    show_logo?: boolean;
   }) => {
     if (data.id) {
       try {
@@ -590,6 +606,7 @@ export default function ContentPage() {
           file: data.file,
           logoUrl: data.logoUrl,
           removeLogo: data.removeLogo,
+          show_logo: data.show_logo,
         });
         setClients((prev) =>
           prev.map((c) => (c.id === data.id ? updated : c))
@@ -608,6 +625,7 @@ export default function ContentPage() {
           name: data.name,
           file: data.file,
           logoUrl: data.logoUrl,
+          show_logo: data.show_logo,
         });
         setClients((prev) => [created, ...prev]);
         showToast("Client added successfully");
@@ -620,6 +638,45 @@ export default function ContentPage() {
       }
     }
     setClientToEdit(null);
+  };
+
+  const handleToggleShowLogo = async (
+    clientItem: ClientItem,
+    targetShowLogo?: boolean
+  ) => {
+    const nextShowLogo =
+      typeof targetShowLogo === "boolean"
+        ? targetShowLogo
+        : !clientItem.show_logo;
+
+    if (nextShowLogo === clientItem.show_logo) return;
+
+    const backup = [...clients];
+
+    // Optimistic UI update
+    setClients((prev) =>
+      prev.map((c) =>
+        c.id === clientItem.id ? { ...c, show_logo: nextShowLogo } : c
+      )
+    );
+    showToast(
+      nextShowLogo
+        ? `Switched "${clientItem.name}" to display logo`
+        : `Switched "${clientItem.name}" to display brand name`
+    );
+
+    try {
+      const updated = await updateClient(clientItem.id, {
+        show_logo: nextShowLogo,
+      });
+      setClients((prev) =>
+        prev.map((c) => (c.id === clientItem.id ? updated : c))
+      );
+    } catch (err) {
+      console.error("Failed to toggle client display mode:", err);
+      setClients(backup);
+      showToast("Failed to update display mode. Changes reverted.");
+    }
   };
 
   const handleDeleteClient = async (clientItem: ClientItem) => {
@@ -822,27 +879,28 @@ export default function ContentPage() {
           aria-labelledby="tab-clients"
           className="flex flex-col gap-2.5 animate-in fade-in duration-200 pb-20"
         >
-          {/* Search Bar */}
-          <ClientSearchBar
-            query={clientSearchQuery}
-            onChange={setClientSearchQuery}
-            onClear={() => setClientSearchQuery("")}
-          />
+          {/* Search Bar & Filter Chips */}
+          <div className="flex flex-col gap-2">
+            <ClientSearchBar
+              query={clientSearchQuery}
+              onChange={setClientSearchQuery}
+              onClear={() => setClientSearchQuery("")}
+            />
+            <ClientFilterChips
+              activeFilter={clientFilter}
+              onSelectFilter={setClientFilter}
+              counts={clientCounts}
+            />
+          </div>
 
           {/* Clients Grid & Status */}
           <div className="flex flex-col gap-2.5 mt-1">
             {isLoadingClients ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-pulse">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-20 bg-surface-container-low rounded-2xl border border-outline-variant/30 p-4 flex items-center gap-3.5"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-surface-container flex-shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-surface-container rounded-md w-3/4" />
-                      <div className="h-3 bg-surface-container rounded-md w-1/3" />
-                    </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-4 animate-pulse">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <div className="aspect-square w-full rounded-2xl bg-surface-container-low border border-outline-variant/30" />
+                    <div className="h-4 bg-surface-container rounded-md w-2/3" />
                   </div>
                 ))}
               </div>
@@ -879,7 +937,7 @@ export default function ContentPage() {
                 </button>
               </div>
             ) : filteredClients.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-4">
                 {filteredClients.map((client) => (
                   <ClientCard
                     key={client.id}
@@ -911,15 +969,20 @@ export default function ContentPage() {
                 <p className="text-[12px] text-on-surface-variant max-w-xs mt-1">
                   {clientSearchQuery
                     ? `No clients matched "${clientSearchQuery}". Try clearing search.`
+                    : clientFilter !== "all"
+                    ? `No clients configured for ${clientFilter === "logo" ? "logo" : "brand name"} display.`
                     : "No clients added yet. Tap '+' to add the first client we've worked with."}
                 </p>
-                {clientSearchQuery && (
+                {(clientSearchQuery || clientFilter !== "all") && (
                   <button
                     type="button"
-                    onClick={() => setClientSearchQuery("")}
+                    onClick={() => {
+                      setClientSearchQuery("");
+                      setClientFilter("all");
+                    }}
                     className="mt-3 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-[12px] font-medium text-on-surface transition-colors cursor-pointer"
                   >
-                    Clear Search
+                    Reset Filters
                   </button>
                 )}
               </div>
@@ -999,6 +1062,7 @@ export default function ContentPage() {
           setIsClientModalOpen(true);
         }}
         onDelete={handleDeleteClient}
+        onToggleShowLogo={handleToggleShowLogo}
       />
     </div>
   );

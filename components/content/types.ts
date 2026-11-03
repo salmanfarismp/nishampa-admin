@@ -2,6 +2,8 @@ export type ContentTab = "gallery" | "service-reviews" | "clients";
 
 export type ContentStatusFilter = "all" | "active" | "draft";
 
+export type ClientDisplayFilter = "all" | "logo" | "name";
+
 export type FaqStatus = "published" | "draft";
 export type FaqFilter = "all" | "published" | "draft";
 
@@ -49,6 +51,7 @@ export interface ClientItem {
   name: string;
   logoUrl: string;
   rawLogoPath?: string;
+  show_logo: boolean;
   createdAt: string;
   formattedDate?: string;
 }

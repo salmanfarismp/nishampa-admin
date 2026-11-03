@@ -15,6 +15,7 @@ interface ClientCreateEditModalProps {
     file?: File | null;
     logoUrl?: string;
     removeLogo?: boolean;
+    show_logo?: boolean;
   }) => Promise<void> | void;
 }
 
@@ -27,6 +28,7 @@ interface ClientFormContentProps {
     file?: File | null;
     logoUrl?: string;
     removeLogo?: boolean;
+    show_logo?: boolean;
   }) => Promise<void> | void;
 }
 
@@ -37,6 +39,7 @@ const ClientFormContent: React.FC<ClientFormContentProps> = ({
 }) => {
   const isEditing = Boolean(clientToEdit);
   const [name, setName] = useState(clientToEdit?.name ?? "");
+  const [showLogo, setShowLogo] = useState(clientToEdit ? Boolean(clientToEdit.show_logo) : false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     clientToEdit?.logoUrl || null
@@ -179,6 +182,7 @@ const ClientFormContent: React.FC<ClientFormContentProps> = ({
         file: selectedFile,
         logoUrl: !selectedFile && previewUrl && !isBlobUrl ? previewUrl : undefined,
         removeLogo: removeExistingLogo && !selectedFile && !previewUrl,
+        show_logo: showLogo,
       });
       onClose();
     } catch (err: unknown) {
@@ -449,6 +453,105 @@ const ClientFormContent: React.FC<ClientFormContentProps> = ({
                   </button>
                 </div>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* Storefront Display Preference */}
+        <div className="flex flex-col gap-2.5 p-3.5 rounded-2xl bg-surface-container-low border border-border-default/60">
+          <div className="flex items-center justify-between">
+            <label className="text-[12px] font-semibold text-on-surface uppercase tracking-wider">
+              Storefront Display Mode
+            </label>
+            <span className="text-[11px] font-medium text-primary">
+              {showLogo ? "Logo Mode Active" : "Brand Name Mode Active"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onClick={() => setShowLogo(false)}
+              className={`p-3 rounded-xl border flex flex-col gap-1 text-left transition-all cursor-pointer ${
+                !showLogo
+                  ? "bg-surface-container-lowest border-primary shadow-xs ring-1 ring-primary/20"
+                  : "bg-surface-container/30 border-transparent hover:bg-surface-container hover:border-outline-variant/30"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
+                  <svg
+                    className={`w-4 h-4 flex-shrink-0 ${
+                      !showLogo ? "text-primary" : "text-on-surface-variant"
+                    }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="4 7 4 4 20 4 20 7" />
+                    <line x1="9" y1="20" x2="15" y2="20" />
+                    <line x1="12" y1="4" x2="12" y2="20" />
+                  </svg>
+                  <span>Brand Name</span>
+                </div>
+                {!showLogo && (
+                  <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                )}
+              </div>
+              <p className="text-[11px] text-on-surface-variant leading-normal mt-0.5">
+                Renders stylized typography on storefront
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowLogo(true)}
+              className={`p-3 rounded-xl border flex flex-col gap-1 text-left transition-all cursor-pointer ${
+                showLogo
+                  ? "bg-surface-container-lowest border-primary shadow-xs ring-1 ring-primary/20"
+                  : "bg-surface-container/30 border-transparent hover:bg-surface-container hover:border-outline-variant/30"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
+                  <svg
+                    className={`w-4 h-4 flex-shrink-0 ${
+                      showLogo ? "text-primary" : "text-on-surface-variant"
+                    }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                  </svg>
+                  <span>Client Logo</span>
+                </div>
+                {showLogo && (
+                  <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                )}
+              </div>
+              <p className="text-[11px] text-on-surface-variant leading-normal mt-0.5">
+                Renders high-res brand logo graphic
+              </p>
+            </button>
+          </div>
+
+          {showLogo && !selectedFile && !previewUrl && (
+            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px] flex items-center gap-2 mt-0.5">
+              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>Logo mode selected, but no logo uploaded yet. Storefront will use brand name until an image is attached.</span>
             </div>
           )}
         </div>

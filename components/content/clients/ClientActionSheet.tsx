@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { ClientItem } from "../types";
 
 interface ClientActionSheetProps {
@@ -9,7 +10,10 @@ interface ClientActionSheetProps {
   onClose: () => void;
   onEdit: (client: ClientItem) => void;
   onDelete: (client: ClientItem) => void;
+  onToggleShowLogo?: (client: ClientItem) => void;
 }
+
+const FALLBACK_IMAGE = "/images/general-img-square.png";
 
 export const ClientActionSheet: React.FC<ClientActionSheetProps> = ({
   client,
@@ -17,15 +21,20 @@ export const ClientActionSheet: React.FC<ClientActionSheetProps> = ({
   onClose,
   onEdit,
   onDelete,
+  onToggleShowLogo,
 }) => {
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   if (!isOpen || !client) return null;
 
   const handleClose = () => {
     setConfirmDelete(false);
+    setImageError(false);
     onClose();
   };
+
+  const imageSrc = !imageError && client.logoUrl ? client.logoUrl : FALLBACK_IMAGE;
 
   return (
     <div
@@ -41,21 +50,28 @@ export const ClientActionSheet: React.FC<ClientActionSheetProps> = ({
         <div className="w-10 h-1 bg-surface-container-highest rounded-full mx-auto -mt-1 mb-1" />
 
         {/* Client Preview Header */}
-        <div className="pb-2 border-b border-surface-container">
-          <span className="text-[11px] font-mono text-on-surface-variant uppercase tracking-wider">
-            Client Options
-          </span>
-          <p
-            id="client-actions-title"
-            className="text-[15px] font-semibold text-on-surface line-clamp-1 mt-0.5"
-          >
-            {client.name || "Unnamed Client"}
-          </p>
-          {client.formattedDate && (
-            <p className="text-[12px] text-on-surface-variant truncate">
-              Added {client.formattedDate}
+        <div className="flex items-center gap-3.5 pb-3 border-b border-surface-container">
+          <div className="relative w-12 h-12 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center justify-center overflow-hidden flex-shrink-0 p-1.5 shadow-2xs">
+            <Image
+              src={imageSrc}
+              alt={client.name || "Client logo"}
+              fill
+              sizes="48px"
+              className="object-contain"
+              onError={() => setImageError(true)}
+            />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <p
+              id="client-actions-title"
+              className="text-[16px] font-semibold text-on-surface truncate leading-tight"
+            >
+              {client.name || "Unnamed Client"}
             </p>
-          )}
+            <p className="text-[12px] text-on-surface-variant truncate mt-0.5">
+              {client.show_logo ? "Storefront: Showing Logo" : "Storefront: Showing Brand Name"}
+            </p>
+          </div>
         </div>
 
         {/* Actions List */}
@@ -84,6 +100,58 @@ export const ClientActionSheet: React.FC<ClientActionSheetProps> = ({
             </svg>
             <span>Edit Client Details</span>
           </button>
+
+          {/* Toggle Show Logo vs Brand Name */}
+          {onToggleShowLogo && (
+            <button
+              type="button"
+              onClick={() => {
+                handleClose();
+                onToggleShowLogo(client);
+              }}
+              className="w-full h-11 px-3 rounded-xl bg-surface-container-low hover:bg-surface-container flex items-center justify-between text-left text-[13px] font-medium text-on-surface transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                {client.show_logo ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4 text-on-surface-variant"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="4 7 4 4 20 4 20 7" />
+                    <line x1="9" y1="20" x2="15" y2="20" />
+                    <line x1="12" y1="4" x2="12" y2="20" />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4 text-on-surface-variant"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                  </svg>
+                )}
+                <span>
+                  {client.show_logo ? "Switch to Display Brand Name" : "Switch to Display Logo"}
+                </span>
+              </div>
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant">
+                Currently: {client.show_logo ? "Logo" : "Brand Name"}
+              </span>
+            </button>
+          )}
 
           {/* Delete Action with inline confirm */}
           {!confirmDelete ? (

@@ -95,6 +95,7 @@ export interface ClientRow {
   created_at: string;
   name: string | null;
   logo_url: string | null;
+  show_logo: boolean | null;
 }
 
 export type OrderStatus =
